@@ -20,10 +20,6 @@ export interface TrParseResult {
   holdings: ParsedHolding[];
 }
 
-/**
- * Lazy-loads pdfjs-dist and extracts holdings from a Trade Republic
- * "Vermögensübersicht" (asset overview) PDF.
- */
 export async function parseTrPortfolioPdf(
   file: File,
 ): Promise<Result<TrParseResult>> {
@@ -51,9 +47,7 @@ export async function parseTrPortfolioPdf(
 }
 
 interface LineItem {
-  /** y-coordinate (decreasing top-to-bottom in PDF coordinate space). */
   y: number;
-  /** x-coordinate (left-to-right). */
   x: number;
   text: string;
 }
@@ -77,7 +71,6 @@ async function extractLines(
     }
   }
 
-  // Group by y (within tolerance), then sort within each row by x.
   allItems.sort((a, b) => a.y - b.y || a.x - b.x);
   const lines: string[] = [];
   let currentY: number | null = null;
@@ -114,6 +107,7 @@ function parseGermanNumber(s: string): number | null {
   if (lastComma === -1 && lastDot === -1) n = cleaned;
   else if (lastComma > lastDot) n = cleaned.replace(/\./g, '').replace(',', '.');
   else n = cleaned.replace(/,/g, '');
+  if ((n.match(/\./g) ?? []).length > 1) return null;
   const v = Number(n);
   return Number.isFinite(v) ? v : null;
 }
@@ -139,69 +133,83 @@ export function parseLines(lines: string[]): TrParseResult {
 }
 
 /**
- * Find each holding row. Strategy:
- *   1. Normalize the joined text (collapse whitespace, normalize ISIN labels).
- *   2. Find every ISIN occurrence.
- *   3. For each ISIN, look BACKWARDS for "<shares> Stk. <name>" and
- *      FORWARDS for the next two numbers (price, value), skipping the
- *      date if present.
- * This is far more tolerant of PDF layout variation than a single
- * monolithic regex.
+ * Treat each "<num> Stk." occurrence as a row boundary. In the real TR
+ * PDF the row visually reads:
+ *
+ *   <shares> Stk.  <name>  <price>  <value>
+ *                  ISIN: <isin>  <date>
+ *
+ * — so price + value sit BEFORE the ISIN (same visual row), not after.
+ * Per row:
+ *   1. Body = text between this Stk. and the next Stk. (or end).
+ *   2. ISIN = first ISIN-shaped token in the body.
+ *   3. Price + value = first two non-date numbers BEFORE the ISIN.
+ *   4. Name = body up to the ISIN, with numbers and headers stripped.
  */
 export function parseHoldings(rawText: string): ParsedHolding[] {
   const text = rawText
-    .replace(/ /g, ' ') // non-breaking spaces
-    .replace(/ /g, ' ') // thin spaces
+    .replace(/[   ]/g, ' ') // non-breaking / narrow spaces
+    .replace(/[  ]/g, ' ') // thin / hair spaces
     .replace(/[\r\n]+/g, ' \n ')
     .replace(/[ \t]+/g, ' ');
 
-  const isinRe = /\b([A-Z]{2}[A-Z0-9]{9}\d)\b/g;
-  const isinHits: { isin: string; idx: number }[] = [];
-  for (const m of text.matchAll(isinRe)) {
-    isinHits.push({ isin: m[1]!, idx: m.index ?? 0 });
+  const stkPattern = /(\d+(?:[.,]\s*\d+)*)\s*Stk\.?\b/gi;
+  interface StkHit {
+    sharesText: string;
+    start: number;
+    end: number;
+  }
+  const stkHits: StkHit[] = [];
+  for (const m of text.matchAll(stkPattern)) {
+    const sharesText = m[1] ?? '';
+    if (parseGermanNumber(sharesText) === null) continue;
+    stkHits.push({
+      sharesText,
+      start: m.index ?? 0,
+      end: (m.index ?? 0) + m[0]!.length,
+    });
   }
 
+  const isinPattern = /\b([A-Z]{2}[A-Z0-9]{9}\d)\b/;
+  const numberRe = /\d[\d.,]*\d|\d/g;
+  const datePattern = /^\d{2}\.\d{2}\.\d{4}$/;
+
   const holdings: ParsedHolding[] = [];
-  for (let i = 0; i < isinHits.length; i++) {
-    const { isin, idx } = isinHits[i]!;
-    const prevEnd =
-      i === 0 ? 0 : isinHits[i - 1]!.idx + isinHits[i - 1]!.isin.length;
-    const nextStart =
-      i + 1 < isinHits.length ? isinHits[i + 1]!.idx : text.length;
+  for (let i = 0; i < stkHits.length; i++) {
+    const hit = stkHits[i]!;
+    const bodyStart = hit.end;
+    const bodyEnd =
+      i + 1 < stkHits.length ? stkHits[i + 1]!.start : text.length;
+    const body = text.slice(bodyStart, bodyEnd);
 
-    const before = text.slice(prevEnd, idx);
-    const after = text.slice(idx + isin.length, nextStart);
+    const isinMatch = body.match(isinPattern);
+    if (!isinMatch) continue;
+    const isin = isinMatch[1]!;
+    const isinIdx = isinMatch.index ?? 0;
+    const isinEndIdx = isinIdx + isin.length;
 
-    // Backward: take the LAST valid "<number> Stk." in the segment.
-    // Allow optional whitespace after a separator inside the number
-    // (handles pdfjs kerning splits like "0, 525373"). Skip date-shaped
-    // false matches like "07.05.2026" via parseGermanNumber returning null.
-    const sharesPattern = /(\d+(?:[.,]\s*\d+)*)\s*Stk\.?\b/gi;
-    let shares = 0;
-    let sharesEndIdx = -1;
-    for (const sm of before.matchAll(sharesPattern)) {
-      const n = parseGermanNumber(sm[1] ?? '');
-      if (n === null) continue;
-      shares = n;
-      sharesEndIdx = (sm.index ?? 0) + sm[0]!.length;
-    }
-    const nameRaw =
-      sharesEndIdx >= 0 ? before.slice(sharesEndIdx) : before;
-    const name = cleanName(nameRaw);
+    const shares = parseGermanNumber(hit.sharesText) ?? 0;
 
-    // Forward: first two non-date numeric tokens.
-    const numberRe = /\d[\d.,]*\d|\d/g;
-    const numbers: number[] = [];
-    for (const numMatch of after.matchAll(numberRe)) {
+    // Numbers in the body, excluding ISIN-internal digits and dates.
+    const numbers: { value: number; pos: number }[] = [];
+    for (const numMatch of body.matchAll(numberRe)) {
       const raw = numMatch[0] ?? '';
-      if (/^\d{2}\.\d{2}\.\d{4}$/.test(raw.trim())) continue;
+      const pos = numMatch.index ?? 0;
+      if (pos >= isinIdx && pos < isinEndIdx) continue;
+      if (datePattern.test(raw)) continue;
       const n = parseGermanNumber(raw);
       if (n === null) continue;
-      numbers.push(n);
-      if (numbers.length >= 2) break;
+      numbers.push({ value: n, pos });
     }
-    const price = numbers[0] ?? 0;
-    const value = numbers[1] ?? 0;
+
+    // Prefer numbers BEFORE the ISIN (price + value, document order).
+    const beforeIsin = numbers.filter((nx) => nx.pos < isinIdx);
+    const candidates = beforeIsin.length >= 2 ? beforeIsin : numbers;
+    const price = candidates[0]?.value ?? 0;
+    const value = candidates[1]?.value ?? 0;
+
+    const nameRaw = body.slice(0, isinIdx);
+    const name = cleanName(stripNumbers(nameRaw));
 
     const isEtf =
       /\bETF\b|\(Acc\)|UCITS|MSCI|S&P|Nasdaq|DAX/i.test(name) ||
@@ -222,14 +230,19 @@ export function parseHoldings(rawText: string): ParsedHolding[] {
   return holdings;
 }
 
+function stripNumbers(s: string): string {
+  return s.replace(/\d[\d.,]*\d|\d/g, ' ');
+}
+
 function cleanName(raw: string): string {
   return raw
     .replace(/[\s\n]+/g, ' ')
     .replace(/\bWERTPAPIERBEZEICHNUNG\b/gi, '')
-    .replace(/\bKURS PRO STÜCK\b/gi, '')
+    .replace(/\bKURS PRO ST(Ü|UE)CK\b/gi, '')
     .replace(/\bKURSWERT IN EUR\b/gi, '')
     .replace(/\bSTK\.\s*\/\s*NOMINALE\b/gi, '')
     .replace(/^\s*ISIN:?\s*/i, '')
     .replace(/\s*ISIN:?\s*$/i, '')
+    .replace(/^\s*\.\s*/, '')
     .trim();
 }
