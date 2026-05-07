@@ -38,6 +38,9 @@ export async function parseTrPortfolioPdf(
     const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
 
     const lines = await extractLines(pdf);
+    if (typeof window !== 'undefined') {
+      console.debug('[TR-PDF] extracted lines', lines);
+    }
     return parseLines(lines);
   });
 }
@@ -90,15 +93,12 @@ async function extractLines(
 
 function flushLine(buf: LineItem[]): string {
   buf.sort((a, b) => a.x - b.x);
-  // Join with single space; collapse multiple spaces.
   return buf
     .map((b) => b.text)
     .join(' ')
     .replace(/\s+/g, ' ')
     .trim();
 }
-
-const ISIN_PATTERN = /\b([A-Z]{2}[A-Z0-9]{9}\d)\b/;
 
 function parseGermanNumber(s: string): number | null {
   const cleaned = s.trim().replace(/\s+/g, '');
@@ -113,98 +113,69 @@ function parseGermanNumber(s: string): number | null {
   return Number.isFinite(v) ? v : null;
 }
 
-function parseLines(lines: string[]): TrParseResult {
-  const allText = lines.join('\n');
+export function parseLines(lines: string[]): TrParseResult {
+  const allText = lines.join(' \n ').replace(/[ \t]+/g, ' ');
 
-  // Date from "VERMÖGENSÜBERSICHT zum DD.MM.YYYY"
   const dateMatch = allText.match(/zum\s+(\d{2}\.\d{2}\.\d{4})/);
   const date = dateMatch?.[1] ?? new Date().toLocaleDateString('de-DE');
 
-  // Brokerage / Cash / Gesamt
   let brokerage = 0;
   let cash = 0;
   let total = 0;
   const brokerageMatch = allText.match(/Brokerage\s+([\d.,]+)/);
-  const cashMatch = allText.match(/Cash\s+([\d.,]+)\s/);
+  const cashMatch = allText.match(/Cash\s+([\d.,]+)/);
   const totalMatch = allText.match(/GESAMT\s+([\d.,]+)\s*EUR/);
   if (brokerageMatch?.[1]) brokerage = parseGermanNumber(brokerageMatch[1]) ?? 0;
   if (cashMatch?.[1]) cash = parseGermanNumber(cashMatch[1]) ?? 0;
   if (totalMatch?.[1]) total = parseGermanNumber(totalMatch[1]) ?? 0;
 
-  // Find the brokerage section: between "BROKERAGE" and "ANZAHL POSITIONEN"
-  const startIdx = lines.findIndex((l) => l.startsWith('BROKERAGE'));
-  const endIdx = lines.findIndex((l) => l.startsWith('ANZAHL POSITIONEN'));
-  if (startIdx === -1 || endIdx === -1) {
-    return { date, brokerage, cash, total, holdings: [] };
-  }
-  const brokerageLines = lines.slice(startIdx + 1, endIdx);
+  const holdings = parseHoldings(allText);
+  return { date, brokerage, cash, total, holdings };
+}
 
-  // Find rows that contain an ISIN. Each holding spans multiple lines:
-  //   "<shares> Stk. <name>"
-  //   "<additional name lines>"
-  //   "ISIN: <isin>"
-  //   "<price> <date>"
-  //   "<value>"
-  // We scan for ISIN occurrences and gather context.
+/**
+ * Find each holding row by looking for the canonical sequence:
+ *   "<shares> Stk. <name> ISIN: <isin> <price> <DD.MM.YYYY> <value>"
+ * across the joined text.
+ */
+export function parseHoldings(text: string): ParsedHolding[] {
+  // Permit whitespace inside numbers (pdfjs sometimes splits them by kerning).
+  const num = '\\d[\\d\\s.,]*?';
+  const pattern = new RegExp(
+    [
+      `(${num})\\s*Stk\\.?\\s*`,
+      `([\\s\\S]+?)`,
+      `\\s*ISIN:\\s*([A-Z]{2}[A-Z0-9]{9}\\d)\\s+`,
+      `(${num})\\s+`,
+      `(\\d{2}\\.\\d{2}\\.\\d{4})\\s+`,
+      `(${num})`,
+      `(?=\\s|$)`,
+    ].join(''),
+    'g',
+  );
+
   const holdings: ParsedHolding[] = [];
-  for (let i = 0; i < brokerageLines.length; i++) {
-    const isinMatch = brokerageLines[i]!.match(ISIN_PATTERN);
-    if (!isinMatch) continue;
-    const isin = isinMatch[1]!;
+  for (const match of text.matchAll(pattern)) {
+    const [, sharesRaw, nameRaw, isin, priceRaw, , valueRaw] = match;
+    const shares = parseGermanNumber(sharesRaw ?? '') ?? 0;
+    const price = parseGermanNumber(priceRaw ?? '') ?? 0;
+    const value = parseGermanNumber(valueRaw ?? '') ?? 0;
+    const name = (nameRaw ?? '')
+      .replace(/[\s\n]+/g, ' ')
+      .replace(/\bWERTPAPIERBEZEICHNUNG\b/i, '')
+      .replace(/\bKURS PRO STÜCK\b/i, '')
+      .replace(/\bKURSWERT IN EUR\b/i, '')
+      .replace(/\bSTK\.\s*\/\s*NOMINALE\b/i, '')
+      .trim();
 
-    // Walk backwards to find the shares + name lines.
-    let shares = 0;
-    let nameParts: string[] = [];
-    for (let j = i - 1; j >= Math.max(0, i - 6); j--) {
-      const line = brokerageLines[j]!;
-      const sharesMatch = line.match(/^([\d.,]+)\s*Stk\.?\b\s*(.*)$/);
-      if (sharesMatch) {
-        shares = parseGermanNumber(sharesMatch[1]!) ?? 0;
-        if (sharesMatch[2]) nameParts.unshift(sharesMatch[2]);
-        break;
-      } else {
-        // Probably continuation of name
-        if (
-          !line.toUpperCase().includes('STK.') &&
-          !line.toUpperCase().includes('ISIN') &&
-          line.length > 0
-        ) {
-          nameParts.unshift(line);
-        }
-      }
-    }
-
-    // Walk forwards to find the price and value lines.
-    let price = 0;
-    let value = 0;
-    for (let j = i + 1; j < Math.min(brokerageLines.length, i + 6); j++) {
-      const line = brokerageLines[j]!;
-      // Price line: "226,70 07.05.2026" or just a number followed by date
-      const priceMatch = line.match(
-        /^([\d.,]+)\s+\d{2}\.\d{2}\.\d{4}\s*([\d.,]+)?$/,
-      );
-      const valueOnlyMatch = line.match(/^([\d.,]+)\s*$/);
-      if (priceMatch && price === 0) {
-        price = parseGermanNumber(priceMatch[1]!) ?? 0;
-        if (priceMatch[2]) {
-          value = parseGermanNumber(priceMatch[2]!) ?? 0;
-          break;
-        }
-      } else if (price !== 0 && valueOnlyMatch && value === 0) {
-        value = parseGermanNumber(valueOnlyMatch[1]!) ?? 0;
-        break;
-      }
-    }
-
-    const name = nameParts.join(' ').replace(/\s+/g, ' ').trim();
     const isEtf =
-      /\bETF\b|\(Acc\)|UCITS|MSCI|S&P|Nasdaq/i.test(name) ||
+      /\bETF\b|\(Acc\)|UCITS|MSCI|S&P|Nasdaq|DAX/i.test(name) ||
       isin.startsWith('IE') ||
       isin.startsWith('LU');
 
     holdings.push({
-      isin,
-      ticker: tickerFromIsin(isin) ?? '',
+      isin: isin ?? '',
+      ticker: isin ? tickerFromIsin(isin) ?? '' : '',
       name,
       shares,
       pricePerShare: price,
@@ -212,6 +183,5 @@ function parseLines(lines: string[]): TrParseResult {
       assetType: isEtf ? 'etf' : 'stock',
     });
   }
-
-  return { date, brokerage, cash, total, holdings };
+  return holdings;
 }
