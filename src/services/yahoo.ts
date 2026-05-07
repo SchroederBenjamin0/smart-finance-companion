@@ -54,6 +54,11 @@ const ISIN_TO_TICKER: Record<string, string> = {
   IE00BFY0GT14: 'SPYI.DE', // SPDR MSCI ACWI IMI
   IE00BJ0KDQ92: 'XMME.DE', // Xtrackers MSCI World
   IE00B0M62Q58: 'IUSA.DE', // iShares Core S&P 500
+  LU0252633754: 'XDAX.DE', // Xtrackers DAX UCITS ETF 1C
+  // Common single-name equities
+  DE0007500001: 'TKA.DE', // thyssenkrupp AG
+  US67066G1040: 'NVDA', // NVIDIA Corp. (USD-quoted)
+  AU000000DRO2: 'DRO.AX', // DroneShield Ltd
 };
 
 export function tickerFromIsin(isin: string): string | null {
