@@ -40,6 +40,38 @@ export const incomeRepo = {
     });
   },
 
+  async deleteWithAllocations(id: string): Promise<Result<void>> {
+    try {
+      const db = await getDB();
+      const tx = db.transaction(
+        ['incomeEntries', 'allocations', 'accounts'],
+        'readwrite',
+      );
+      const allocations = await tx
+        .objectStore('allocations')
+        .index('by-income')
+        .getAll(id);
+      const accountStore = tx.objectStore('accounts');
+      for (const a of allocations) {
+        const matches: Account[] = await accountStore
+          .index('by-type')
+          .getAll(a.accountType);
+        const account = matches[0];
+        if (account) {
+          account.balance = round2(account.balance - a.amount);
+          account.lastUpdated = nowIso();
+          await accountStore.put(account);
+        }
+        await tx.objectStore('allocations').delete(a.id);
+      }
+      await tx.objectStore('incomeEntries').delete(id);
+      await tx.done;
+      return ok(undefined);
+    } catch (e) {
+      return err(e instanceof Error ? e : new Error(String(e)));
+    }
+  },
+
   async createWithAllocations(
     input: IncomeWithSplit,
   ): Promise<Result<{ income: IncomeEntry; allocations: Allocation[] }>> {

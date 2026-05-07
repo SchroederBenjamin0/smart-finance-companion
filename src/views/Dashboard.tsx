@@ -7,6 +7,16 @@ import {
   RecentList,
   type RecentItem,
 } from '@/components/feature/dashboard/RecentList';
+import {
+  EntryDetailsSheet,
+  type EntrySelection,
+} from '@/components/feature/dashboard/EntryDetailsSheet';
+import { DueSubscriptionsBanner } from '@/components/feature/subscriptions/DueSubscriptionsBanner';
+import { PullToRefresh } from '@/components/ui/PullToRefresh';
+import { fetchQuotes } from '@/services/yahoo';
+import { positionsRepo as positionsRepoForRefresh } from '@/db/repositories/positions';
+import { round2 } from '@/lib/currency';
+import { nowIso } from '@/lib/date';
 import { incomeRepo } from '@/db/repositories/income';
 import { positionsRepo } from '@/db/repositories/positions';
 import { transactionsRepo } from '@/db/repositories/transactions';
@@ -31,22 +41,52 @@ export function Dashboard() {
   const [incomes, setIncomes] = useState<IncomeEntry[]>([]);
   const [expenses, setExpenses] = useState<Transaction[]>([]);
   const [positions, setPositions] = useState<InvestmentPosition[]>([]);
+  const [selection, setSelection] = useState<EntrySelection | null>(null);
 
   useEffect(() => {
     if (!loaded) void load();
   }, [loaded, load]);
 
+  const reloadActivity = async () => {
+    const [iR, tR, pR] = await Promise.all([
+      incomeRepo.findRecent(10),
+      transactionsRepo.findRecent(10),
+      positionsRepo.findAll(),
+    ]);
+    if (iR.ok) setIncomes(iR.value);
+    if (tR.ok) setExpenses(tR.value);
+    if (pR.ok) setPositions(pR.value);
+  };
+
+  async function refreshAll() {
+    await load();
+    const positionsResult = await positionsRepoForRefresh.findAll();
+    const current = positionsResult.ok ? positionsResult.value : [];
+    if (current.length > 0) {
+      const tickers = [...new Set(current.map((p) => p.ticker).filter(Boolean))];
+      const q = await fetchQuotes(tickers);
+      if (q.ok) {
+        const priceBy: Record<string, number> = {};
+        for (const quote of q.value) priceBy[quote.symbol] = quote.price;
+        const ts = nowIso();
+        for (const p of current) {
+          const px = priceBy[p.ticker];
+          if (typeof px === 'number' && px > 0) {
+            await positionsRepoForRefresh.upsert({
+              ...p,
+              currentValue: round2(p.shares * px),
+              lastSyncedPrice: ts,
+            });
+          }
+        }
+      }
+    }
+    await reloadActivity();
+  }
+
   useEffect(() => {
-    void (async () => {
-      const [iR, tR, pR] = await Promise.all([
-        incomeRepo.findRecent(10),
-        transactionsRepo.findRecent(10),
-        positionsRepo.findAll(),
-      ]);
-      if (iR.ok) setIncomes(iR.value);
-      if (tR.ok) setExpenses(tR.value);
-      if (pR.ok) setPositions(pR.value);
-    })();
+    void reloadActivity();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accounts]);
 
   const recent = useMemo<RecentItem[]>(() => {
@@ -86,7 +126,7 @@ export function Dashboard() {
   }, [incomes, expenses]);
 
   return (
-    <>
+    <PullToRefresh onRefresh={refreshAll}>
       <HeroHeader>
         <div className="flex items-start justify-between">
           <div>
@@ -133,7 +173,8 @@ export function Dashboard() {
         </div>
       </HeroHeader>
 
-      <div className="px-4 pt-4 animate-view-enter">
+      <div className="space-y-3 px-4 pt-4 animate-view-enter">
+        <DueSubscriptionsBanner />
         <ClaudeTipCard
           message="Ab Sprint 4 kommt hier ein AI-Tipp basierend auf deinem Portfolio. Bis dahin: erfasse Einnahmen oder Ausgaben über Add."
         />
@@ -174,9 +215,21 @@ export function Dashboard() {
           </button>
         </header>
         <div className="mt-3">
-          <RecentList items={recent} />
+          <RecentList
+            items={recent}
+            onSelect={(it) => setSelection(it as EntrySelection)}
+          />
         </div>
       </section>
-    </>
+
+      <EntryDetailsSheet
+        open={selection !== null}
+        onOpenChange={(o) => {
+          if (!o) setSelection(null);
+        }}
+        selection={selection}
+        onDeleted={() => void reloadActivity()}
+      />
+    </PullToRefresh>
   );
 }

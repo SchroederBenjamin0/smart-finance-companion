@@ -13,6 +13,7 @@ import {
   Tag,
   type LucideIcon,
 } from 'lucide-react';
+import { RulesEditorSheet } from '@/components/feature/settings/RulesEditorSheet';
 import { configRepo } from '@/db/repositories/config';
 import { resetDB } from '@/db/client';
 import { secretsRepo } from '@/db/repositories/secrets';
@@ -34,6 +35,7 @@ export function Settings() {
   const [editingKey, setEditingKey] = useState(false);
   const [newKey, setNewKey] = useState('');
   const [saving, setSaving] = useState(false);
+  const [editingRules, setEditingRules] = useState(false);
   const [emergencyText, setEmergencyText] = useState(
     String(config.emergencyFundTarget),
   );
@@ -117,6 +119,7 @@ export function Settings() {
             label="Auto-Split-Regeln"
             value={splitLabel}
             hint="Inv / Spar / Fun"
+            onClick={() => setEditingRules(true)}
           />
           <Row
             Icon={Shield}
@@ -225,6 +228,11 @@ export function Settings() {
           v0.1.0 · Local-only · Keine Telemetrie
         </p>
       </div>
+
+      <RulesEditorSheet
+        open={editingRules}
+        onOpenChange={setEditingRules}
+      />
     </div>
   );
 }

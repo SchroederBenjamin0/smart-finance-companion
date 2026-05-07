@@ -12,6 +12,7 @@ export type RecentItem =
 
 interface Props {
   items: RecentItem[];
+  onSelect?: (item: RecentItem) => void;
 }
 
 const SOURCE_LABEL: Record<IncomeSource, string> = {
@@ -20,7 +21,7 @@ const SOURCE_LABEL: Record<IncomeSource, string> = {
   other: 'Sonstiges',
 };
 
-export function RecentList({ items }: Props) {
+export function RecentList({ items, onSelect }: Props) {
   if (items.length === 0) {
     return (
       <div className="rounded-[22px] bg-white p-5 text-center shadow-card">
@@ -45,6 +46,7 @@ export function RecentList({ items }: Props) {
               when={formatRelativeDate(it.entry.date)}
               positive
               index={i}
+              onClick={onSelect ? () => onSelect(it) : undefined}
             />
           );
         }
@@ -58,6 +60,7 @@ export function RecentList({ items }: Props) {
             when={formatRelativeDate(it.transaction.date)}
             positive={false}
             index={i}
+            onClick={onSelect ? () => onSelect(it) : undefined}
           />
         );
       })}
@@ -73,6 +76,7 @@ interface RowProps {
   when: string;
   positive: boolean;
   index: number;
+  onClick?: () => void;
 }
 
 function RecentRow({
@@ -83,10 +87,14 @@ function RecentRow({
   when,
   positive,
   index,
+  onClick,
 }: RowProps) {
+  const Element = (onClick ? 'button' : 'div') as 'button';
   return (
-    <div
-      className="flex items-center gap-3 px-4 py-3 animate-list-enter"
+    <Element
+      type={onClick ? 'button' : undefined}
+      onClick={onClick}
+      className="flex w-full items-center gap-3 px-4 py-3 animate-list-enter text-left transition active:bg-paper"
       style={{ animationDelay: `${index * 35}ms` }}
     >
       <div
@@ -115,7 +123,7 @@ function RecentRow({
         </div>
         <div className="text-[11px] text-ink-subtle">{when}</div>
       </div>
-    </div>
+    </Element>
   );
 }
 

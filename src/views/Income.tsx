@@ -7,6 +7,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { HeroHeader } from '@/components/layout/HeroHeader';
+import { AdvisorSheet } from '@/components/feature/income/AdvisorSheet';
 import { incomeRepo } from '@/db/repositories/income';
 import { transactionsRepo } from '@/db/repositories/transactions';
 import type { AccountType, IncomeSource } from '@/db/types';
@@ -55,6 +56,8 @@ export function Income() {
   const [date, setDate] = useState(todayIso());
   const [note, setNote] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [advisorOpen, setAdvisorOpen] = useState(false);
+  const [advisorAmount, setAdvisorAmount] = useState(0);
 
   const ruleFor = useConfigStore((s) => s.ruleFor);
   const thresholds = useConfigStore((s) => s.thresholds);
@@ -101,8 +104,11 @@ export function Income() {
 
       await reloadAccounts();
       pushToast(`${formatEur(amount)} verteilt auf 3 Konten`, 'success');
+      // Always show the AI sparplan advisor after a successful split,
+      // regardless of amount — per user preference.
+      setAdvisorAmount(preview.investment);
+      setAdvisorOpen(true);
       resetForm();
-      setActiveTab('home');
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       pushToast(`Fehler: ${msg}`, 'error');
@@ -397,6 +403,15 @@ export function Income() {
           </>
         )}
       </div>
+
+      <AdvisorSheet
+        open={advisorOpen}
+        onOpenChange={(o) => {
+          setAdvisorOpen(o);
+          if (!o) setActiveTab('home');
+        }}
+        investmentAmount={advisorAmount}
+      />
 
       <div
         className="sticky inset-x-0 z-30 px-4 pt-3 pb-2"
