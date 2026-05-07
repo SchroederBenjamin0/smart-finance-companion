@@ -12,7 +12,7 @@ export function Toaster() {
       {toasts.map((t) => (
         <div
           key={t.id}
-          className={`pointer-events-auto w-full max-w-md rounded-xl px-4 py-3 text-sm font-medium shadow-lg transition ${
+          className={`pointer-events-auto w-full max-w-md rounded-xl px-4 py-3 text-sm font-medium shadow-lg animate-pop-in ${
             t.variant === 'success'
               ? 'bg-emerald-600 text-white'
               : t.variant === 'error'

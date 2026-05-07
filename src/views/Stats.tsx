@@ -37,7 +37,7 @@ export function Stats() {
         <h1 className="mt-1 text-2xl font-semibold leading-tight">Stats</h1>
       </HeroHeader>
 
-      <div className="px-4 pt-4">
+      <div className="px-4 pt-4 animate-view-enter">
         <div className="rounded-[22px] bg-white p-5 shadow-card">
           <div className="flex items-start justify-between">
             <div>

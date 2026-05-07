@@ -32,3 +32,7 @@ dev-dist
 .env
 .env.local
 .env.*.local
+
+# Local-only design references and dev artifacts
+ignore (my files for this app)/
+.playwright-mcp/

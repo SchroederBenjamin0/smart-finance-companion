@@ -3,9 +3,13 @@ import { ArrowUpRight, Settings as SettingsIcon } from 'lucide-react';
 import { HeroHeader } from '@/components/layout/HeroHeader';
 import { AccountCardCarousel } from '@/components/feature/dashboard/AccountCardCarousel';
 import { ClaudeTipCard } from '@/components/feature/dashboard/ClaudeTipCard';
-import { RecentList } from '@/components/feature/dashboard/RecentList';
+import {
+  RecentList,
+  type RecentItem,
+} from '@/components/feature/dashboard/RecentList';
 import { incomeRepo } from '@/db/repositories/income';
-import type { IncomeEntry } from '@/db/types';
+import { transactionsRepo } from '@/db/repositories/transactions';
+import type { IncomeEntry, Transaction } from '@/db/types';
 import { formatEur } from '@/lib/currency';
 import { formatMonthYearDe } from '@/lib/date';
 import { useAccountsStore } from '@/stores/accounts';
@@ -19,7 +23,8 @@ export function Dashboard() {
   const rules = useConfigStore((s) => s.rules);
   const setActiveTab = useNavStore((s) => s.setActiveTab);
 
-  const [recent, setRecent] = useState<IncomeEntry[]>([]);
+  const [incomes, setIncomes] = useState<IncomeEntry[]>([]);
+  const [expenses, setExpenses] = useState<Transaction[]>([]);
 
   useEffect(() => {
     if (!loaded) void load();
@@ -27,10 +32,30 @@ export function Dashboard() {
 
   useEffect(() => {
     void (async () => {
-      const r = await incomeRepo.findRecent(5);
-      if (r.ok) setRecent(r.value);
+      const [iR, tR] = await Promise.all([
+        incomeRepo.findRecent(10),
+        transactionsRepo.findRecent(10),
+      ]);
+      if (iR.ok) setIncomes(iR.value);
+      if (tR.ok) setExpenses(tR.value);
     })();
   }, [accounts]);
+
+  const recent = useMemo<RecentItem[]>(() => {
+    const merged: RecentItem[] = [
+      ...incomes.map((entry) => ({ kind: 'income' as const, entry })),
+      ...expenses.map((transaction) => ({
+        kind: 'expense' as const,
+        transaction,
+      })),
+    ];
+    merged.sort((a, b) => {
+      const da = a.kind === 'income' ? a.entry.date : a.transaction.date;
+      const db = b.kind === 'income' ? b.entry.date : b.transaction.date;
+      return db.localeCompare(da);
+    });
+    return merged.slice(0, 6);
+  }, [incomes, expenses]);
 
   const total = accounts.reduce((sum, a) => sum + a.balance, 0);
   const monthDelta = useMemo(() => {
@@ -38,10 +63,14 @@ export function Dashboard() {
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
       .toISOString()
       .slice(0, 10);
-    return recent
+    const incomeSum = incomes
       .filter((r) => r.date >= monthStart)
       .reduce((sum, r) => sum + r.amount, 0);
-  }, [recent]);
+    const expenseSum = expenses
+      .filter((r) => r.date >= monthStart)
+      .reduce((sum, r) => sum + r.amount, 0);
+    return incomeSum + expenseSum;
+  }, [incomes, expenses]);
 
   return (
     <>
@@ -84,9 +113,9 @@ export function Dashboard() {
         </div>
       </HeroHeader>
 
-      <div className="px-4 pt-4">
+      <div className="px-4 pt-4 animate-view-enter">
         <ClaudeTipCard
-          message="Ab Sprint 4 kommt hier ein AI-Tipp basierend auf deinem Portfolio. Bis dahin: erfasse Einnahmen über Add."
+          message="Ab Sprint 4 kommt hier ein AI-Tipp basierend auf deinem Portfolio. Bis dahin: erfasse Einnahmen oder Ausgaben über Add."
         />
       </div>
 

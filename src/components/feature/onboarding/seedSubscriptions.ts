@@ -2,68 +2,36 @@ import { addMonths } from '@/lib/date';
 import type { SubscriptionDraft } from './types';
 
 export function seedSubscriptions(): SubscriptionDraft[] {
-  const nextMonth = addMonths(new Date().toISOString(), 1);
-  const inFourMonths = addMonths(new Date().toISOString(), 4);
+  const today = new Date().toISOString();
+  const nextMonth = addMonths(today, 1);
+  const inFourMonths = addMonths(today, 4);
+  const make = (
+    overrides: Partial<SubscriptionDraft> & {
+      name: string;
+      amount: number;
+      category: string;
+    },
+  ): SubscriptionDraft => ({
+    currency: 'EUR',
+    billingCycle: 'monthly',
+    lastBilledDate: today,
+    nextBillDate: nextMonth,
+    endDate: null,
+    enabled: true,
+    ...overrides,
+  });
+
   return [
-    {
-      name: 'Lexware',
-      amount: 12.9,
-      currency: 'EUR',
-      billingCycle: 'monthly',
-      nextBillDate: nextMonth,
-      endDate: null,
-      category: 'Buchhaltung',
-      enabled: true,
-    },
-    {
-      name: 'Splice',
-      amount: 13.23,
-      currency: 'EUR',
-      billingCycle: 'monthly',
-      nextBillDate: nextMonth,
-      endDate: null,
-      category: 'Music-Tools',
-      enabled: true,
-    },
-    {
+    make({ name: 'Lexware', amount: 12.9, category: 'Buchhaltung' }),
+    make({ name: 'Splice', amount: 13.23, category: 'Music-Tools' }),
+    make({
       name: 'Splice Serum (Rent-to-Own)',
       amount: 8.53,
-      currency: 'EUR',
-      billingCycle: 'monthly',
-      nextBillDate: nextMonth,
-      endDate: inFourMonths,
       category: 'Music-Tools',
-      enabled: true,
-    },
-    {
-      name: 'ChatGPT Plus',
-      amount: 9.83,
-      currency: 'EUR',
-      billingCycle: 'monthly',
-      nextBillDate: nextMonth,
-      endDate: null,
-      category: 'AI-Tools',
-      enabled: true,
-    },
-    {
-      name: 'SoundCloud',
-      amount: 4.99,
-      currency: 'EUR',
-      billingCycle: 'monthly',
-      nextBillDate: nextMonth,
-      endDate: null,
-      category: 'Music-Hosting',
-      enabled: true,
-    },
-    {
-      name: 'Snapchat+',
-      amount: 3.99,
-      currency: 'EUR',
-      billingCycle: 'monthly',
-      nextBillDate: nextMonth,
-      endDate: null,
-      category: 'Social',
-      enabled: true,
-    },
+      endDate: inFourMonths,
+    }),
+    make({ name: 'ChatGPT Plus', amount: 9.83, category: 'AI-Tools' }),
+    make({ name: 'SoundCloud', amount: 4.99, category: 'Music-Hosting' }),
+    make({ name: 'Snapchat+', amount: 3.99, category: 'Social' }),
   ];
 }

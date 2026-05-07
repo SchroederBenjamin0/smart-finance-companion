@@ -22,7 +22,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center px-4"
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center px-4 before:pointer-events-none before:absolute before:inset-x-0 before:-top-8 before:h-8 before:bg-gradient-to-t before:from-paper before:to-transparent"
       style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 16px)' }}
       aria-label="Hauptnavigation"
     >

@@ -38,6 +38,7 @@ export function SubscriptionsStep({
   const addCustom = () => {
     const amount = parseEurInput(customAmount);
     if (!customName.trim() || amount === null || amount < 0) return;
+    const today = new Date().toISOString();
     onChange([
       ...subscriptions,
       {
@@ -45,7 +46,8 @@ export function SubscriptionsStep({
         amount,
         currency: 'EUR',
         billingCycle: 'monthly',
-        nextBillDate: addMonths(new Date().toISOString(), 1),
+        lastBilledDate: today,
+        nextBillDate: addMonths(today, 1),
         endDate: null,
         category: 'Sonstiges',
         enabled: true,

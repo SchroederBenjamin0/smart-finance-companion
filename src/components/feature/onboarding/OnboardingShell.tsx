@@ -133,6 +133,7 @@ export function OnboardingShell() {
           amount: s.amount,
           currency: s.currency,
           billingCycle: s.billingCycle,
+          lastBilledDate: s.lastBilledDate,
           nextBillDate: s.nextBillDate,
           endDate: s.endDate,
           category: s.category,

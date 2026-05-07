@@ -62,6 +62,11 @@ export interface Subscription {
   amount: number;
   currency: 'EUR' | 'USD';
   billingCycle: BillingCycle;
+  /**
+   * Date of the most recent successful debit. Optional — older records may
+   * not have this set. When present, `nextBillDate` is derived from it.
+   */
+  lastBilledDate?: string | null;
   nextBillDate: string;
   endDate: string | null;
   category: string;
@@ -113,6 +118,8 @@ export interface InvestmentPosition {
   shares: number;
   currentValue: number;
   lastSyncedPrice: string;
+  /** Target weight in the portfolio (0-100). 0 means "no target set". */
+  targetPercentage: number;
 }
 
 export interface Recommendation {

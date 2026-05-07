@@ -3,11 +3,15 @@ import {
   ArrowUpRight,
   type LucideIcon,
 } from 'lucide-react';
-import type { IncomeEntry, IncomeSource } from '@/db/types';
+import type { IncomeEntry, IncomeSource, Transaction } from '@/db/types';
 import { formatEur } from '@/lib/currency';
 
+export type RecentItem =
+  | { kind: 'income'; entry: IncomeEntry }
+  | { kind: 'expense'; transaction: Transaction };
+
 interface Props {
-  items: IncomeEntry[];
+  items: RecentItem[];
 }
 
 const SOURCE_LABEL: Record<IncomeSource, string> = {
@@ -22,24 +26,41 @@ export function RecentList({ items }: Props) {
       <div className="rounded-[22px] bg-white p-5 text-center shadow-card">
         <p className="text-sm text-ink-muted">
           Noch keine Einträge. Tippe auf <strong>Add</strong>, um die erste
-          Einnahme zu erfassen.
+          Einnahme oder Ausgabe zu erfassen.
         </p>
       </div>
     );
   }
   return (
     <div className="row-divider rounded-[22px] bg-white shadow-card">
-      {items.map((it) => (
-        <RecentRow
-          key={it.id}
-          icon={ArrowUpRight}
-          title={SOURCE_LABEL[it.source]}
-          subtitle={it.note ?? 'Einnahme'}
-          amount={it.amount}
-          when={formatRelativeDate(it.date)}
-          positive
-        />
-      ))}
+      {items.map((it, i) => {
+        if (it.kind === 'income') {
+          return (
+            <RecentRow
+              key={`i-${it.entry.id}`}
+              icon={ArrowUpRight}
+              title={SOURCE_LABEL[it.entry.source]}
+              subtitle={it.entry.note ?? 'Einnahme'}
+              amount={it.entry.amount}
+              when={formatRelativeDate(it.entry.date)}
+              positive
+              index={i}
+            />
+          );
+        }
+        return (
+          <RecentRow
+            key={`t-${it.transaction.id}`}
+            icon={ArrowDownLeft}
+            title={it.transaction.counterparty}
+            subtitle={it.transaction.category}
+            amount={it.transaction.amount}
+            when={formatRelativeDate(it.transaction.date)}
+            positive={false}
+            index={i}
+          />
+        );
+      })}
     </div>
   );
 }
@@ -51,6 +72,7 @@ interface RowProps {
   amount: number;
   when: string;
   positive: boolean;
+  index: number;
 }
 
 function RecentRow({
@@ -60,10 +82,20 @@ function RecentRow({
   amount,
   when,
   positive,
+  index,
 }: RowProps) {
   return (
-    <div className="flex items-center gap-3 px-4 py-3">
-      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-forest-800">
+    <div
+      className="flex items-center gap-3 px-4 py-3 animate-list-enter"
+      style={{ animationDelay: `${index * 35}ms` }}
+    >
+      <div
+        className={`grid h-10 w-10 shrink-0 place-items-center rounded-full ${
+          positive
+            ? 'bg-forest-100 text-forest-800'
+            : 'bg-red-50 text-red-600'
+        }`}
+      >
         <Icon className="h-4 w-4" strokeWidth={2.5} />
       </div>
       <div className="min-w-0 flex-1">
@@ -86,10 +118,6 @@ function RecentRow({
     </div>
   );
 }
-
-// Treat ArrowDownLeft as used so the import doesn't trip noUnusedLocals
-// once non-income rows are added in Sprint 2.
-void ArrowDownLeft;
 
 function formatRelativeDate(iso: string): string {
   const d = new Date(iso);
