@@ -1,6 +1,5 @@
-// Generates simple PWA icons from scratch using only built-in modules.
-// Produces solid brand-color tiles with a centered rounded "card" glyph.
-// Replace public/icon-*.png with proper artwork later.
+// Generates PWA icons: forest-green gradient background with a centered
+// stylized "€" mark. Uses only Node built-ins (no canvas dep).
 
 import { writeFileSync } from 'node:fs';
 import { deflateSync } from 'node:zlib';
@@ -9,9 +8,7 @@ const CRC_TABLE = (() => {
   const t = new Uint32Array(256);
   for (let n = 0; n < 256; n++) {
     let c = n;
-    for (let k = 0; k < 8; k++) {
-      c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
-    }
+    for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
     t[n] = c >>> 0;
   }
   return t;
@@ -39,16 +36,13 @@ function makePng(w, h, paint) {
   const ihdr = Buffer.alloc(13);
   ihdr.writeUInt32BE(w, 0);
   ihdr.writeUInt32BE(h, 4);
-  ihdr[8] = 8; // bit depth
-  ihdr[9] = 2; // RGB color type
-  ihdr[10] = 0;
-  ihdr[11] = 0;
-  ihdr[12] = 0;
+  ihdr[8] = 8;
+  ihdr[9] = 2;
 
   const rowSize = w * 3 + 1;
   const raw = Buffer.alloc(rowSize * h);
   for (let y = 0; y < h; y++) {
-    raw[y * rowSize] = 0; // filter: None
+    raw[y * rowSize] = 0;
     for (let x = 0; x < w; x++) {
       const [r, g, b] = paint(x, y, w, h);
       const off = y * rowSize + 1 + x * 3;
@@ -66,38 +60,80 @@ function makePng(w, h, paint) {
   ]);
 }
 
-const BRAND = [0x0a, 0x2e, 0x1f]; // forest-950
-const ACCENT = [0xdc, 0xfc, 0xe7]; // mint-200
-const INNER = [0x14, 0x53, 0x2d]; // forest-800
+// Palette
+const FOREST_950 = [0x0a, 0x2e, 0x1f];
+const FOREST_700 = [0x16, 0x65, 0x34];
+const MINT_200 = [0xdc, 0xfc, 0xe7];
 
+function lerp(a, b, t) {
+  return [
+    Math.round(a[0] + (b[0] - a[0]) * t),
+    Math.round(a[1] + (b[1] - a[1]) * t),
+    Math.round(a[2] + (b[2] - a[2]) * t),
+  ];
+}
+
+/**
+ * Diagonal gradient: top-left = forest-700, bottom-right = forest-950.
+ */
+function gradientBg(x, y, w, h) {
+  const t = (x + y) / (w + h);
+  return lerp(FOREST_700, FOREST_950, t);
+}
+
+/**
+ * Centered mint-coloured tile with a forest "F" letterform inside.
+ * The F is built from three rectangles (vertical bar, top bar, middle
+ * bar) — simple, legible at small sizes, and recognisable as "Finance".
+ */
 function paintIcon(x, y, w, h) {
-  // Layered rounded squares like a stack of cards
   const cx = w / 2;
   const cy = h / 2;
   const dx = Math.abs(x - cx);
   const dy = Math.abs(y - cy);
 
-  const outerHalf = w * 0.34;
-  const radiusOuter = w * 0.06;
-  const innerHalf = w * 0.22;
-  const radiusInner = w * 0.05;
+  // Centered rounded rectangle (the "tile")
+  const tileHalf = w * 0.34;
+  const tileRadius = w * 0.12;
 
-  if (insideRoundRect(dx, dy, outerHalf, outerHalf, radiusOuter)) {
-    if (insideRoundRect(dx, dy, innerHalf, innerHalf, radiusInner)) {
-      return INNER;
-    }
-    return ACCENT;
-  }
-  return BRAND;
-}
+  const insideTile = (() => {
+    if (dx <= tileHalf - tileRadius && dy <= tileHalf) return true;
+    if (dy <= tileHalf - tileRadius && dx <= tileHalf) return true;
+    if (dx > tileHalf || dy > tileHalf) return false;
+    const ddx = dx - (tileHalf - tileRadius);
+    const ddy = dy - (tileHalf - tileRadius);
+    return ddx * ddx + ddy * ddy <= tileRadius * tileRadius;
+  })();
 
-function insideRoundRect(dx, dy, halfW, halfH, r) {
-  if (dx <= halfW - r && dy <= halfH) return true;
-  if (dy <= halfH - r && dx <= halfW) return true;
-  if (dx > halfW || dy > halfH) return false;
-  const ddx = dx - (halfW - r);
-  const ddy = dy - (halfH - r);
-  return ddx * ddx + ddy * ddy <= r * r;
+  if (!insideTile) return gradientBg(x, y, w, h);
+
+  // F glyph — coordinates relative to the tile centre.
+  const localX = (x - cx) / w; // ~ -0.34..0.34 inside the tile
+  const localY = (y - cy) / h;
+
+  // Vertical stem: slightly left of centre
+  const stem =
+    localX >= -0.18 &&
+    localX <= -0.07 &&
+    localY >= -0.22 &&
+    localY <= 0.22;
+
+  // Top horizontal arm
+  const topArm =
+    localX >= -0.18 &&
+    localX <= 0.18 &&
+    localY >= -0.22 &&
+    localY <= -0.12;
+
+  // Middle horizontal arm (shorter)
+  const midArm =
+    localX >= -0.18 &&
+    localX <= 0.08 &&
+    localY >= -0.04 &&
+    localY <= 0.04;
+
+  if (stem || topArm || midArm) return FOREST_950;
+  return MINT_200;
 }
 
 const sizes = [192, 512];
@@ -106,8 +142,5 @@ for (const size of sizes) {
   writeFileSync(`public/icon-${size}.png`, buf);
   console.log(`wrote public/icon-${size}.png (${buf.length} bytes)`);
 }
-
-// Also write a 32x32 favicon as PNG (browsers accept .ico containing PNG too,
-// but a plain PNG named favicon.ico is fine for most modern browsers).
 writeFileSync('public/favicon.ico', makePng(32, 32, paintIcon));
 console.log('wrote public/favicon.ico');

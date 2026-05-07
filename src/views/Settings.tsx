@@ -7,12 +7,14 @@ import {
   FileJson,
   Key,
   Layout,
+  Lock as LockIcon,
   PieChart,
   RefreshCw,
   Shield,
   Tag,
   type LucideIcon,
 } from 'lucide-react';
+import { PinSettingsSheet } from '@/components/feature/settings/PinSettingsSheet';
 import { RulesEditorSheet } from '@/components/feature/settings/RulesEditorSheet';
 import { configRepo } from '@/db/repositories/config';
 import { resetDB } from '@/db/client';
@@ -36,6 +38,8 @@ export function Settings() {
   const [newKey, setNewKey] = useState('');
   const [saving, setSaving] = useState(false);
   const [editingRules, setEditingRules] = useState(false);
+  const [editingPin, setEditingPin] = useState(false);
+  const [pinIsSet, setPinIsSet] = useState(false);
   const [emergencyText, setEmergencyText] = useState(
     String(config.emergencyFundTarget),
   );
@@ -45,8 +49,15 @@ export function Settings() {
     void (async () => {
       const r = await secretsRepo.exists('anthropic_key');
       if (r.ok) setKeyExists(r.value);
+      const p = await configRepo.getJson<string>(ALL_CONFIG_KEYS.appPinHash);
+      setPinIsSet(p.ok && typeof p.value === 'string' && p.value.length > 0);
     })();
   }, [config.emergencyFundTarget]);
+
+  const reloadPinState = async () => {
+    const p = await configRepo.getJson<string>(ALL_CONFIG_KEYS.appPinHash);
+    setPinIsSet(p.ok && typeof p.value === 'string' && p.value.length > 0);
+  };
 
   async function saveKey() {
     setSaving(true);
@@ -202,6 +213,16 @@ export function Settings() {
           />
         </Section>
 
+        <Section title="Sicherheit">
+          <Row
+            Icon={LockIcon}
+            label="App-PIN"
+            value={pinIsSet ? 'Aktiv' : 'Aus'}
+            valueTone={pinIsSet ? 'good' : 'muted'}
+            onClick={() => setEditingPin(true)}
+          />
+        </Section>
+
         <Section title="Daten">
           <Row
             Icon={FileJson}
@@ -232,6 +253,12 @@ export function Settings() {
       <RulesEditorSheet
         open={editingRules}
         onOpenChange={setEditingRules}
+      />
+      <PinSettingsSheet
+        open={editingPin}
+        onOpenChange={setEditingPin}
+        pinIsSet={pinIsSet}
+        onChanged={() => void reloadPinState()}
       />
     </div>
   );

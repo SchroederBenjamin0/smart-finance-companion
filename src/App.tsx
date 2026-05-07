@@ -12,6 +12,7 @@ import { useAccountsStore } from '@/stores/accounts';
 import { useConfigStore } from '@/stores/config';
 import { useNavStore } from '@/stores/navigation';
 import { useOnboardingStore } from '@/stores/onboarding';
+import { runStartupTasks } from '@/modules/watchdog';
 
 async function requestPersistentStorage(): Promise<void> {
   if (typeof navigator === 'undefined') return;
@@ -41,6 +42,8 @@ export function App() {
       ]);
       setBootstrapped(true);
       void requestPersistentStorage();
+      // Watchdog runs once a day max — news scan + quarterly insight if due.
+      void runStartupTasks().catch(() => undefined);
     })();
   }, [refreshOnboarding, loadAccounts, loadConfig]);
 

@@ -1,10 +1,13 @@
 import { tryAsync, type Result } from '@/lib/result';
+import { getRateToEur } from './fx';
 
 export interface YahooQuote {
   symbol: string;
+  /** Price normalized to EUR. Original currency is in `originalCurrency`. */
   price: number;
   changePercent: number;
-  currency: string;
+  currency: 'EUR';
+  originalCurrency: string;
 }
 
 const ENDPOINT = 'https://query1.finance.yahoo.com/v7/finance/quote';
@@ -33,12 +36,26 @@ export async function fetchQuotes(
     }
     const data = (await res.json()) as YahooResponse;
     const results = data.quoteResponse?.result ?? [];
-    return results.map((r) => ({
-      symbol: r.symbol,
-      price: r.regularMarketPrice ?? 0,
-      changePercent: r.regularMarketChangePercent ?? 0,
-      currency: r.currency ?? 'EUR',
-    }));
+
+    // Convert to EUR for any non-EUR quotes (FX rates cached 24h).
+    const quotes: YahooQuote[] = [];
+    for (const r of results) {
+      const original = (r.currency ?? 'EUR').toUpperCase();
+      const rawPrice = r.regularMarketPrice ?? 0;
+      let price = rawPrice;
+      if (original !== 'EUR' && rawPrice > 0) {
+        const fx = await getRateToEur(original);
+        if (fx.ok) price = rawPrice * fx.value;
+      }
+      quotes.push({
+        symbol: r.symbol,
+        price,
+        changePercent: r.regularMarketChangePercent ?? 0,
+        currency: 'EUR',
+        originalCurrency: original,
+      });
+    }
+    return quotes;
   });
 }
 

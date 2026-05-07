@@ -12,6 +12,8 @@ import {
   type EntrySelection,
 } from '@/components/feature/dashboard/EntryDetailsSheet';
 import { DueSubscriptionsBanner } from '@/components/feature/subscriptions/DueSubscriptionsBanner';
+import { NewsBanner } from '@/components/feature/dashboard/NewsBanner';
+import { QuarterlyInsightBanner } from '@/components/feature/dashboard/QuarterlyInsightBanner';
 import { PullToRefresh } from '@/components/ui/PullToRefresh';
 import { fetchQuotes } from '@/services/yahoo';
 import { positionsRepo as positionsRepoForRefresh } from '@/db/repositories/positions';
@@ -175,8 +177,10 @@ export function Dashboard() {
 
       <div className="space-y-3 px-4 pt-4 animate-view-enter">
         <DueSubscriptionsBanner />
+        <QuarterlyInsightBanner />
+        <NewsBanner />
         <ClaudeTipCard
-          message="Ab Sprint 4 kommt hier ein AI-Tipp basierend auf deinem Portfolio. Bis dahin: erfasse Einnahmen oder Ausgaben über Add."
+          message="Tippe auf eine Banner-Karte oben für aktuelle Themen. Pull-to-refresh holt frische Yahoo-Preise + News."
         />
       </div>
 
