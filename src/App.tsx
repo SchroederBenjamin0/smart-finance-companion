@@ -13,6 +13,10 @@ import { useConfigStore } from '@/stores/config';
 import { useNavStore } from '@/stores/navigation';
 import { useOnboardingStore } from '@/stores/onboarding';
 import { runStartupTasks } from '@/modules/watchdog';
+import { configRepo } from '@/db/repositories/config';
+import { ALL_CONFIG_KEYS } from '@/db/types';
+import { PinGate } from '@/components/feature/lock/PinGate';
+import { UpdateBanner } from '@/components/feature/updates/UpdateBanner';
 
 async function requestPersistentStorage(): Promise<void> {
   if (typeof navigator === 'undefined') return;
@@ -32,6 +36,8 @@ export function App() {
   const loadConfig = useConfigStore((s) => s.load);
   const activeTab = useNavStore((s) => s.activeTab);
   const [bootstrapped, setBootstrapped] = useState(false);
+  const [pinHash, setPinHash] = useState<string | null>(null);
+  const [unlocked, setUnlocked] = useState(false);
 
   useEffect(() => {
     void (async () => {
@@ -40,9 +46,12 @@ export function App() {
         loadAccounts(),
         loadConfig(),
       ]);
+      const pin = await configRepo.getJson<string>(ALL_CONFIG_KEYS.appPinHash);
+      const hash = pin.ok && typeof pin.value === 'string' ? pin.value : null;
+      setPinHash(hash);
+      if (!hash) setUnlocked(true);
       setBootstrapped(true);
       void requestPersistentStorage();
-      // Watchdog runs once a day max — news scan + quarterly insight if due.
       void runStartupTasks().catch(() => undefined);
     })();
   }, [refreshOnboarding, loadAccounts, loadConfig]);
@@ -56,11 +65,21 @@ export function App() {
     );
   }
 
+  if (pinHash && !unlocked) {
+    return (
+      <>
+        <PinGate expectedHash={pinHash} onUnlock={() => setUnlocked(true)} />
+        <UpdateBanner />
+      </>
+    );
+  }
+
   if (!onboardingComplete) {
     return (
       <>
         <OnboardingShell />
         <Toaster />
+        <UpdateBanner />
       </>
     );
   }
@@ -70,6 +89,7 @@ export function App() {
       <>
         <Settings />
         <Toaster />
+        <UpdateBanner />
       </>
     );
   }
@@ -84,6 +104,7 @@ export function App() {
         {activeTab === 'stats' && <Stats />}
       </AppShell>
       <Toaster />
+      <UpdateBanner />
     </>
   );
 }

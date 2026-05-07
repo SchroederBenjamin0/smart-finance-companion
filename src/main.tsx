@@ -1,6 +1,5 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { registerSW } from 'virtual:pwa-register';
 import { App } from './App';
 import './index.css';
 
@@ -13,4 +12,5 @@ createRoot(root).render(
   </StrictMode>,
 );
 
-registerSW({ immediate: true });
+// Service worker registration is delegated to <UpdateBanner /> inside
+// App.tsx so we can surface a "neu laden" prompt when an update lands.
