@@ -8,8 +8,13 @@ import {
   type RecentItem,
 } from '@/components/feature/dashboard/RecentList';
 import { incomeRepo } from '@/db/repositories/income';
+import { positionsRepo } from '@/db/repositories/positions';
 import { transactionsRepo } from '@/db/repositories/transactions';
-import type { IncomeEntry, Transaction } from '@/db/types';
+import type {
+  IncomeEntry,
+  InvestmentPosition,
+  Transaction,
+} from '@/db/types';
 import { formatEur } from '@/lib/currency';
 import { formatMonthYearDe } from '@/lib/date';
 import { useAccountsStore } from '@/stores/accounts';
@@ -25,6 +30,7 @@ export function Dashboard() {
 
   const [incomes, setIncomes] = useState<IncomeEntry[]>([]);
   const [expenses, setExpenses] = useState<Transaction[]>([]);
+  const [positions, setPositions] = useState<InvestmentPosition[]>([]);
 
   useEffect(() => {
     if (!loaded) void load();
@@ -32,12 +38,14 @@ export function Dashboard() {
 
   useEffect(() => {
     void (async () => {
-      const [iR, tR] = await Promise.all([
+      const [iR, tR, pR] = await Promise.all([
         incomeRepo.findRecent(10),
         transactionsRepo.findRecent(10),
+        positionsRepo.findAll(),
       ]);
       if (iR.ok) setIncomes(iR.value);
       if (tR.ok) setExpenses(tR.value);
+      if (pR.ok) setPositions(pR.value);
     })();
   }, [accounts]);
 
@@ -57,7 +65,12 @@ export function Dashboard() {
     return merged.slice(0, 6);
   }, [incomes, expenses]);
 
-  const total = accounts.reduce((sum, a) => sum + a.balance, 0);
+  const portfolioValue = positions.reduce(
+    (sum, p) => sum + p.currentValue,
+    0,
+  );
+  const accountsTotal = accounts.reduce((sum, a) => sum + a.balance, 0);
+  const total = accountsTotal + portfolioValue;
   const monthDelta = useMemo(() => {
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
@@ -101,15 +114,22 @@ export function Dashboard() {
           <div className="mt-1 text-[40px] font-semibold leading-none tabular-nums">
             {formatEur(total)}
           </div>
-          {monthDelta > 0 && (
-            <div className="mt-3 flex items-center gap-2 text-[13px]">
-              <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 font-medium">
-                <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={3} />
-                +{formatEur(monthDelta)}
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-[13px]">
+            {monthDelta > 0 && (
+              <>
+                <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 font-medium">
+                  <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={3} />
+                  +{formatEur(monthDelta)}
+                </span>
+                <span className="text-mint-200">diesen Monat</span>
+              </>
+            )}
+            {portfolioValue > 0 && (
+              <span className="rounded-full bg-white/10 px-2.5 py-1 text-[12px] text-mint-200">
+                davon Portfolio {formatEur(portfolioValue)}
               </span>
-              <span className="text-mint-200">diesen Monat</span>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </HeroHeader>
 
@@ -136,6 +156,8 @@ export function Dashboard() {
             funPct={rules.main_job.funPercentage}
             savingsPct={rules.main_job.savingsPercentage}
             investmentPct={rules.main_job.investmentPercentage}
+            portfolioValue={portfolioValue}
+            portfolioPositionCount={positions.length}
           />
         </div>
       </section>
