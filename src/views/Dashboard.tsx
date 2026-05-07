@@ -1,0 +1,131 @@
+import { useEffect, useMemo, useState } from 'react';
+import { ArrowUpRight, Settings as SettingsIcon } from 'lucide-react';
+import { HeroHeader } from '@/components/layout/HeroHeader';
+import { AccountCardCarousel } from '@/components/feature/dashboard/AccountCardCarousel';
+import { ClaudeTipCard } from '@/components/feature/dashboard/ClaudeTipCard';
+import { RecentList } from '@/components/feature/dashboard/RecentList';
+import { incomeRepo } from '@/db/repositories/income';
+import type { IncomeEntry } from '@/db/types';
+import { formatEur } from '@/lib/currency';
+import { formatMonthYearDe } from '@/lib/date';
+import { useAccountsStore } from '@/stores/accounts';
+import { useConfigStore } from '@/stores/config';
+import { useNavStore } from '@/stores/navigation';
+
+export function Dashboard() {
+  const accounts = useAccountsStore((s) => s.accounts);
+  const loaded = useAccountsStore((s) => s.loaded);
+  const load = useAccountsStore((s) => s.load);
+  const rules = useConfigStore((s) => s.rules);
+  const setActiveTab = useNavStore((s) => s.setActiveTab);
+
+  const [recent, setRecent] = useState<IncomeEntry[]>([]);
+
+  useEffect(() => {
+    if (!loaded) void load();
+  }, [loaded, load]);
+
+  useEffect(() => {
+    void (async () => {
+      const r = await incomeRepo.findRecent(5);
+      if (r.ok) setRecent(r.value);
+    })();
+  }, [accounts]);
+
+  const total = accounts.reduce((sum, a) => sum + a.balance, 0);
+  const monthDelta = useMemo(() => {
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
+      .toISOString()
+      .slice(0, 10);
+    return recent
+      .filter((r) => r.date >= monthStart)
+      .reduce((sum, r) => sum + r.amount, 0);
+  }, [recent]);
+
+  return (
+    <>
+      <HeroHeader>
+        <div className="flex items-start justify-between">
+          <div>
+            <p className="text-[13px] font-medium uppercase tracking-wide text-mint-200">
+              Willkommen zurück
+            </p>
+            <h1 className="mt-1 text-2xl font-semibold leading-tight">
+              {formatMonthYearDe()}
+            </h1>
+          </div>
+          <button
+            type="button"
+            onClick={() => setActiveTab('settings')}
+            aria-label="Einstellungen"
+            className="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-white"
+          >
+            <SettingsIcon className="h-5 w-5" strokeWidth={2.25} />
+          </button>
+        </div>
+
+        <div className="mt-7">
+          <p className="text-[13px] font-medium text-mint-200">
+            Gesamt-Saldo
+          </p>
+          <div className="mt-1 text-[40px] font-semibold leading-none tabular-nums">
+            {formatEur(total)}
+          </div>
+          {monthDelta > 0 && (
+            <div className="mt-3 flex items-center gap-2 text-[13px]">
+              <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 font-medium">
+                <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={3} />
+                +{formatEur(monthDelta)}
+              </span>
+              <span className="text-mint-200">diesen Monat</span>
+            </div>
+          )}
+        </div>
+      </HeroHeader>
+
+      <div className="px-4 pt-4">
+        <ClaudeTipCard
+          message="Ab Sprint 4 kommt hier ein AI-Tipp basierend auf deinem Portfolio. Bis dahin: erfasse Einnahmen über Add."
+        />
+      </div>
+
+      <section className="mt-5">
+        <header className="flex items-center justify-between px-4">
+          <h2 className="text-[15px] font-semibold text-ink">Meine Konten</h2>
+          <button
+            type="button"
+            onClick={() => setActiveTab('inv')}
+            className="text-[13px] font-medium text-ink-subtle"
+          >
+            Alle ansehen
+          </button>
+        </header>
+        <div className="mt-3">
+          <AccountCardCarousel
+            accounts={accounts}
+            funPct={rules.main_job.funPercentage}
+            savingsPct={rules.main_job.savingsPercentage}
+            investmentPct={rules.main_job.investmentPercentage}
+          />
+        </div>
+      </section>
+
+      <section className="mt-6 px-4">
+        <header className="flex items-center justify-between">
+          <h2 className="text-[15px] font-semibold text-ink">Letzte Einträge</h2>
+          <button
+            type="button"
+            className="text-[13px] font-medium text-ink-subtle"
+            onClick={() => setActiveTab('add')}
+          >
+            Neuer Eintrag
+          </button>
+        </header>
+        <div className="mt-3">
+          <RecentList items={recent} />
+        </div>
+      </section>
+    </>
+  );
+}
