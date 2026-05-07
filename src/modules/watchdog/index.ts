@@ -10,6 +10,7 @@ import { hoursSince, nowIso } from '@/lib/date';
 import { fetchNewsForSymbols } from '@/services/marketaux';
 import { filterNews } from '@/services/news-filter';
 import { generateQuarterlyInsight } from '@/services/quarterlyInsight';
+import { migrateTickers } from './migrateTickers';
 
 export interface WatchdogReport {
   newsAdded: number;
@@ -25,6 +26,9 @@ export async function runStartupTasks(): Promise<WatchdogReport> {
     newsErrors: 0,
     quarterlyGenerated: false,
   };
+
+  // Idempotent migrations run every cold start (cheap, no network).
+  await migrateTickers().catch(() => undefined);
 
   const lastRun = await configRepo.getRaw(DAILY_KEY);
   const lastRunIso = lastRun.ok ? lastRun.value : null;
