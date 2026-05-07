@@ -55,9 +55,9 @@ export function PositionForm({
     }
   }, [open, initial]);
 
-  const shares = Number(sharesText.replace(',', '.'));
+  const shares = parseEurInput(sharesText) ?? NaN;
   const invested = parseEurInput(investedText);
-  const target = parseFloat(targetText.replace(',', '.'));
+  const target = parseEurInput(targetText) ?? NaN;
 
   const canSave =
     name.trim().length > 0 &&
@@ -201,10 +201,9 @@ export function PositionForm({
         <div className="grid grid-cols-2 gap-3">
           <Field label="Anteile">
             <input
-              type="number"
+              type="text"
               inputMode="decimal"
-              step="0.0001"
-              min="0"
+              autoComplete="off"
               className="input-field tabular-nums"
               placeholder="0"
               value={sharesText}
@@ -213,10 +212,9 @@ export function PositionForm({
           </Field>
           <Field label="Eingezahlt (€)">
             <input
-              type="number"
+              type="text"
               inputMode="decimal"
-              step="0.01"
-              min="0"
+              autoComplete="off"
               className="input-field tabular-nums"
               placeholder="0,00"
               value={investedText}
@@ -227,11 +225,9 @@ export function PositionForm({
 
         <Field label="Ziel-Anteil im Portfolio (%, optional)">
           <input
-            type="number"
+            type="text"
             inputMode="decimal"
-            step="1"
-            min="0"
-            max="100"
+            autoComplete="off"
             className="input-field tabular-nums"
             placeholder="z.B. 60"
             value={targetText}

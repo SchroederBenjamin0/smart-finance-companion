@@ -92,17 +92,16 @@ export function SubscriptionsStep({
                 </div>
               </div>
               <input
-                type="number"
+                type="text"
                 inputMode="decimal"
-                step="0.01"
-                min="0"
+                autoComplete="off"
                 aria-label={`${s.name} Betrag`}
                 disabled={!s.enabled}
                 className="h-10 w-24 rounded-lg border border-forest-950/15 bg-white px-2 text-right text-sm font-mono outline-none focus-visible:ring-2 focus-visible:ring-forest-700 disabled:opacity-50"
-                value={s.amount}
+                value={String(s.amount)}
                 onChange={(e) =>
                   updateAt(i, {
-                    amount: Number(e.target.value) || 0,
+                    amount: parseEurInput(e.target.value) ?? 0,
                   })
                 }
               />
@@ -120,12 +119,11 @@ export function SubscriptionsStep({
               onChange={(e) => setCustomName(e.target.value)}
             />
             <input
-              type="number"
+              type="text"
               inputMode="decimal"
-              step="0.01"
-              min="0"
+              autoComplete="off"
               placeholder="Betrag (€)"
-              className="input-field mt-2"
+              className="input-field mt-2 tabular-nums"
               value={customAmount}
               onChange={(e) => setCustomAmount(e.target.value)}
             />

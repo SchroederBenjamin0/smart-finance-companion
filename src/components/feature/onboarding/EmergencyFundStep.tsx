@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { parseEurInput } from '@/lib/currency';
 
 interface Props {
   emergencyFundTarget: number;
@@ -16,8 +17,8 @@ export function EmergencyFundStep({
   const [text, setText] = useState(String(emergencyFundTarget));
 
   const commit = () => {
-    const n = Number(text.replace(',', '.'));
-    if (Number.isFinite(n) && n >= 0) onChange(Math.round(n));
+    const n = parseEurInput(text);
+    if (n !== null && n >= 0) onChange(Math.round(n));
   };
 
   return (
@@ -37,11 +38,10 @@ export function EmergencyFundStep({
           </label>
           <input
             id="emergency-fund"
-            type="number"
+            type="text"
             inputMode="decimal"
-            min="0"
-            step="100"
-            className="input-field mt-1"
+            autoComplete="off"
+            className="input-field mt-1 tabular-nums"
             value={text}
             onChange={(e) => setText(e.target.value)}
             onBlur={commit}

@@ -162,10 +162,9 @@ export function SubscriptionForm({
         <div className="grid grid-cols-2 gap-3">
           <Field label="Betrag (€)">
             <input
-              type="number"
+              type="text"
               inputMode="decimal"
-              step="0.01"
-              min="0"
+              autoComplete="off"
               className="input-field tabular-nums"
               placeholder="0,00"
               value={amountText}

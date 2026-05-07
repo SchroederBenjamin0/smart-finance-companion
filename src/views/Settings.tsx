@@ -17,7 +17,7 @@ import { configRepo } from '@/db/repositories/config';
 import { resetDB } from '@/db/client';
 import { secretsRepo } from '@/db/repositories/secrets';
 import { ALL_CONFIG_KEYS } from '@/db/types';
-import { formatEur } from '@/lib/currency';
+import { formatEur, parseEurInput } from '@/lib/currency';
 import { probeAnthropicKey } from '@/services/claude';
 import { useAccountsStore } from '@/stores/accounts';
 import { useConfigStore } from '@/stores/config';
@@ -63,8 +63,8 @@ export function Settings() {
   }
 
   async function saveEmergencyTarget() {
-    const n = Number(emergencyText.replace(',', '.'));
-    if (!Number.isFinite(n) || n < 0) {
+    const n = parseEurInput(emergencyText);
+    if (n === null || n < 0) {
       pushToast('Ungültiger Wert', 'error');
       return;
     }
@@ -129,11 +129,10 @@ export function Settings() {
           >
             <div className="mt-3 flex items-center gap-2">
               <input
-                type="number"
+                type="text"
                 inputMode="decimal"
-                min="0"
-                step="100"
-                className="input-field flex-1"
+                autoComplete="off"
+                className="input-field flex-1 tabular-nums"
                 value={emergencyText}
                 onChange={(e) => setEmergencyText(e.target.value)}
               />
