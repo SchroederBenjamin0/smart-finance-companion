@@ -20,6 +20,7 @@
     "idb": "^8.0.1",
     "lucide-react": "^1.14.0",
     "papaparse": "^5.4.1",
+    "pdfjs-dist": "^5.4.624",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "recharts": "^2.15.0",

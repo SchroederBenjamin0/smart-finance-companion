@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ExternalLink,
+  FileUp,
   Plus,
   RefreshCw,
   Sparkles,
@@ -8,6 +9,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { HeroHeader } from '@/components/layout/HeroHeader';
+import { PdfImportSheet } from '@/components/feature/portfolio/PdfImportSheet';
 import { PositionForm } from '@/components/feature/portfolio/PositionForm';
 import { positionsRepo } from '@/db/repositories/positions';
 import type { InvestmentPosition } from '@/db/types';
@@ -21,6 +23,7 @@ export function Investments() {
   const [loaded, setLoaded] = useState(false);
   const [editing, setEditing] = useState<InvestmentPosition | undefined>();
   const [creating, setCreating] = useState(false);
+  const [importing, setImporting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const pushToast = useToastStore((s) => s.push);
 
@@ -100,18 +103,28 @@ export function Investments() {
               Portfolio
             </h1>
           </div>
-          <button
-            type="button"
-            onClick={() => void refreshPrices(false)}
-            disabled={refreshing || positions.length === 0}
-            aria-label="Preise aktualisieren"
-            className="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-white disabled:opacity-50"
-          >
-            <RefreshCw
-              className={`h-5 w-5 ${refreshing ? 'animate-spin' : ''}`}
-              strokeWidth={2.25}
-            />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setImporting(true)}
+              aria-label="Aus PDF importieren"
+              className="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-white"
+            >
+              <FileUp className="h-5 w-5" strokeWidth={2.25} />
+            </button>
+            <button
+              type="button"
+              onClick={() => void refreshPrices(false)}
+              disabled={refreshing || positions.length === 0}
+              aria-label="Preise aktualisieren"
+              className="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-white disabled:opacity-50"
+            >
+              <RefreshCw
+                className={`h-5 w-5 ${refreshing ? 'animate-spin' : ''}`}
+                strokeWidth={2.25}
+              />
+            </button>
+          </div>
         </div>
       </HeroHeader>
 
@@ -207,6 +220,12 @@ export function Investments() {
         }}
         initial={editing}
         onSaved={() => void reload()}
+      />
+      <PdfImportSheet
+        open={importing}
+        onOpenChange={setImporting}
+        existingPositions={positions}
+        onImported={() => void reload()}
       />
     </>
   );
