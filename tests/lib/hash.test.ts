@@ -31,6 +31,7 @@ describe('computeTransactionHash', () => {
       counterparty: 'REWE',
     });
     expect(hash).toMatch(/^[a-f0-9]{64}$/);
+    expect(hash).toBe('4687b8b83c833eab44097acb32cf1c0c903dded9171abdca9bf31062fd3f7f1e');
   });
 
   it('produces identical hashes for identical normalized inputs', async () => {

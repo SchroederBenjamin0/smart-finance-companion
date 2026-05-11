@@ -10,6 +10,7 @@ export interface HashInput {
 
 export async function computeTransactionHash(input: HashInput): Promise<string> {
   const cents = Math.round(input.amount * 100);
+  // FROZEN canonical format: changing this invalidates all stored transaction hashes.
   const normalized = `${input.date}|${cents}|${normalizeCounterparty(input.counterparty)}`;
   const buf = new TextEncoder().encode(normalized);
   const digest = await crypto.subtle.digest('SHA-256', buf);
