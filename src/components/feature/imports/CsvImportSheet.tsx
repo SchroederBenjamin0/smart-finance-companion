@@ -25,6 +25,11 @@ import { useToastStore } from '@/stores/toast';
 
 type Stage = 'pick' | 'parsing' | 'review' | 'saving' | 'done';
 
+interface ImportSummary {
+  inserted: number;
+  skipped: number;
+}
+
 interface DraftRow {
   txn: RevolutTxn;
   category: string;
@@ -54,6 +59,7 @@ export function CsvImportSheet({
   const [drafts, setDrafts] = useState<DraftRow[]>([]);
   const [periodLabel, setPeriodLabel] = useState('');
   const [fileName, setFileName] = useState('');
+  const [importSummary, setImportSummary] = useState<ImportSummary | null>(null);
   const pushToast = useToastStore((s) => s.push);
 
   function reset() {
@@ -62,6 +68,7 @@ export function CsvImportSheet({
     setDrafts([]);
     setPeriodLabel('');
     setFileName('');
+    setImportSummary(null);
   }
 
   useEffect(() => {
@@ -133,7 +140,7 @@ export function CsvImportSheet({
     const csvImportId = generateId();
     const enabled = drafts.filter((d) => d.enabled);
 
-    const transactions: Transaction[] = enabled.map((d) => ({
+    const transactions: Omit<Transaction, 'transactionHash' | 'isAnomaly'>[] = enabled.map((d) => ({
       id: generateId(),
       date: d.txn.date,
       amount: d.txn.amount,
@@ -147,11 +154,10 @@ export function CsvImportSheet({
     }));
 
     const dates = enabled.map((d) => d.txn.date).sort();
-    const csvRecord: CSVImport = {
+    const csvRecord: Omit<CSVImport, 'expiresAt' | 'transactionCount'> = {
       id: csvImportId,
       fileName,
       importedAt: ts,
-      transactionCount: transactions.length,
       dateRangeStart: dates[0] ?? '',
       dateRangeEnd: dates[dates.length - 1] ?? '',
       categorizationCostEur: 0,
@@ -164,7 +170,12 @@ export function CsvImportSheet({
       setStage('review');
       return;
     }
-    pushToast(`${transactions.length} Transaktionen importiert`, 'success');
+    const { inserted, skipped } = r.value;
+    const msg = skipped > 0
+      ? `${inserted} neue Transaktionen importiert, ${skipped} Duplikate übersprungen`
+      : `${inserted} Transaktionen importiert`;
+    pushToast(msg, 'success');
+    setImportSummary({ inserted, skipped });
     onImported();
     setStage('done');
     setTimeout(() => onOpenChange(false), 800);
@@ -235,6 +246,14 @@ export function CsvImportSheet({
         <div className="flex h-40 flex-col items-center justify-center gap-3 text-emerald-700">
           <CheckCircle2 className="h-8 w-8" strokeWidth={2} />
           <p className="text-sm font-medium">Import abgeschlossen</p>
+          {importSummary && (
+            <p className="text-[12px] text-ink-muted text-center">
+              {importSummary.inserted} Transaktion{importSummary.inserted === 1 ? '' : 'en'} importiert
+              {importSummary.skipped > 0 && (
+                <> · {importSummary.skipped} Duplikat{importSummary.skipped === 1 ? '' : 'e'} übersprungen</>
+              )}
+            </p>
+          )}
         </div>
       )}
 
