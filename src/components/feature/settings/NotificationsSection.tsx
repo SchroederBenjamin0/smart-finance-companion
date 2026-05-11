@@ -71,7 +71,7 @@ export function NotificationsSection() {
           </div>
           <div className="min-w-0 flex-1">
             <div className="text-[15px] font-semibold text-ink">
-              Notifications aktivieren
+              Benachrichtigungen aktivieren
             </div>
             {permission === 'denied' ? (
               <div className="text-[12px] text-red-600">
@@ -86,7 +86,7 @@ export function NotificationsSection() {
           <Switch
             checked={enabled}
             onChange={(next) => void onMasterToggle(next)}
-            ariaLabel="Notifications aktivieren"
+            ariaLabel="Benachrichtigungen aktivieren"
           />
         </div>
 
