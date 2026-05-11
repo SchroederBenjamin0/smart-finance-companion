@@ -12,11 +12,25 @@ import { useAccountsStore } from '@/stores/accounts';
 import { useConfigStore } from '@/stores/config';
 import { useNavStore } from '@/stores/navigation';
 import { useOnboardingStore } from '@/stores/onboarding';
+import { useSharePrefillStore } from '@/stores/sharePrefill';
 import { runStartupTasks } from '@/modules/watchdog';
 import { configRepo } from '@/db/repositories/config';
 import { ALL_CONFIG_KEYS } from '@/db/types';
 import { PinGate } from '@/components/feature/lock/PinGate';
 import { UpdateBanner } from '@/components/feature/updates/UpdateBanner';
+
+/**
+ * Parse text shared from another iOS app via the Web Share Target API.
+ * Extracts the first numeric value (with optional €, comma decimal, negative sign)
+ * and returns it together with the full original text as a note.
+ */
+export function parseSharedText(text: string): { amount: number | null; note: string } {
+  const m = text.match(/(-?\d+(?:[.,]\d{1,2})?)\s*€?/);
+  return {
+    amount: m ? Number(m[1]!.replace(',', '.')) : null,
+    note: text,
+  };
+}
 
 async function requestPersistentStorage(): Promise<void> {
   if (typeof navigator === 'undefined') return;
@@ -35,9 +49,25 @@ export function App() {
   const loadAccounts = useAccountsStore((s) => s.load);
   const loadConfig = useConfigStore((s) => s.load);
   const activeTab = useNavStore((s) => s.activeTab);
+  const setActiveTab = useNavStore((s) => s.setActiveTab);
+  const setPrefill = useSharePrefillStore((s) => s.setPrefill);
   const [bootstrapped, setBootstrapped] = useState(false);
   const [pinHash, setPinHash] = useState<string | null>(null);
   const [unlocked, setUnlocked] = useState(false);
+
+  // Detect share_target launch: /smart-finance-companion/share?text=...
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const sharedText = params.get('text') ?? params.get('title') ?? params.get('url');
+    if (sharedText) {
+      const parsed = parseSharedText(sharedText);
+      setPrefill(parsed);
+      setActiveTab('add');
+      // Clean the URL so refreshing doesn't re-trigger the prefill
+      const cleanUrl = window.location.pathname;
+      window.history.replaceState(null, '', cleanUrl);
+    }
+  }, [setPrefill, setActiveTab]);
 
   useEffect(() => {
     void (async () => {

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   ArrowRight,
   Briefcase,
@@ -18,6 +18,7 @@ import { split } from '@/modules/allocation';
 import { useAccountsStore } from '@/stores/accounts';
 import { useConfigStore } from '@/stores/config';
 import { useNavStore } from '@/stores/navigation';
+import { useSharePrefillStore } from '@/stores/sharePrefill';
 import { useToastStore } from '@/stores/toast';
 
 type Mode = 'income' | 'expense';
@@ -65,6 +66,27 @@ export function Income() {
   const reloadAccounts = useAccountsStore((s) => s.load);
   const pushToast = useToastStore((s) => s.push);
   const setActiveTab = useNavStore((s) => s.setActiveTab);
+
+  const sharePrefill = useSharePrefillStore((s) => s.prefill);
+  const clearPrefill = useSharePrefillStore((s) => s.clearPrefill);
+
+  // Apply share-target prefill once when the view mounts with pending data
+  useEffect(() => {
+    if (!sharePrefill) return;
+    if (sharePrefill.amount !== null && sharePrefill.amount > 0) {
+      // Positive amounts → income mode
+      setMode('income');
+      setAmountText(String(sharePrefill.amount));
+    } else if (sharePrefill.amount !== null && sharePrefill.amount < 0) {
+      // Negative amounts → expense mode
+      setMode('expense');
+      setAmountText(String(Math.abs(sharePrefill.amount)));
+    }
+    setNote(sharePrefill.note);
+    clearPrefill();
+  // Only run once when a prefill value arrives — intentionally omit mutable setters
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sharePrefill]);
 
   const amount = parseEurInput(amountText);
   const validAmount = amount !== null && amount > 0;
