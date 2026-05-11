@@ -1,8 +1,7 @@
 import { debugWarn } from '@/lib/debug';
-import { computeTransactionHash } from '@/lib/hash';
 import { openDB, type IDBPDatabase } from 'idb';
 import { DB_NAME, DB_VERSION, type SmartFinanceDB } from './schema';
-import { ALL_CONFIG_KEYS } from './types';
+import { runPostUpgradeBackfill } from './migrations';
 
 let dbPromise: Promise<IDBPDatabase<SmartFinanceDB>> | null = null;
 
@@ -132,55 +131,4 @@ export async function resetDB(): Promise<void> {
     req.onerror = () => reject(req.error);
     req.onblocked = () => resolve();
   });
-}
-
-async function runPostUpgradeBackfill(db: IDBPDatabase<SmartFinanceDB>): Promise<void> {
-  const flag = await db.get('appConfig', ALL_CONFIG_KEYS.hashBackfillComplete);
-  if (flag?.value === 'true') return;
-
-  // 1) Backfill transactionHash + isAnomaly for transactions without hash.
-  const txAll = await db.getAll('transactions');
-  const toBackfill = txAll.filter((t) => !t.transactionHash);
-  if (toBackfill.length > 0) {
-    const hashed = await Promise.all(
-      toBackfill.map(async (t) => ({
-        ...t,
-        transactionHash: await computeTransactionHash({
-          date: t.date,
-          amount: t.amount,
-          counterparty: t.counterparty,
-        }),
-        isAnomaly: t.isAnomaly ?? 0,
-      })),
-    );
-    const wTx = db.transaction('transactions', 'readwrite');
-    await Promise.all(hashed.map((t) => wTx.objectStore('transactions').put(t)));
-    await wTx.done;
-  }
-
-  // 2) Backfill expiresAt for existing csvImports.
-  const csvAll = await db.getAll('csvImports');
-  const csvToBackfill = csvAll.filter((c) => !c.expiresAt);
-  if (csvToBackfill.length > 0) {
-    const updated = csvToBackfill.map((c) => ({
-      ...c,
-      expiresAt: addDaysIso(c.importedAt, 30),
-    }));
-    const wTx = db.transaction('csvImports', 'readwrite');
-    await Promise.all(updated.map((c) => wTx.objectStore('csvImports').put(c)));
-    await wTx.done;
-  }
-
-  // 3) Set flag so we don't re-run.
-  await db.put('appConfig', {
-    key: ALL_CONFIG_KEYS.hashBackfillComplete,
-    value: 'true',
-    updatedAt: new Date().toISOString(),
-  });
-}
-
-function addDaysIso(iso: string, days: number): string {
-  const d = new Date(iso);
-  d.setDate(d.getDate() + days);
-  return d.toISOString();
 }

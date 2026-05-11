@@ -8,6 +8,12 @@ export const todayIso = (): string => {
   return `${yyyy}-${mm}-${dd}`;
 };
 
+export function addDays(iso: string, days: number): string {
+  const d = new Date(iso);
+  d.setDate(d.getDate() + days);
+  return d.toISOString();
+}
+
 export function addMonths(iso: string, months: number): string {
   const d = new Date(iso);
   const day = d.getDate();
