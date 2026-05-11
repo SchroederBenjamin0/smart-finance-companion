@@ -14,6 +14,8 @@ import {
 import { DueSubscriptionsBanner } from '@/components/feature/subscriptions/DueSubscriptionsBanner';
 import { NewsBanner } from '@/components/feature/dashboard/NewsBanner';
 import { QuarterlyInsightBanner } from '@/components/feature/dashboard/QuarterlyInsightBanner';
+import { CashflowWarningBanner } from '@/components/feature/dashboard/CashflowWarningBanner';
+import { BackupDueBanner } from '@/components/feature/dashboard/BackupDueBanner';
 import { PullToRefresh } from '@/components/ui/PullToRefresh';
 import { fetchQuotes } from '@/services/yahoo';
 import { positionsRepo as positionsRepoForRefresh } from '@/db/repositories/positions';
@@ -32,6 +34,7 @@ import { formatMonthYearDe } from '@/lib/date';
 import { useAccountsStore } from '@/stores/accounts';
 import { useConfigStore } from '@/stores/config';
 import { useNavStore } from '@/stores/navigation';
+import { useStatsNavStore } from '@/stores/statsNav';
 
 export function Dashboard() {
   const accounts = useAccountsStore((s) => s.accounts);
@@ -39,6 +42,7 @@ export function Dashboard() {
   const load = useAccountsStore((s) => s.load);
   const rules = useConfigStore((s) => s.rules);
   const setActiveTab = useNavStore((s) => s.setActiveTab);
+  const setPendingSubTab = useStatsNavStore((s) => s.setPendingSubTab);
 
   const [incomes, setIncomes] = useState<IncomeEntry[]>([]);
   const [expenses, setExpenses] = useState<Transaction[]>([]);
@@ -176,6 +180,13 @@ export function Dashboard() {
       </HeroHeader>
 
       <div className="space-y-3 px-4 pt-4 animate-view-enter">
+        <BackupDueBanner />
+        <CashflowWarningBanner
+          onClick={() => {
+            setPendingSubTab('cashflow');
+            setActiveTab('stats');
+          }}
+        />
         <DueSubscriptionsBanner />
         <QuarterlyInsightBanner />
         <NewsBanner />

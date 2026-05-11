@@ -9,9 +9,14 @@ import { transactionsRepo } from '@/db/repositories/transactions';
 import type { IncomeEntry, Transaction } from '@/db/types';
 import { formatEur } from '@/lib/currency';
 import { formatMonthYearDe } from '@/lib/date';
+import { useStatsNavStore } from '@/stores/statsNav';
 
 export function Stats() {
-  const [tab, setTab] = useState<'overview' | 'spending' | 'cashflow'>('overview');
+  const pendingSubTab = useStatsNavStore((s) => s.pendingSubTab);
+  const clearPendingSubTab = useStatsNavStore((s) => s.clearPendingSubTab);
+  const [tab, setTab] = useState<'overview' | 'spending' | 'cashflow'>(
+    pendingSubTab ?? 'overview',
+  );
   const [entries, setEntries] = useState<IncomeEntry[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [importing, setImporting] = useState(false);
@@ -28,6 +33,14 @@ export function Stats() {
   useEffect(() => {
     void reload();
   }, [reload]);
+
+  // Consume deep-link sub-tab set by Dashboard banner
+  useEffect(() => {
+    if (pendingSubTab) {
+      setTab(pendingSubTab);
+      clearPendingSubTab();
+    }
+  }, [pendingSubTab, clearPendingSubTab]);
 
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
