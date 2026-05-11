@@ -190,7 +190,7 @@ export function AdvisorSheet({
                   key={`${a.ticker}-${i}`}
                   className="flex items-start gap-3 px-4 py-3"
                 >
-                  <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-[12px] font-bold text-forest-800">
+                  <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-forest-800 dark:bg-forest-900 dark:text-forest-200 text-[12px] font-bold">
                     {a.ticker.slice(0, 4) || 'ETF'}
                   </div>
                   <div className="min-w-0 flex-1">
@@ -212,7 +212,7 @@ export function AdvisorSheet({
                       </a>
                     )}
                   </div>
-                  <div className="text-right text-[14px] font-semibold tabular-nums text-emerald-700">
+                  <div className="text-right text-[14px] font-semibold tabular-nums text-emerald-700 dark:text-emerald-400">
                     {formatEur(a.amountEur)}
                   </div>
                 </div>

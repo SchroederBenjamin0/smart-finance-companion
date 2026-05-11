@@ -62,7 +62,7 @@ export function NotificationsSection() {
       <div className="row-divider overflow-hidden rounded-[22px] bg-surface shadow-card">
         {/* Master toggle row */}
         <div className="flex items-center gap-3 px-4 py-3">
-          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-forest-800">
+          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-forest-800 dark:bg-forest-900 dark:text-forest-200">
             {enabled ? (
               <Bell className="h-4.5 w-4.5" strokeWidth={2.25} />
             ) : (
@@ -106,7 +106,7 @@ export function NotificationsSection() {
         {enabled &&
           TRIGGER_LABELS.map(({ key, label, Icon }) => (
             <div key={key} className="flex items-center gap-3 px-4 py-3">
-              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-forest-800">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-forest-800 dark:bg-forest-900 dark:text-forest-200">
                 <Icon className="h-4.5 w-4.5" strokeWidth={2.25} />
               </div>
               <div className="min-w-0 flex-1 text-[14px] font-medium text-ink">

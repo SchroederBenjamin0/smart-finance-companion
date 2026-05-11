@@ -27,7 +27,7 @@ export function NewsBanner() {
         onClick={() => setOpen(true)}
         className="flex w-full items-center gap-3 rounded-2xl bg-surface px-4 py-3 text-left shadow-card transition active:scale-[0.99]"
       >
-        <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-forest-100 text-forest-800">
+        <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-forest-100 text-forest-800 dark:bg-forest-900 dark:text-forest-200">
           <Newspaper className="h-4 w-4" strokeWidth={2.5} />
         </div>
         <div className="min-w-0 flex-1">

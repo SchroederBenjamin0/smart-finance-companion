@@ -164,7 +164,7 @@ function IncomeDetails({ entry }: { entry: IncomeEntry }) {
   return (
     <div className="space-y-3">
       <Field label="Betrag">
-        <span className="text-2xl font-semibold tabular-nums text-emerald-700">
+        <span className="text-2xl font-semibold tabular-nums text-emerald-700 dark:text-emerald-400">
           +{formatEur(entry.amount)}
         </span>
       </Field>
@@ -186,7 +186,7 @@ function ExpenseDetails({ transaction }: { transaction: Transaction }) {
   return (
     <div className="space-y-3">
       <Field label="Betrag">
-        <span className="text-2xl font-semibold tabular-nums text-red-700">
+        <span className="text-2xl font-semibold tabular-nums text-red-700 dark:text-red-400">
           {formatEur(transaction.amount)}
         </span>
       </Field>

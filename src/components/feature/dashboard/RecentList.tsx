@@ -100,7 +100,7 @@ function RecentRow({
       <div
         className={`grid h-10 w-10 shrink-0 place-items-center rounded-full ${
           positive
-            ? 'bg-forest-100 text-forest-800'
+            ? 'bg-forest-100 text-forest-800 dark:bg-forest-900 dark:text-forest-200'
             : 'bg-red-50 text-red-600'
         }`}
       >
@@ -115,7 +115,7 @@ function RecentRow({
       <div className="text-right">
         <div
           className={`text-[15px] font-semibold tabular-nums ${
-            positive ? 'text-emerald-700' : 'text-ink'
+            positive ? 'text-emerald-700 dark:text-emerald-400' : 'text-ink'
           }`}
         >
           {positive ? '+' : ''}

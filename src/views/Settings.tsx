@@ -318,7 +318,7 @@ function Row({
 }: RowProps) {
   const valueClasses =
     valueTone === 'good'
-      ? 'text-emerald-700'
+      ? 'text-emerald-700 dark:text-emerald-400'
       : valueTone === 'bad'
         ? 'text-red-600'
         : valueTone === 'muted'
@@ -336,7 +336,7 @@ function Row({
         className={`grid h-10 w-10 shrink-0 place-items-center rounded-full ${
           destructive
             ? 'bg-red-50 text-red-600'
-            : 'bg-forest-100 text-forest-800'
+            : 'bg-forest-100 text-forest-800 dark:bg-forest-900 dark:text-forest-200'
         }`}
       >
         <Icon className="h-4.5 w-4.5" strokeWidth={2.25} />
@@ -378,7 +378,7 @@ function RowEditable({
   return (
     <div className="px-4 py-3">
       <div className="flex items-center gap-3">
-        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-forest-800">
+        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-forest-800 dark:bg-forest-900 dark:text-forest-200">
           <Icon className="h-4.5 w-4.5" strokeWidth={2.25} />
         </div>
         <div className="text-[15px] font-semibold text-ink">{label}</div>
