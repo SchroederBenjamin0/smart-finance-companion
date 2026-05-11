@@ -34,6 +34,8 @@ export type NotificationTrigger =
   | 'drift'
   | 'anomaly'
   | 'cashflow';
+export type LoanStatus = 'lent' | 'returned';
+export type LoanPaymentMethod = 'cash' | 'transfer';
 
 export interface Account {
   id: string;
@@ -183,6 +185,18 @@ export interface NotificationLogEntry {
   type: NotificationTrigger;
   dedupeKey: string;        // siehe modules/notifications/triggers.ts
   firedAt: string;
+}
+
+export interface Loan {
+  id: string;
+  borrowerName: string;
+  itemDescription: string;
+  lentAt: string;          // ISO date
+  amount?: number;
+  paymentMethod?: LoanPaymentMethod;
+  status: LoanStatus;
+  returnedAt?: string;
+  createdAt: string;
 }
 
 export interface Portfolio {

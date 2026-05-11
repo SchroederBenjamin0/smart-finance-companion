@@ -14,6 +14,7 @@ import {
   Tag,
   type LucideIcon,
 } from 'lucide-react';
+import { LoansSection } from '@/components/feature/settings/LoansSection';
 import { NotificationsSection } from '@/components/feature/settings/NotificationsSection';
 import { PinSettingsSheet } from '@/components/feature/settings/PinSettingsSheet';
 import { RulesEditorSheet } from '@/components/feature/settings/RulesEditorSheet';
@@ -215,6 +216,8 @@ export function Settings() {
         </Section>
 
         <NotificationsSection />
+
+        <LoansSection />
 
         <Section title="Sicherheit">
           <Row

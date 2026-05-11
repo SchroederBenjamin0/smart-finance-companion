@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { BarChart3, FileUp } from 'lucide-react';
 import { HeroHeader } from '@/components/layout/HeroHeader';
 import { CsvImportSheet } from '@/components/feature/imports/CsvImportSheet';
+import { SpendingTab } from '@/components/feature/stats/SpendingTab';
 import { incomeRepo } from '@/db/repositories/income';
 import { transactionsRepo } from '@/db/repositories/transactions';
 import type { IncomeEntry, Transaction } from '@/db/types';
@@ -9,6 +10,7 @@ import { formatEur } from '@/lib/currency';
 import { formatMonthYearDe } from '@/lib/date';
 
 export function Stats() {
+  const [tab, setTab] = useState<'overview' | 'spending'>('overview');
   const [entries, setEntries] = useState<IncomeEntry[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [importing, setImporting] = useState(false);
@@ -76,114 +78,141 @@ export function Stats() {
       </HeroHeader>
 
       <div className="px-4 pt-4 animate-view-enter">
-        <div className="rounded-[22px] bg-white p-5 shadow-card">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-[13px] font-medium text-ink-subtle">
-                Einnahmen
-              </p>
-              <div className="mt-1 text-[36px] font-semibold leading-none tabular-nums text-ink">
-                {formatEur(monthIncome)}
-              </div>
-              <p className="mt-2 text-[12px] text-ink-subtle">
-                diesen Monat
-              </p>
-            </div>
-            <div className="grid h-12 w-12 place-items-center rounded-full bg-forest-100 text-forest-800">
-              <BarChart3 className="h-5 w-5" strokeWidth={2.25} />
-            </div>
-          </div>
+        <div className="flex gap-1 rounded-full bg-paper p-1">
+          <button
+            type="button"
+            onClick={() => setTab('overview')}
+            className={`flex-1 rounded-full px-3 py-1.5 text-[13px] font-medium transition ${
+              tab === 'overview' ? 'bg-white text-ink shadow-sm' : 'text-ink-muted'
+            }`}
+          >
+            Übersicht
+          </button>
+          <button
+            type="button"
+            onClick={() => setTab('spending')}
+            className={`flex-1 rounded-full px-3 py-1.5 text-[13px] font-medium transition ${
+              tab === 'spending' ? 'bg-white text-ink shadow-sm' : 'text-ink-muted'
+            }`}
+          >
+            Top-Kategorien
+          </button>
         </div>
 
-        {Object.keys(bySource).length > 0 && (
-          <div className="mt-5 row-divider rounded-[22px] bg-white shadow-card">
-            {Object.entries(bySource).map(([src, amount]) => {
-              const pct = monthIncome > 0 ? (amount / monthIncome) * 100 : 0;
-              const label =
-                src === 'main_job'
-                  ? 'Hauptjob'
-                  : src === 'dj_gig'
-                    ? 'DJ-Gigs'
-                    : 'Sonstiges';
-              return (
-                <div
-                  key={src}
-                  className="flex items-center gap-3 px-4 py-3"
-                >
-                  <div className="min-w-0 flex-1">
-                    <div className="text-[15px] font-semibold text-ink">
-                      {label}
-                    </div>
-                    <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-paper">
-                      <div
-                        className="h-full rounded-full bg-forest-700"
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
+        {tab === 'overview' && (
+          <>
+            <div className="mt-4 rounded-[22px] bg-white p-5 shadow-card">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-[13px] font-medium text-ink-subtle">
+                    Einnahmen
+                  </p>
+                  <div className="mt-1 text-[36px] font-semibold leading-none tabular-nums text-ink">
+                    {formatEur(monthIncome)}
                   </div>
-                  <div className="text-right">
-                    <div className="text-[15px] font-semibold tabular-nums text-ink">
-                      {formatEur(amount)}
+                  <p className="mt-2 text-[12px] text-ink-subtle">
+                    diesen Monat
+                  </p>
+                </div>
+                <div className="grid h-12 w-12 place-items-center rounded-full bg-forest-100 text-forest-800">
+                  <BarChart3 className="h-5 w-5" strokeWidth={2.25} />
+                </div>
+              </div>
+            </div>
+
+            {Object.keys(bySource).length > 0 && (
+              <div className="mt-5 row-divider rounded-[22px] bg-white shadow-card">
+                {Object.entries(bySource).map(([src, amount]) => {
+                  const pct = monthIncome > 0 ? (amount / monthIncome) * 100 : 0;
+                  const label =
+                    src === 'main_job'
+                      ? 'Hauptjob'
+                      : src === 'dj_gig'
+                        ? 'DJ-Gigs'
+                        : 'Sonstiges';
+                  return (
+                    <div
+                      key={src}
+                      className="flex items-center gap-3 px-4 py-3"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="text-[15px] font-semibold text-ink">
+                          {label}
+                        </div>
+                        <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-paper">
+                          <div
+                            className="h-full rounded-full bg-forest-700"
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-[15px] font-semibold tabular-nums text-ink">
+                          {formatEur(amount)}
+                        </div>
+                        <div className="text-[11px] text-ink-subtle">
+                          {Math.round(pct)} %
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-[11px] text-ink-subtle">
-                      {Math.round(pct)} %
-                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {sortedCategories.length > 0 && (
+              <>
+                <h2 className="mt-6 text-[13px] font-semibold uppercase tracking-wider text-ink-subtle">
+                  Ausgaben nach Kategorie
+                </h2>
+                <div className="mt-3 rounded-[22px] bg-white p-4 shadow-card">
+                  <div className="text-[13px] font-medium text-ink-subtle">
+                    Gesamt diesen Monat
+                  </div>
+                  <div className="mt-1 text-[28px] font-semibold leading-none tabular-nums text-ink">
+                    −{formatEur(totalExpenses)}
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        )}
+                <div className="mt-3 row-divider rounded-[22px] bg-white shadow-card">
+                  {sortedCategories.map(([cat, amount]) => {
+                    const pct = totalExpenses > 0 ? (amount / totalExpenses) * 100 : 0;
+                    return (
+                      <div key={cat} className="flex items-center gap-3 px-4 py-3">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-[14px] font-semibold text-ink">
+                            {cat}
+                          </div>
+                          <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-paper">
+                            <div
+                              className="h-full rounded-full bg-forest-700"
+                              style={{ width: `${pct}%` }}
+                            />
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-[14px] font-semibold tabular-nums text-ink">
+                            {formatEur(amount)}
+                          </div>
+                          <div className="text-[11px] text-ink-subtle">
+                            {Math.round(pct)} %
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
 
-        {sortedCategories.length > 0 && (
-          <>
-            <h2 className="mt-6 text-[13px] font-semibold uppercase tracking-wider text-ink-subtle">
-              Ausgaben nach Kategorie
-            </h2>
-            <div className="mt-3 rounded-[22px] bg-white p-4 shadow-card">
-              <div className="text-[13px] font-medium text-ink-subtle">
-                Gesamt diesen Monat
-              </div>
-              <div className="mt-1 text-[28px] font-semibold leading-none tabular-nums text-ink">
-                −{formatEur(totalExpenses)}
-              </div>
-            </div>
-            <div className="mt-3 row-divider rounded-[22px] bg-white shadow-card">
-              {sortedCategories.map(([cat, amount]) => {
-                const pct = totalExpenses > 0 ? (amount / totalExpenses) * 100 : 0;
-                return (
-                  <div key={cat} className="flex items-center gap-3 px-4 py-3">
-                    <div className="min-w-0 flex-1">
-                      <div className="text-[14px] font-semibold text-ink">
-                        {cat}
-                      </div>
-                      <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-paper">
-                        <div
-                          className="h-full rounded-full bg-forest-700"
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-[14px] font-semibold tabular-nums text-ink">
-                        {formatEur(amount)}
-                      </div>
-                      <div className="text-[11px] text-ink-subtle">
-                        {Math.round(pct)} %
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            {sortedCategories.length === 0 && (
+              <p className="mt-5 text-center text-[12px] text-ink-subtle">
+                Tippe auf 📤 oben rechts, um eine Revolut-CSV zu importieren.
+              </p>
+            )}
           </>
         )}
 
-        {sortedCategories.length === 0 && (
-          <p className="mt-5 text-center text-[12px] text-ink-subtle">
-            Tippe auf 📤 oben rechts, um eine Revolut-CSV zu importieren.
-          </p>
-        )}
+        {tab === 'spending' && <SpendingTab />}
       </div>
 
       <CsvImportSheet

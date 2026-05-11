@@ -95,6 +95,14 @@ export function getDB(): Promise<IDBPDatabase<SmartFinanceDB>> {
             notif.createIndex('by-type', 'type');
           }
         }
+
+        if (oldVersion < 3) {
+          if (!db.objectStoreNames.contains('loans')) {
+            const loans = db.createObjectStore('loans', { keyPath: 'id' });
+            loans.createIndex('by-status', 'status');
+            loans.createIndex('by-lentAt', 'lentAt');
+          }
+        }
       },
       blocked() {
         debugWarn('IndexedDB upgrade blocked by another tab');
