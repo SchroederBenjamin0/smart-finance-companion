@@ -9,10 +9,13 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { HeroHeader } from '@/components/layout/HeroHeader';
+import { DriftBar } from '@/components/feature/investments/DriftBar';
 import { PdfImportSheet } from '@/components/feature/portfolio/PdfImportSheet';
 import { PositionForm } from '@/components/feature/portfolio/PositionForm';
+import { configRepo } from '@/db/repositories/config';
 import { positionsRepo } from '@/db/repositories/positions';
 import type { InvestmentPosition } from '@/db/types';
+import { ALL_CONFIG_KEYS } from '@/db/types';
 import { formatEur, formatPercent, round2 } from '@/lib/currency';
 import { hoursSince, nowIso } from '@/lib/date';
 import { fetchQuotes, trDeepLink } from '@/services/yahoo';
@@ -25,7 +28,15 @@ export function Investments() {
   const [creating, setCreating] = useState(false);
   const [importing, setImporting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [tolerance, setTolerance] = useState(5);
   const pushToast = useToastStore((s) => s.push);
+
+  useEffect(() => {
+    void (async () => {
+      const r = await configRepo.getJson<number>(ALL_CONFIG_KEYS.driftToleranceGlobal);
+      if (r.ok && typeof r.value === 'number') setTolerance(r.value);
+    })();
+  }, []);
 
   const reload = useCallback(async () => {
     const r = await positionsRepo.findAll();
@@ -189,6 +200,7 @@ export function Investments() {
                   key={p.id}
                   position={p}
                   totalValue={totals.value}
+                  tolerance={tolerance}
                   onClick={() => setEditing(p)}
                   index={i}
                 />
@@ -234,11 +246,13 @@ export function Investments() {
 function PositionRow({
   position,
   totalValue,
+  tolerance,
   onClick,
   index,
 }: {
   position: InvestmentPosition;
   totalValue: number;
+  tolerance: number;
   onClick: () => void;
   index: number;
 }) {
@@ -289,36 +303,45 @@ function PositionRow({
           </div>
         </div>
 
-        <div className="mt-3 flex items-center justify-between text-[12px]">
-          <span className="text-ink-subtle">
-            {currentPct.toFixed(1)}%
-            {position.targetPercentage > 0 && (
-              <> / {position.targetPercentage}% Ziel</>
-            )}
-          </span>
-          {drift !== null && Math.abs(drift) > 0.5 && (
-            <span
-              className={`rounded-full px-2 py-0.5 font-semibold ${
-                Math.abs(drift) > 4
-                  ? 'bg-amber-50 text-amber-800'
-                  : 'bg-paper text-ink-subtle'
-              }`}
-            >
-              {drift > 0 ? '+' : ''}
-              {drift.toFixed(1)}% Drift
+        <div className="mt-3 space-y-1.5">
+          <DriftBar
+            currentWeight={currentPct}
+            targetWeight={position.targetPercentage}
+            tolerancePp={tolerance}
+          />
+          <div className="flex items-center justify-between text-[11px]">
+            <span className="text-ink-subtle">
+              {currentPct.toFixed(1)}%
+              {position.targetPercentage > 0 && (
+                <> / Ziel {position.targetPercentage}%</>
+              )}
             </span>
-          )}
-          {position.isin && (
-            <a
-              href={trDeepLink(position.isin)}
-              target="_blank"
-              rel="noopener"
-              onClick={(e) => e.stopPropagation()}
-              className="inline-flex items-center gap-1 rounded-full bg-forest-950 px-2.5 py-0.5 font-semibold text-white"
-            >
-              In TR <ExternalLink className="h-3 w-3" strokeWidth={2.5} />
-            </a>
-          )}
+            <div className="flex items-center gap-2">
+              {drift !== null && Math.abs(drift) > 0.5 && (
+                <span
+                  className={`rounded-full px-2 py-0.5 font-semibold ${
+                    Math.abs(drift) > tolerance
+                      ? 'bg-amber-50 text-amber-800'
+                      : 'bg-paper text-ink-subtle'
+                  }`}
+                >
+                  {drift > 0 ? '+' : ''}
+                  {drift.toFixed(1)}% Drift
+                </span>
+              )}
+              {position.isin && (
+                <a
+                  href={trDeepLink(position.isin)}
+                  target="_blank"
+                  rel="noopener"
+                  onClick={(e) => e.stopPropagation()}
+                  className="inline-flex items-center gap-1 rounded-full bg-forest-950 px-2.5 py-0.5 text-[11px] font-semibold text-white"
+                >
+                  In TR <ExternalLink className="h-3 w-3" strokeWidth={2.5} />
+                </a>
+              )}
+            </div>
+          </div>
         </div>
       </button>
     </li>
