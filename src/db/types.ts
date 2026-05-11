@@ -259,5 +259,6 @@ export const ALL_CONFIG_KEYS = {
   themeOverride: 'theme_override',
   notificationsEnabled: 'notifications_enabled',
   notificationsTriggers: 'notifications_triggers',
+  driftToleranceGlobal: 'drift_tolerance_global',
   hashBackfillComplete: 'hash_backfill_complete',
 } as const;
