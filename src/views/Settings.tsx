@@ -14,6 +14,7 @@ import {
   Tag,
   type LucideIcon,
 } from 'lucide-react';
+import { BackupSection } from '@/components/feature/settings/BackupSection';
 import { DriftToleranceSlider } from '@/components/feature/settings/DriftToleranceSlider';
 import { LoansSection } from '@/components/feature/settings/LoansSection';
 import { NotificationsSection } from '@/components/feature/settings/NotificationsSection';
@@ -223,6 +224,8 @@ export function Settings() {
         </Section>
 
         <LoansSection />
+
+        <BackupSection />
 
         <Section title="Sicherheit">
           <Row
