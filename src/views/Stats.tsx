@@ -3,6 +3,7 @@ import { BarChart3, FileUp } from 'lucide-react';
 import { HeroHeader } from '@/components/layout/HeroHeader';
 import { CsvImportSheet } from '@/components/feature/imports/CsvImportSheet';
 import { SpendingTab } from '@/components/feature/stats/SpendingTab';
+import { CashflowTab } from '@/components/feature/stats/CashflowTab';
 import { incomeRepo } from '@/db/repositories/income';
 import { transactionsRepo } from '@/db/repositories/transactions';
 import type { IncomeEntry, Transaction } from '@/db/types';
@@ -10,7 +11,7 @@ import { formatEur } from '@/lib/currency';
 import { formatMonthYearDe } from '@/lib/date';
 
 export function Stats() {
-  const [tab, setTab] = useState<'overview' | 'spending'>('overview');
+  const [tab, setTab] = useState<'overview' | 'spending' | 'cashflow'>('overview');
   const [entries, setEntries] = useState<IncomeEntry[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [importing, setImporting] = useState(false);
@@ -96,6 +97,15 @@ export function Stats() {
             }`}
           >
             Top-Kategorien
+          </button>
+          <button
+            type="button"
+            onClick={() => setTab('cashflow')}
+            className={`flex-1 rounded-full px-3 py-1.5 text-[13px] font-medium transition ${
+              tab === 'cashflow' ? 'bg-white text-ink shadow-sm' : 'text-ink-muted'
+            }`}
+          >
+            Cashflow
           </button>
         </div>
 
@@ -213,6 +223,8 @@ export function Stats() {
         )}
 
         {tab === 'spending' && <SpendingTab />}
+
+        {tab === 'cashflow' && <CashflowTab />}
       </div>
 
       <CsvImportSheet
