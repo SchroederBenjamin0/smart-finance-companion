@@ -31,10 +31,10 @@ export function DriftToleranceSlider() {
         onValueChange={handleChange}
         min={1} max={10} step={1}
       >
-        <Slider.Track className="relative h-1.5 grow rounded-full bg-zinc-200">
+        <Slider.Track className="relative h-1.5 grow rounded-full bg-divider">
           <Slider.Range className="absolute h-full rounded-full bg-forest-700" />
         </Slider.Track>
-        <Slider.Thumb className="block h-5 w-5 rounded-full bg-white border-2 border-forest-700 shadow" />
+        <Slider.Thumb className="block h-5 w-5 rounded-full bg-surface border-2 border-forest-700 shadow" />
       </Slider.Root>
     </div>
   );

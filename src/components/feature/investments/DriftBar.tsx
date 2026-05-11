@@ -29,10 +29,10 @@ export function DriftBar({ currentWeight, targetWeight, tolerancePp }: Props) {
       : 'bg-red-500';
 
   return (
-    <div className="relative h-3 w-full rounded-full bg-zinc-100">
+    <div className="relative h-3 w-full rounded-full bg-paper">
       {/* tolerance band */}
       <div
-        className="absolute top-0 h-3 rounded-full bg-zinc-200/80"
+        className="absolute top-0 h-3 rounded-full bg-divider/80"
         style={{ left: `${tMin}%`, width: `${tMax - tMin}%` }}
       />
       {/* target marker line */}

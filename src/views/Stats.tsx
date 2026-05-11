@@ -84,7 +84,7 @@ export function Stats() {
             type="button"
             onClick={() => setImporting(true)}
             aria-label="Revolut CSV importieren"
-            className="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-white"
+            className="grid h-10 w-10 place-items-center rounded-full bg-surface/10 text-white"
           >
             <FileUp className="h-5 w-5" strokeWidth={2.25} />
           </button>
@@ -97,7 +97,7 @@ export function Stats() {
             type="button"
             onClick={() => setTab('overview')}
             className={`flex-1 rounded-full px-3 py-1.5 text-[13px] font-medium transition ${
-              tab === 'overview' ? 'bg-white text-ink shadow-sm' : 'text-ink-muted'
+              tab === 'overview' ? 'bg-surface text-ink shadow-sm' : 'text-ink-muted'
             }`}
           >
             Übersicht
@@ -106,7 +106,7 @@ export function Stats() {
             type="button"
             onClick={() => setTab('spending')}
             className={`flex-1 rounded-full px-3 py-1.5 text-[13px] font-medium transition ${
-              tab === 'spending' ? 'bg-white text-ink shadow-sm' : 'text-ink-muted'
+              tab === 'spending' ? 'bg-surface text-ink shadow-sm' : 'text-ink-muted'
             }`}
           >
             Top-Kategorien
@@ -115,7 +115,7 @@ export function Stats() {
             type="button"
             onClick={() => setTab('cashflow')}
             className={`flex-1 rounded-full px-3 py-1.5 text-[13px] font-medium transition ${
-              tab === 'cashflow' ? 'bg-white text-ink shadow-sm' : 'text-ink-muted'
+              tab === 'cashflow' ? 'bg-surface text-ink shadow-sm' : 'text-ink-muted'
             }`}
           >
             Cashflow
@@ -124,7 +124,7 @@ export function Stats() {
 
         {tab === 'overview' && (
           <>
-            <div className="mt-4 rounded-[22px] bg-white p-5 shadow-card">
+            <div className="mt-4 rounded-[22px] bg-surface p-5 shadow-card">
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-[13px] font-medium text-ink-subtle">
@@ -144,7 +144,7 @@ export function Stats() {
             </div>
 
             {Object.keys(bySource).length > 0 && (
-              <div className="mt-5 row-divider rounded-[22px] bg-white shadow-card">
+              <div className="mt-5 row-divider rounded-[22px] bg-surface shadow-card">
                 {Object.entries(bySource).map(([src, amount]) => {
                   const pct = monthIncome > 0 ? (amount / monthIncome) * 100 : 0;
                   const label =
@@ -188,7 +188,7 @@ export function Stats() {
                 <h2 className="mt-6 text-[13px] font-semibold uppercase tracking-wider text-ink-subtle">
                   Ausgaben nach Kategorie
                 </h2>
-                <div className="mt-3 rounded-[22px] bg-white p-4 shadow-card">
+                <div className="mt-3 rounded-[22px] bg-surface p-4 shadow-card">
                   <div className="text-[13px] font-medium text-ink-subtle">
                     Gesamt diesen Monat
                   </div>
@@ -196,7 +196,7 @@ export function Stats() {
                     −{formatEur(totalExpenses)}
                   </div>
                 </div>
-                <div className="mt-3 row-divider rounded-[22px] bg-white shadow-card">
+                <div className="mt-3 row-divider rounded-[22px] bg-surface shadow-card">
                   {sortedCategories.map(([cat, amount]) => {
                     const pct = totalExpenses > 0 ? (amount / totalExpenses) * 100 : 0;
                     return (

@@ -14,7 +14,7 @@ export function Switch({ checked, onChange, ariaLabel }: SwitchProps) {
       onCheckedChange={onChange}
       aria-label={ariaLabel}
     >
-      <RadixSwitch.Thumb className="block h-6 w-6 translate-x-0.5 rounded-full bg-white shadow transition data-[state=checked]:translate-x-[22px]" />
+      <RadixSwitch.Thumb className="block h-6 w-6 translate-x-0.5 rounded-full bg-surface shadow transition data-[state=checked]:translate-x-[22px]" />
     </RadixSwitch.Root>
   );
 }

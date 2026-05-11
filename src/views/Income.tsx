@@ -199,12 +199,12 @@ export function Income() {
           {mode === 'income' ? 'Einnahme erfassen' : 'Ausgabe erfassen'}
         </h1>
 
-        <div className="mt-4 grid h-11 grid-cols-2 rounded-2xl bg-white/10 p-1">
+        <div className="mt-4 grid h-11 grid-cols-2 rounded-2xl bg-surface/10 p-1">
           <button
             type="button"
             onClick={() => setMode('income')}
             className={`flex items-center justify-center rounded-xl text-sm font-semibold transition ${
-              mode === 'income' ? 'bg-white text-forest-950' : 'text-white/85'
+              mode === 'income' ? 'bg-surface text-forest-950' : 'text-white/85'
             }`}
           >
             + Einnahme
@@ -214,7 +214,7 @@ export function Income() {
             onClick={() => setMode('expense')}
             className={`flex items-center justify-center rounded-xl text-sm font-semibold transition ${
               mode === 'expense'
-                ? 'bg-white text-forest-950'
+                ? 'bg-surface text-forest-950'
                 : 'text-white/85'
             }`}
           >
@@ -234,8 +234,8 @@ export function Income() {
                   aria-pressed={active}
                   className={`flex flex-col items-center gap-1.5 rounded-2xl px-3 py-3 text-[12px] font-semibold transition ${
                     active
-                      ? 'bg-white text-forest-950'
-                      : 'bg-white/10 text-white/85'
+                      ? 'bg-surface text-forest-950'
+                      : 'bg-surface/10 text-white/85'
                   }`}
                 >
                   <s.Icon className="h-5 w-5" strokeWidth={2.25} />
@@ -256,8 +256,8 @@ export function Income() {
                   aria-pressed={active}
                   className={`flex flex-col items-center gap-1 rounded-2xl px-3 py-3 text-[12px] font-semibold transition ${
                     active
-                      ? 'bg-white text-forest-950'
-                      : 'bg-white/10 text-white/85'
+                      ? 'bg-surface text-forest-950'
+                      : 'bg-surface/10 text-white/85'
                   }`}
                 >
                   <span className="text-xl leading-none" aria-hidden="true">
@@ -272,7 +272,7 @@ export function Income() {
       </HeroHeader>
 
       <div className="px-4 pt-5 animate-view-enter">
-        <div className="rounded-[22px] bg-white p-5 shadow-card">
+        <div className="rounded-[22px] bg-surface p-5 shadow-card">
           <p className="text-[13px] font-medium text-ink-subtle">
             {mode === 'income' ? 'Du erhältst' : 'Du gibst aus'}
           </p>
@@ -353,7 +353,7 @@ export function Income() {
                       className={`h-9 rounded-full px-3 text-sm font-medium transition active:scale-[0.97] ${
                         active
                           ? 'bg-forest-950 text-white'
-                          : 'border border-forest-950/10 bg-white text-ink-muted'
+                          : 'border border-forest-950/10 bg-surface text-ink-muted'
                       }`}
                     >
                       {c}
@@ -396,7 +396,7 @@ export function Income() {
             <h2 className="mt-6 text-[13px] font-semibold uppercase tracking-wider text-ink-subtle">
               Auto-Split Vorschau
             </h2>
-            <div className="mt-3 row-divider rounded-[22px] bg-white shadow-card">
+            <div className="mt-3 row-divider rounded-[22px] bg-surface shadow-card">
               <PreviewRow
                 emoji="🎉"
                 label="Fun-Geld"

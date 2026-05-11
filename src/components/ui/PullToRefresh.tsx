@@ -94,7 +94,7 @@ export function PullToRefresh({
           transition: refreshing || pullY === 0 ? 'all 220ms ease' : 'none',
         }}
       >
-        <div className="mt-3 grid h-10 w-10 place-items-center rounded-full bg-white text-forest-950 shadow-card">
+        <div className="mt-3 grid h-10 w-10 place-items-center rounded-full bg-surface text-forest-950 shadow-card">
           <RefreshCw
             className={`h-5 w-5 ${refreshing ? 'animate-spin' : ''}`}
             style={{

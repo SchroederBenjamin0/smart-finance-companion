@@ -58,7 +58,7 @@ export function CategoryDrilldownSheet({ category, transactions, onClose, onReca
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-40 bg-black/40" />
         <Dialog.Content
-          className="fixed bottom-0 left-0 right-0 z-50 max-h-[85vh] overflow-y-auto rounded-t-[28px] bg-white p-5 shadow-2xl outline-none"
+          className="fixed bottom-0 left-0 right-0 z-50 max-h-[85vh] overflow-y-auto rounded-t-[28px] bg-surface p-5 shadow-2xl outline-none"
           aria-describedby={undefined}
         >
           <div className="flex items-center justify-between gap-3">

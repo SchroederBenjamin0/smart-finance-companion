@@ -25,7 +25,7 @@ export function NewsBanner() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex w-full items-center gap-3 rounded-2xl bg-white px-4 py-3 text-left shadow-card transition active:scale-[0.99]"
+        className="flex w-full items-center gap-3 rounded-2xl bg-surface px-4 py-3 text-left shadow-card transition active:scale-[0.99]"
       >
         <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-forest-100 text-forest-800">
           <Newspaper className="h-4 w-4" strokeWidth={2.5} />
@@ -46,7 +46,7 @@ export function NewsBanner() {
           {items.map((n) => (
             <div
               key={n.id}
-              className="rounded-2xl border border-forest-950/10 bg-white p-3"
+              className="rounded-2xl border border-forest-950/10 bg-surface p-3"
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0 flex-1">

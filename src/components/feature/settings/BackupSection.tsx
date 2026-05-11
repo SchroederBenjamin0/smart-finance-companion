@@ -90,7 +90,7 @@ export function BackupSection() {
         <h2 className="mb-2 ml-1 text-[12px] font-semibold uppercase tracking-wider text-ink-subtle">
           Backup
         </h2>
-        <div className="row-divider overflow-hidden rounded-[22px] bg-white shadow-card">
+        <div className="row-divider overflow-hidden rounded-[22px] bg-surface shadow-card">
           {/* Export row */}
           <button
             type="button"
@@ -157,7 +157,7 @@ export function BackupSection() {
             </p>
 
             {stats && (
-              <ul className="mt-2 space-y-1 rounded-xl border border-forest-950/10 bg-white px-3 py-2 text-[13px] text-ink-muted">
+              <ul className="mt-2 space-y-1 rounded-xl border border-forest-950/10 bg-surface px-3 py-2 text-[13px] text-ink-muted">
                 <li className="flex items-center justify-between">
                   <span>Transaktionen</span>
                   <span className="tabular-nums">
@@ -192,7 +192,7 @@ export function BackupSection() {
 
             <p className="mt-3 text-[14px] font-medium text-ink">
               Um zu bestätigen, tippe{' '}
-              <code className="rounded bg-white px-1.5 py-0.5 font-mono text-red-700 shadow-card">
+              <code className="rounded bg-surface px-1.5 py-0.5 font-mono text-red-700 shadow-card">
                 REPLACE
               </code>{' '}
               ein:
@@ -217,7 +217,7 @@ export function BackupSection() {
               <button
                 type="button"
                 onClick={() => setPendingRestore(null)}
-                className="flex-1 rounded-full border border-forest-950/15 bg-white px-4 py-2 text-[15px] font-medium text-ink"
+                className="flex-1 rounded-full border border-forest-950/15 bg-surface px-4 py-2 text-[15px] font-medium text-ink"
                 disabled={busy}
               >
                 Abbrechen

@@ -119,7 +119,7 @@ export function Settings() {
         <button
           type="button"
           onClick={() => setActiveTab('home')}
-          className="grid h-10 w-10 place-items-center rounded-full bg-white shadow-card"
+          className="grid h-10 w-10 place-items-center rounded-full bg-surface shadow-card"
           aria-label="Zurück"
         >
           <ArrowLeft className="h-5 w-5" strokeWidth={2.25} />
@@ -290,7 +290,7 @@ function Section({
       <h2 className="mb-2 ml-1 text-[12px] font-semibold uppercase tracking-wider text-ink-subtle">
         {title}
       </h2>
-      <div className="row-divider overflow-hidden rounded-[22px] bg-white shadow-card">
+      <div className="row-divider overflow-hidden rounded-[22px] bg-surface shadow-card">
         {children}
       </div>
     </div>

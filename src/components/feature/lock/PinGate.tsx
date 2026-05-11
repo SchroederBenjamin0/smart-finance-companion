@@ -57,7 +57,7 @@ export function PinGate({ expectedHash, onUnlock }: Props) {
               className={`grid h-14 w-14 place-items-center rounded-2xl border-2 text-2xl font-semibold tabular-nums ${
                 filled
                   ? 'border-forest-950 bg-forest-950 text-white'
-                  : 'border-forest-950/15 bg-white text-ink-subtle'
+                  : 'border-forest-950/15 bg-surface text-ink-subtle'
               }`}
             >
               {filled ? '•' : ''}

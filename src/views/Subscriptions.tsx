@@ -46,7 +46,7 @@ export function Subscriptions() {
       </HeroHeader>
 
       <div className="px-4 pt-4 animate-view-enter">
-        <div className="rounded-[22px] bg-white p-5 shadow-card">
+        <div className="rounded-[22px] bg-surface p-5 shadow-card">
           <p className="text-[13px] font-medium text-ink-subtle">
             Monatlicher Abfluss
           </p>
@@ -58,7 +58,7 @@ export function Subscriptions() {
           </p>
         </div>
 
-        <div className="mt-5 row-divider overflow-hidden rounded-[22px] bg-white shadow-card">
+        <div className="mt-5 row-divider overflow-hidden rounded-[22px] bg-surface shadow-card">
           {subs.map((s, i) => (
             <SubscriptionRow
               key={s.id}

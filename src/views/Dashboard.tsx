@@ -147,7 +147,7 @@ export function Dashboard() {
             type="button"
             onClick={() => setActiveTab('settings')}
             aria-label="Einstellungen"
-            className="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-white"
+            className="grid h-10 w-10 place-items-center rounded-full bg-surface/10 text-white"
           >
             <SettingsIcon className="h-5 w-5" strokeWidth={2.25} />
           </button>
@@ -163,7 +163,7 @@ export function Dashboard() {
           <div className="mt-3 flex flex-wrap items-center gap-2 text-[13px]">
             {monthDelta > 0 && (
               <>
-                <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 font-medium">
+                <span className="inline-flex items-center gap-1 rounded-full bg-surface/15 px-2.5 py-1 font-medium">
                   <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={3} />
                   +{formatEur(monthDelta)}
                 </span>
@@ -171,7 +171,7 @@ export function Dashboard() {
               </>
             )}
             {portfolioValue > 0 && (
-              <span className="rounded-full bg-white/10 px-2.5 py-1 text-[12px] text-mint-200">
+              <span className="rounded-full bg-surface/10 px-2.5 py-1 text-[12px] text-mint-200">
                 davon Portfolio {formatEur(portfolioValue)}
               </span>
             )}

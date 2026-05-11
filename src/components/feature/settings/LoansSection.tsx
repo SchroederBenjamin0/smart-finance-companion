@@ -102,7 +102,7 @@ function TransferReturnConfirm({ loan, onClose, onConfirmed }: TransferReturnCon
         <div className="flex gap-2">
           <button
             type="button"
-            className="flex-1 rounded-full border border-forest-950/15 bg-white px-4 py-2 text-[15px] font-medium text-ink"
+            className="flex-1 rounded-full border border-forest-950/15 bg-surface px-4 py-2 text-[15px] font-medium text-ink"
             onClick={onClose}
             disabled={busy}
           >
@@ -218,7 +218,7 @@ function LoanFormModal({ loan, open, onClose, onSaved }: LoanFormModalProps) {
           </h2>
           <button
             type="button"
-            className="grid h-9 w-9 place-items-center rounded-full bg-white text-ink shadow-card"
+            className="grid h-9 w-9 place-items-center rounded-full bg-surface text-ink shadow-card"
             onClick={onClose}
             aria-label="Schließen"
           >
@@ -277,7 +277,7 @@ function LoanFormModal({ loan, open, onClose, onSaved }: LoanFormModalProps) {
             </label>
 
             {/* "Geld zurück" toggle */}
-            <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-forest-950/10 bg-white px-4 py-3">
+            <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-forest-950/10 bg-surface px-4 py-3">
               <input
                 type="checkbox"
                 className="h-4 w-4 accent-forest-700"
@@ -291,7 +291,7 @@ function LoanFormModal({ loan, open, onClose, onSaved }: LoanFormModalProps) {
 
             {/* Amount + method — revealed when hasAmount */}
             {hasAmount && (
-              <div className="space-y-3 rounded-xl border border-forest-950/10 bg-white px-4 py-3">
+              <div className="space-y-3 rounded-xl border border-forest-950/10 bg-surface px-4 py-3">
                 <label className="block">
                   <span className="text-[13px] font-medium text-ink">Betrag (€)</span>
                   <input
@@ -336,13 +336,13 @@ function LoanFormModal({ loan, open, onClose, onSaved }: LoanFormModalProps) {
         </div>
 
         <div
-          className="border-t border-forest-950/10 bg-white/95 px-5 py-3 backdrop-blur"
+          className="border-t border-forest-950/10 bg-surface/95 px-5 py-3 backdrop-blur"
           style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 16px)' }}
         >
           <div className="flex gap-2">
             <button
               type="button"
-              className="flex-1 rounded-full border border-forest-950/15 bg-white px-4 py-2 text-[15px] font-medium text-ink"
+              className="flex-1 rounded-full border border-forest-950/15 bg-surface px-4 py-2 text-[15px] font-medium text-ink"
               onClick={onClose}
               disabled={busy}
             >
@@ -394,7 +394,7 @@ function LoanRow({ loan, onEdit, onReturn, onDelete }: LoanRowProps) {
             className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
               isOpen
                 ? 'bg-forest-100 text-forest-800'
-                : 'bg-zinc-100 text-zinc-600'
+                : 'bg-paper text-ink-subtle'
             }`}
           >
             {isOpen ? 'verliehen' : 'zurück'}
@@ -551,7 +551,7 @@ export function LoansSection() {
           </button>
         </div>
 
-        <div className="row-divider overflow-hidden rounded-[22px] bg-white shadow-card">
+        <div className="row-divider overflow-hidden rounded-[22px] bg-surface shadow-card">
           {loading ? (
             <div className="flex items-center gap-3 px-4 py-3">
               <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-forest-800">

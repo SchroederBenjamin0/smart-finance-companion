@@ -162,7 +162,7 @@ function DueSubscriptionsSheet({
           return (
             <div
               key={s.id}
-              className="rounded-2xl border border-forest-950/10 bg-white p-3"
+              className="rounded-2xl border border-forest-950/10 bg-surface p-3"
             >
               <div className="flex items-baseline justify-between gap-3">
                 <div className="min-w-0 flex-1">
@@ -189,7 +189,7 @@ function DueSubscriptionsSheet({
                       className={`rounded-lg border px-2 py-1.5 text-[11px] font-semibold transition active:scale-[0.97] ${
                         account === a
                           ? 'border-forest-950 bg-forest-950 text-white'
-                          : 'border-forest-950/15 bg-white text-ink-muted'
+                          : 'border-forest-950/15 bg-surface text-ink-muted'
                       }`}
                     >
                       {ACCOUNT_LABEL[a]}

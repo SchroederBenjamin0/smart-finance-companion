@@ -32,7 +32,7 @@ export function Slider({
         <RadixSlider.Range className="absolute h-full rounded-full bg-forest-950" />
       </RadixSlider.Track>
       <RadixSlider.Thumb
-        className="block h-7 w-7 rounded-full border-2 border-forest-950 bg-white shadow-md transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-700"
+        className="block h-7 w-7 rounded-full border-2 border-forest-950 bg-surface shadow-md transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-700"
         aria-label={ariaLabel}
       />
     </RadixSlider.Root>

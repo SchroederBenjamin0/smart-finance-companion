@@ -162,7 +162,7 @@ export function AdvisorSheet({
             </div>
           )}
 
-          <div className="row-divider rounded-[22px] bg-white shadow-card">
+          <div className="row-divider rounded-[22px] bg-surface shadow-card">
             {rec.allocations.map((a, i) => {
               const isin = isinForTicker(a.ticker);
               return (

@@ -172,7 +172,7 @@ export function SubscriptionForm({
             />
           </Field>
           <Field label="Zyklus">
-            <div className="grid h-12 grid-cols-2 rounded-2xl border border-forest-950/10 bg-white p-1">
+            <div className="grid h-12 grid-cols-2 rounded-2xl border border-forest-950/10 bg-surface p-1">
               {(['monthly', 'yearly'] as BillingCycle[]).map((c) => (
                 <button
                   key={c}

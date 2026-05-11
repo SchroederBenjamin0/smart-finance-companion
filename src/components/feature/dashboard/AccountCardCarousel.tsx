@@ -52,7 +52,7 @@ export function AccountCardCarousel({
               className={`relative shrink-0 snap-start ${meta.gradient} flex h-[142px] w-[180px] flex-col justify-between overflow-hidden rounded-[22px] p-[18px] text-white shadow-card`}
             >
               <div
-                className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/[0.10]"
+                className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-surface/[0.10]"
                 aria-hidden="true"
               />
               <div className="relative">
@@ -76,7 +76,7 @@ export function AccountCardCarousel({
         {showPortfolio && (
           <li className="relative shrink-0 snap-start bg-card-investment flex h-[142px] w-[180px] flex-col justify-between overflow-hidden rounded-[22px] p-[18px] text-white shadow-card">
             <div
-              className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/[0.10]"
+              className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-surface/[0.10]"
               aria-hidden="true"
             />
             <div className="relative">

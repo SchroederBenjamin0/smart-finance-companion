@@ -37,7 +37,7 @@ export function CashflowTab() {
 
   if (forecast.length === 0) {
     return (
-      <div className="rounded-[22px] bg-white p-6 text-center text-[14px] text-ink-subtle shadow-card">
+      <div className="rounded-[22px] bg-surface p-6 text-center text-[14px] text-ink-subtle shadow-card">
         Daten werden geladen...
       </div>
     );
@@ -45,7 +45,7 @@ export function CashflowTab() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="rounded-[22px] bg-white p-4 shadow-card">
+      <div className="rounded-[22px] bg-surface p-4 shadow-card">
         <div className="text-[14px] font-semibold text-ink">Fun-Konto — nächste 90 Tage</div>
         <div className="text-[11px] text-ink-subtle">
           Basiert auf Median der letzten 3 Monate. Variiert mit deinem Verhalten.
@@ -70,14 +70,14 @@ export function CashflowTab() {
         </div>
       </div>
 
-      <div className="rounded-[22px] bg-white p-4 shadow-card">
+      <div className="rounded-[22px] bg-surface p-4 shadow-card">
         <div className="mb-2 text-[14px] font-semibold text-ink">Anstehende Subscriptions</div>
         <ul className="text-[13px] text-ink-muted">
           {forecast.flatMap((w) =>
             w.events
               .filter((e) => e.type === 'subscription')
               .map((e, i) => (
-                <li key={`${w.weekStartIso}-${i}`} className="flex items-center justify-between border-b border-zinc-100 py-1 last:border-b-0">
+                <li key={`${w.weekStartIso}-${i}`} className="flex items-center justify-between border-b border-divider py-1 last:border-b-0">
                   <span>{e.label}</span>
                   <span className="tabular-nums">{e.amount.toFixed(2)} € · KW {w.weekStartIso.slice(5)}</span>
                 </li>

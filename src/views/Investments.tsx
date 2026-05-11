@@ -119,7 +119,7 @@ export function Investments() {
               type="button"
               onClick={() => setImporting(true)}
               aria-label="Aus PDF importieren"
-              className="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-white"
+              className="grid h-10 w-10 place-items-center rounded-full bg-surface/10 text-white"
             >
               <FileUp className="h-5 w-5" strokeWidth={2.25} />
             </button>
@@ -128,7 +128,7 @@ export function Investments() {
               onClick={() => void refreshPrices(false)}
               disabled={refreshing || positions.length === 0}
               aria-label="Preise aktualisieren"
-              className="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-white disabled:opacity-50"
+              className="grid h-10 w-10 place-items-center rounded-full bg-surface/10 text-white disabled:opacity-50"
             >
               <RefreshCw
                 className={`h-5 w-5 ${refreshing ? 'animate-spin' : ''}`}
@@ -140,7 +140,7 @@ export function Investments() {
       </HeroHeader>
 
       <div className="px-4 pt-4 animate-view-enter">
-        <div className="rounded-[22px] bg-white p-5 shadow-card">
+        <div className="rounded-[22px] bg-surface p-5 shadow-card">
           <p className="text-[13px] font-medium text-ink-subtle">
             Aktuell investiert
           </p>
@@ -173,7 +173,7 @@ export function Investments() {
         </div>
 
         {positions.length === 0 && loaded && (
-          <div className="mt-5 flex items-start gap-3 rounded-[22px] bg-white p-4 shadow-card">
+          <div className="mt-5 flex items-start gap-3 rounded-[22px] bg-surface p-4 shadow-card">
             <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-forest-800">
               <Sparkles className="h-5 w-5" strokeWidth={2.25} />
             </div>
@@ -271,7 +271,7 @@ function PositionRow({
       <button
         type="button"
         onClick={onClick}
-        className="block w-full rounded-[22px] bg-white p-4 text-left shadow-card transition active:scale-[0.99]"
+        className="block w-full rounded-[22px] bg-surface p-4 text-left shadow-card transition active:scale-[0.99]"
       >
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">

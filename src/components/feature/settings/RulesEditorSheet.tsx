@@ -101,7 +101,7 @@ function RuleEditor({
   };
 
   return (
-    <div className="rounded-2xl border border-forest-950/10 bg-white p-4">
+    <div className="rounded-2xl border border-forest-950/10 bg-surface p-4">
       <h3 className="text-[14px] font-semibold text-ink">{title}</h3>
 
       <div className="mt-3">

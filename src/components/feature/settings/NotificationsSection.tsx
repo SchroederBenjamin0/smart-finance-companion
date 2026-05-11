@@ -59,7 +59,7 @@ export function NotificationsSection() {
       <h2 className="mb-2 ml-1 text-[12px] font-semibold uppercase tracking-wider text-ink-subtle">
         Benachrichtigungen
       </h2>
-      <div className="row-divider overflow-hidden rounded-[22px] bg-white shadow-card">
+      <div className="row-divider overflow-hidden rounded-[22px] bg-surface shadow-card">
         {/* Master toggle row */}
         <div className="flex items-center gap-3 px-4 py-3">
           <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-forest-800">

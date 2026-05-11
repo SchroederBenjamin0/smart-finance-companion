@@ -234,7 +234,7 @@ export function CsvImportSheet({
             sie mit deinen manuellen Einträgen ab. Du kannst alles vor dem
             Speichern noch prüfen.
           </p>
-          <label className="flex h-32 w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-forest-950/20 bg-white text-ink-muted transition active:scale-[0.99]">
+          <label className="flex h-32 w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-forest-950/20 bg-surface text-ink-muted transition active:scale-[0.99]">
             <Upload className="h-6 w-6" strokeWidth={2.25} />
             <span className="text-sm font-medium">CSV auswählen</span>
             <input
@@ -338,7 +338,7 @@ function ReviewRow({
       className={`rounded-2xl border p-3 ${
         draft.isDuplicate
           ? 'border-amber-200 bg-amber-50/30'
-          : 'border-forest-950/10 bg-white'
+          : 'border-forest-950/10 bg-surface'
       }`}
     >
       <div className="flex items-start gap-3">
@@ -398,7 +398,7 @@ function ReviewRow({
             <select
               value={draft.category}
               onChange={(e) => onChange({ category: e.target.value })}
-              className="h-9 flex-1 rounded-xl border border-forest-950/10 bg-white px-2 text-[13px] text-ink outline-none focus-visible:ring-2 focus-visible:ring-forest-700"
+              className="h-9 flex-1 rounded-xl border border-forest-950/10 bg-surface px-2 text-[13px] text-ink outline-none focus-visible:ring-2 focus-visible:ring-forest-700"
             >
               {VALID_CATEGORIES.map((c) => (
                 <option key={c} value={c}>
