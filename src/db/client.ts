@@ -1,12 +1,14 @@
+import { debugWarn } from '@/lib/debug';
 import { openDB, type IDBPDatabase } from 'idb';
 import { DB_NAME, DB_VERSION, type SmartFinanceDB } from './schema';
+import { runPostUpgradeBackfill } from './migrations';
 
 let dbPromise: Promise<IDBPDatabase<SmartFinanceDB>> | null = null;
 
 export function getDB(): Promise<IDBPDatabase<SmartFinanceDB>> {
   if (!dbPromise) {
     dbPromise = openDB<SmartFinanceDB>(DB_NAME, DB_VERSION, {
-      upgrade(db, oldVersion) {
+      upgrade(db, oldVersion, _newVersion, transaction) {
         if (oldVersion < 1) {
           const accounts = db.createObjectStore('accounts', {
             keyPath: 'id',
@@ -73,9 +75,29 @@ export function getDB(): Promise<IDBPDatabase<SmartFinanceDB>> {
           log.createIndex('by-timestamp', 'timestamp');
           log.createIndex('by-level', 'level');
         }
+
+        if (oldVersion < 2) {
+          // v2: notificationLog store, by-hash on transactions, by-expires on csvImports.
+          const txStore = transaction.objectStore('transactions');
+          if (!txStore.indexNames.contains('by-hash')) {
+            txStore.createIndex('by-hash', 'transactionHash');
+          }
+
+          const csvImportsStore = transaction.objectStore('csvImports');
+          if (!csvImportsStore.indexNames.contains('by-expires')) {
+            csvImportsStore.createIndex('by-expires', 'expiresAt');
+          }
+
+          if (!db.objectStoreNames.contains('notificationLog')) {
+            const notif = db.createObjectStore('notificationLog', { keyPath: 'id' });
+            notif.createIndex('by-dedupeKey', 'dedupeKey', { unique: true });
+            notif.createIndex('by-firedAt', 'firedAt');
+            notif.createIndex('by-type', 'type');
+          }
+        }
       },
       blocked() {
-        console.warn('IndexedDB upgrade blocked by another tab');
+        debugWarn('IndexedDB upgrade blocked by another tab');
       },
       blocking() {
         // Another tab wants to upgrade — close this connection
@@ -87,6 +109,11 @@ export function getDB(): Promise<IDBPDatabase<SmartFinanceDB>> {
       terminated() {
         dbPromise = null;
       },
+    }).then(async (db) => {
+      await runPostUpgradeBackfill(db).catch((e) => {
+        debugWarn('Post-upgrade backfill failed', e);
+      });
+      return db;
     });
   }
   return dbPromise;

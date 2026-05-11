@@ -13,6 +13,8 @@ import type {
   LogLevel,
   NewsEvent,
   NewsRelevance,
+  NotificationLogEntry,
+  NotificationTrigger,
   Recommendation,
   RecommendationTrigger,
   SecretEntry,
@@ -21,7 +23,7 @@ import type {
 } from './types';
 
 export const DB_NAME = 'smart-finance';
-export const DB_VERSION = 1;
+export const DB_VERSION = 2;
 
 export interface SmartFinanceDB extends DBSchema {
   accounts: {
@@ -51,6 +53,7 @@ export interface SmartFinanceDB extends DBSchema {
       'by-date': string;
       'by-category': string;
       'by-csv': string;
+      'by-hash': string;
     };
   };
   categoryRules: {
@@ -61,7 +64,7 @@ export interface SmartFinanceDB extends DBSchema {
   csvImports: {
     key: string;
     value: CSVImport;
-    indexes: { 'by-date': string };
+    indexes: { 'by-date': string; 'by-expires': string };
   };
   investmentPositions: {
     key: string;
@@ -83,6 +86,15 @@ export interface SmartFinanceDB extends DBSchema {
       'by-ticker': string;
       'by-date': string;
       'by-relevance': NewsRelevance;
+    };
+  };
+  notificationLog: {
+    key: string;
+    value: NotificationLogEntry;
+    indexes: {
+      'by-dedupeKey': string;
+      'by-firedAt': string;
+      'by-type': NotificationTrigger;
     };
   };
   appConfig: {

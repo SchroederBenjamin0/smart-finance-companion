@@ -40,6 +40,14 @@ export const incomeRepo = {
     });
   },
 
+  async findSince(iso: string): Promise<Result<IncomeEntry[]>> {
+    return tryAsync(async () => {
+      const db = await getDB();
+      const all = await db.getAllFromIndex('incomeEntries', 'by-date');
+      return all.filter((e) => e.date >= iso);
+    });
+  },
+
   async deleteWithAllocations(id: string): Promise<Result<void>> {
     try {
       const db = await getDB();

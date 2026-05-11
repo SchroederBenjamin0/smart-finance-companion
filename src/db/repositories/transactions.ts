@@ -2,6 +2,7 @@ import { getDB } from '../client';
 import { tryAsync, ok, err, type Result } from '@/lib/result';
 import { generateId } from '@/lib/id';
 import { nowIso } from '@/lib/date';
+import { computeTransactionHash } from '@/lib/hash';
 import type { AccountType, Transaction } from '../types';
 
 const round2 = (n: number): number => Math.round(n * 100) / 100;
@@ -25,6 +26,14 @@ export const transactionsRepo = {
       return all
         .sort((a, b) => b.date.localeCompare(a.date))
         .slice(0, limit);
+    });
+  },
+
+  async findByHash(hash: string): Promise<Result<Transaction | null>> {
+    return tryAsync(async () => {
+      const db = await getDB();
+      const hit = await db.getFromIndex('transactions', 'by-hash', hash);
+      return hit ?? null;
     });
   },
 
@@ -65,18 +74,26 @@ export const transactionsRepo = {
   ): Promise<Result<Transaction>> {
     try {
       const db = await getDB();
+
+      const date = input.date;
+      const counterparty = input.counterparty;
+      const amount = -Math.abs(input.amount);
+      const transactionHash = await computeTransactionHash({ date, amount, counterparty });
+
       const tx = db.transaction(['transactions', 'accounts'], 'readwrite');
       const transaction: Transaction = {
         id: generateId(),
-        date: input.date,
-        amount: -Math.abs(input.amount),
-        counterparty: input.counterparty,
+        date,
+        amount,
+        counterparty,
         description: input.note,
         category: input.category,
         categoryConfidence: 1,
         isUserReviewed: 1,
         sourceCsvId: MANUAL_CSV_ID,
         importedAt: nowIso(),
+        transactionHash,
+        isAnomaly: 0,
       };
       await tx.objectStore('transactions').put(transaction);
 

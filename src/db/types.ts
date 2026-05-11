@@ -28,6 +28,12 @@ export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 export type RuleSource = 'user' | 'ai' | 'system';
 export type MatchType = 'exact' | 'regex';
 export type SecretKey = 'anthropic_key' | 'marketaux_key';
+export type NotificationTrigger =
+  | 'allocation'
+  | 'subscription'
+  | 'drift'
+  | 'anomaly'
+  | 'cashflow';
 
 export interface Account {
   id: string;
@@ -84,6 +90,8 @@ export interface Transaction {
   isUserReviewed: number;
   sourceCsvId: string;
   importedAt: string;
+  transactionHash: string;   // SHA-256(date|cents|counterparty)
+  isAnomaly: number;         // 0 / 1, gesetzt beim Import (default 0)
 }
 
 export interface CategoryRule {
@@ -106,6 +114,7 @@ export interface CSVImport {
   dateRangeEnd: string;
   categorizationCostEur: number;
   anomalies: string[];
+  expiresAt: string;         // importedAt + 30 Tage, ISO
 }
 
 export interface InvestmentPosition {
@@ -167,6 +176,13 @@ export interface LogEntry {
   module: string;
   message: string;
   contextJson: string | null;
+}
+
+export interface NotificationLogEntry {
+  id: string;
+  type: NotificationTrigger;
+  dedupeKey: string;        // siehe modules/notifications/triggers.ts
+  firedAt: string;
 }
 
 export interface Portfolio {
@@ -241,4 +257,8 @@ export const ALL_CONFIG_KEYS = {
   appPinHash: 'app_pin_hash',
   onboardingComplete: 'onboarding_complete',
   themeOverride: 'theme_override',
+  notificationsEnabled: 'notifications_enabled',
+  notificationsTriggers: 'notifications_triggers',
+  driftToleranceGlobal: 'drift_tolerance_global',
+  hashBackfillComplete: 'hash_backfill_complete',
 } as const;
