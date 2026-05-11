@@ -62,6 +62,7 @@ export interface SubscriptionCheckResult {
 }
 
 export function shouldFireSubscription(sub: Subscription, now: Date): SubscriptionCheckResult {
+  // `isActive` is the project's SQLite-boolean convention: 1 = active, 0 = inactive.
   if (sub.isActive !== 1) return { shouldFire: false, daysUntil: -1 };
   const due = new Date(sub.nextBillDate);
   const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
@@ -107,7 +108,9 @@ export function shouldFireCashflow(
 
   for (const point of forecast.slice(0, 5)) { // 5 wks = ~30 days
     if (point.funBalance < 0 && !earliestRed) earliestRed = point.weekStartIso;
-    else if (point.funBalance < yellowThreshold && !earliestYellow) earliestYellow = point.weekStartIso;
+    if (point.funBalance >= 0 && point.funBalance < yellowThreshold && !earliestYellow) {
+      earliestYellow = point.weekStartIso;
+    }
   }
 
   if (earliestRed) return { shouldFire: true, severity: 'red', earliestWeek: earliestRed };

@@ -37,6 +37,18 @@ describe('buildCashflowDedupeKey', () => {
   it('uses ISO week format', () => {
     expect(buildCashflowDedupeKey(new Date('2026-05-11T10:00:00Z'))).toMatch(/^cashflow-2026-W\d{2}$/);
   });
+
+  it('attributes 2025-12-29 (Monday) to 2026-W01 per ISO-8601', () => {
+    expect(buildCashflowDedupeKey(new Date('2025-12-29T00:00:00Z'))).toBe('cashflow-2026-W01');
+  });
+
+  it('attributes 2026-12-31 (Thursday) to 2026-W53', () => {
+    expect(buildCashflowDedupeKey(new Date('2026-12-31T00:00:00Z'))).toBe('cashflow-2026-W53');
+  });
+
+  it('attributes 2027-01-03 (Sunday) to 2026-W53', () => {
+    expect(buildCashflowDedupeKey(new Date('2027-01-03T00:00:00Z'))).toBe('cashflow-2026-W53');
+  });
 });
 
 describe('buildAnomalyDedupeKey', () => {
@@ -175,6 +187,19 @@ describe('shouldFireCashflow', () => {
     const forecast = [
       { weekStartIso: '2026-05-11', funBalance: 500 },
       { weekStartIso: '2026-05-18', funBalance: 250 },
+    ];
+    const r = shouldFireCashflow(forecast, 100);
+    expect(r.shouldFire).toBe(false);
+  });
+
+  it('does not fire when only week 6 is below threshold (outside 5-week window)', () => {
+    const forecast = [
+      { weekStartIso: '2026-05-11', funBalance: 500 },
+      { weekStartIso: '2026-05-18', funBalance: 500 },
+      { weekStartIso: '2026-05-25', funBalance: 500 },
+      { weekStartIso: '2026-06-01', funBalance: 500 },
+      { weekStartIso: '2026-06-08', funBalance: 500 },
+      { weekStartIso: '2026-06-15', funBalance: -100 },  // week 6 — outside window
     ];
     const r = shouldFireCashflow(forecast, 100);
     expect(r.shouldFire).toBe(false);
