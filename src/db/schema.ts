@@ -9,6 +9,8 @@ import type {
   IncomeEntry,
   IncomeSource,
   InvestmentPosition,
+  Loan,
+  LoanStatus,
   LogEntry,
   LogLevel,
   NewsEvent,
@@ -23,7 +25,7 @@ import type {
 } from './types';
 
 export const DB_NAME = 'smart-finance';
-export const DB_VERSION = 2;
+export const DB_VERSION = 3;
 
 export interface SmartFinanceDB extends DBSchema {
   accounts: {
@@ -70,6 +72,11 @@ export interface SmartFinanceDB extends DBSchema {
     key: string;
     value: InvestmentPosition;
     indexes: { 'by-isin': string };
+  };
+  loans: {
+    key: string;
+    value: Loan;
+    indexes: { 'by-status': LoanStatus; 'by-lentAt': string };
   };
   recommendations: {
     key: string;
