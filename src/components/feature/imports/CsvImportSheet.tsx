@@ -20,6 +20,7 @@ import {
   type CategorizationOutput,
 } from '@/modules/categorizer';
 import { detectAnomalies, type AnomalyResult } from '@/modules/anomaly';
+import { notifyAnomalies } from '@/modules/notifications';
 import {
   parseRevolutCsv,
   type RevolutTxn,
@@ -202,6 +203,7 @@ export function CsvImportSheet({
         }
         await dbTx.done;
         setAnomalies(detected);
+        await notifyAnomalies(csvImportId, detected.length);
       }
     }
 
