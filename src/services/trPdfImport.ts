@@ -1,3 +1,4 @@
+import { debug } from '@/lib/debug';
 import { tryAsync, type Result } from '@/lib/result';
 import { tickerFromIsin } from './yahoo';
 
@@ -34,14 +35,10 @@ export async function parseTrPortfolioPdf(
     const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
 
     const lines = await extractLines(pdf);
-    if (typeof window !== 'undefined') {
-      console.debug('[TR-PDF] extracted lines', lines);
-      console.debug('[TR-PDF] joined text', lines.join(' | '));
-    }
+    debug('[TR-PDF] extracted lines', lines);
+    debug('[TR-PDF] joined text', lines.join(' | '));
     const result = parseLines(lines);
-    if (typeof window !== 'undefined') {
-      console.debug('[TR-PDF] parsed result', result);
-    }
+    debug('[TR-PDF] parsed result', result);
     return result;
   });
 }

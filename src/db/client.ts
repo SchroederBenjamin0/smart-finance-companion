@@ -1,3 +1,4 @@
+import { debugError } from '@/lib/debug';
 import { openDB, type IDBPDatabase } from 'idb';
 import { DB_NAME, DB_VERSION, type SmartFinanceDB } from './schema';
 
@@ -75,7 +76,7 @@ export function getDB(): Promise<IDBPDatabase<SmartFinanceDB>> {
         }
       },
       blocked() {
-        console.warn('IndexedDB upgrade blocked by another tab');
+        debugError('IndexedDB upgrade blocked by another tab');
       },
       blocking() {
         // Another tab wants to upgrade — close this connection
