@@ -14,6 +14,7 @@ import {
   Tag,
   type LucideIcon,
 } from 'lucide-react';
+import { NotificationsSection } from '@/components/feature/settings/NotificationsSection';
 import { PinSettingsSheet } from '@/components/feature/settings/PinSettingsSheet';
 import { RulesEditorSheet } from '@/components/feature/settings/RulesEditorSheet';
 import { configRepo } from '@/db/repositories/config';
@@ -212,6 +213,8 @@ export function Settings() {
             valueTone="muted"
           />
         </Section>
+
+        <NotificationsSection />
 
         <Section title="Sicherheit">
           <Row
