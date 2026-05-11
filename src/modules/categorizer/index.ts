@@ -26,6 +26,7 @@ export const VALID_CATEGORIES = [
   'software-abos',
   'transport',
   'freizeit',
+  'nightlife',
   'kleidung',
   'gesundheit',
   'gebühren',
@@ -136,11 +137,12 @@ Deine Aufgabe: Transaktionsdaten klassifizieren.
 
 Verfügbare Kategorien (genau eine pro Buchung):
 - lebensmittel  (Supermärkte, Bäcker, Wochenmarkt, Kioske)
-- restaurants   (Restaurants, Lieferdienste, Coffee Shops, Bars, Clubs)
+- restaurants   (Restaurants, Lieferdienste, Coffee Shops)
 - musik-tools   (Splice, Plugins, Studio-Equipment, DJ-Software)
 - software-abos (alle SaaS-Subscriptions außer Music-Tools)
 - transport     (Tank, ÖPNV, Bahn, Flüge, Taxi/Uber)
 - freizeit      (Kino, Konzerte, Streaming, Games, Hobbies)
+- nightlife     (Clubs, Bars, Spätis nach Mitternacht, Türen-/Eintrittsgebühren)
 - kleidung      (Mode, Schuhe, Accessoires)
 - gesundheit    (Apotheke, Arzt, Sport, Fitness)
 - gebühren      (Bankgebühren, Mahnungen, Steuern)
@@ -223,5 +225,40 @@ async function llmCategorize(
     });
   }
   return ok(outputs);
+}
+
+/**
+ * Force re-categorization via LLM for the provided transactions, skipping
+ * the rule-lookup stage. Used by the manual "Mit LLM neu prüfen" button.
+ */
+export async function recategorizeWithLLM(
+  inputs: CategorizationInput[],
+): Promise<Result<CategorizationOutput[]>> {
+  if (inputs.length === 0) return ok([]);
+
+  const outputs: (CategorizationOutput | null)[] = inputs.map(() => null);
+  for (let start = 0; start < inputs.length; start += BATCH_SIZE) {
+    const batch = inputs.slice(start, start + BATCH_SIZE);
+    const r = await llmCategorize(batch);
+    if (r.ok) {
+      for (const out of r.value) {
+        const idx = inputs.findIndex((t) => t.localId === out.localId);
+        if (idx >= 0) outputs[idx] = out;
+      }
+    }
+  }
+  // Fallback for anything still null.
+  for (let i = 0; i < outputs.length; i++) {
+    if (outputs[i] === null) {
+      const t = inputs[i]!;
+      outputs[i] = {
+        localId: t.localId,
+        category: t.amount > 0 ? 'einkommen' : 'sonstiges',
+        confidence: 0.4,
+        source: 'fallback',
+      };
+    }
+  }
+  return ok(outputs.map((o) => o!));
 }
 

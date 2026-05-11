@@ -29,9 +29,14 @@ export const SEED_RULES: SeedRule[] = [
   // Streaming / Entertainment
   { pattern: '\\b(NETFLIX|SPOTIFY|APPLE MUSIC|YOUTUBE|DISNEY|PRIME VIDEO|HBO|TWITCH|SNAPCHAT)\\b', matchType: 'regex', category: 'freizeit', createdBy: 'system' },
 
-  // Restaurants / Cafés / Bars
-  { pattern: '\\b(STARBUCKS|MCDONALD|BURGER KING|KFC|SUBWAY|VAPIANO|DOMINO|PIZZA|SUSHI|BÄCKER|BACK[- ]?WERK|CAFE|CAFÉ|RESTAURANT|BAR |KIOSK|CLUB)\\b', matchType: 'regex', category: 'restaurants', createdBy: 'system' },
+  // Restaurants / Cafés / Delivery
+  { pattern: '\\b(STARBUCKS|MCDONALD|BURGER KING|KFC|SUBWAY|VAPIANO|DOMINO|PIZZA|SUSHI|BÄCKER|BACK[- ]?WERK|CAFE|CAFÉ|RESTAURANT|KIOSK)\\b', matchType: 'regex', category: 'restaurants', createdBy: 'system' },
   { pattern: '\\b(LIEFERANDO|UBER EATS|WOLT|FLINK|GORILLAS|PICNIC)\\b', matchType: 'regex', category: 'restaurants', createdBy: 'system' },
+
+  // Nightlife — German clubs, bars, Spätis
+  { pattern: '\\b(BERGHAIN|SISYPHOS|KATER BLAU|CIRCLE CLUB|TRESOR|SALON ZUR WILDEN RENATE|WATERGATE|ABOUT BLANK|FABRIC|KESSELHAUS|GRIESSMÜHLE|GRIESSMUEHLE)\\b', matchType: 'regex', category: 'nightlife', createdBy: 'system' },
+  { pattern: '(?:^|\\b)(NIGHTCLUB|NACHTCLUB|DISCOTHEK|DISCO |DANCEFLOOR)\\b', matchType: 'regex', category: 'nightlife', createdBy: 'system' },
+  { pattern: '\\b(SPAETI|SP[ÄA]TI|SP[ÄA]TKAUF|SPAETKAUF|SPAETSHOP|SP[ÄA]TSHOP)\\b', matchType: 'regex', category: 'nightlife', createdBy: 'system' },
 
   // Health
   { pattern: '\\b(APOTHEKE|DOC MORRIS|ZUR ROSE|FIT(?:NESS)?|MCFIT|FITX|URBAN SPORTS|SPORTSTUDIO)\\b', matchType: 'regex', category: 'gesundheit', createdBy: 'system' },
