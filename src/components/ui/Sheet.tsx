@@ -31,7 +31,7 @@ export function Sheet({
               {title}
             </Dialog.Title>
             <Dialog.Close
-              className="grid h-9 w-9 place-items-center rounded-full bg-white text-ink shadow-card"
+              className="grid h-9 w-9 place-items-center rounded-full bg-surface text-ink shadow-card"
               aria-label="Schließen"
             >
               <X className="h-4 w-4" strokeWidth={2.5} />
@@ -40,7 +40,7 @@ export function Sheet({
           <div className="flex-1 overflow-y-auto px-5 py-3">{children}</div>
           {footer && (
             <div
-              className="border-t border-forest-950/10 bg-white/95 px-5 py-3 backdrop-blur"
+              className="border-t border-forest-950/10 bg-surface/95 px-5 py-3 backdrop-blur"
               style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 16px)' }}
             >
               {footer}

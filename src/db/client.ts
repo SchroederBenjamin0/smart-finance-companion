@@ -103,6 +103,13 @@ export function getDB(): Promise<IDBPDatabase<SmartFinanceDB>> {
             loans.createIndex('by-lentAt', 'lentAt');
           }
         }
+
+        if (oldVersion < 4) {
+          if (!db.objectStoreNames.contains('priceCache')) {
+            const cache = db.createObjectStore('priceCache', { keyPath: 'ticker' });
+            cache.createIndex('by-fetchedAt', 'fetchedAt');
+          }
+        }
       },
       blocked() {
         debugWarn('IndexedDB upgrade blocked by another tab');

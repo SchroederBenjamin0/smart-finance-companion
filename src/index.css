@@ -6,6 +6,32 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Semantic colour tokens ─────────────────────────────────────────────────
+   All bg-paper, bg-surface, text-ink* classes resolve through these variables.
+   A single @media block here covers every component without touching them.
+   NOTE: Recharts chart stroke colours (#0a2e1f etc.) are inline SVG props and
+   do NOT auto-switch — this is a known gap, tracked for a future sprint.
+   ────────────────────────────────────────────────────────────────────────── */
+:root {
+  --color-paper:      #f2f2f7;
+  --color-surface:    #ffffff;
+  --color-divider:    #e4e4e7; /* zinc-200 equivalent */
+  --color-ink:        #0a2e1f;
+  --color-ink-muted:  #3d5a4d;
+  --color-ink-subtle: #7a8c84;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-paper:      #111827; /* gray-900 */
+    --color-surface:    #1f2937; /* gray-800 */
+    --color-divider:    #374151; /* gray-700 */
+    --color-ink:        #e5e7eb; /* gray-200 */
+    --color-ink-muted:  #9ca3af; /* gray-400 */
+    --color-ink-subtle: #6b7280; /* gray-500 */
+  }
+}
+
 @layer base {
   html {
     height: 100%;
@@ -44,11 +70,11 @@
 
 @layer components {
   .card {
-    @apply rounded-[22px] bg-white p-4 shadow-card;
+    @apply rounded-[22px] bg-surface p-4 shadow-card;
   }
 
   .card-tight {
-    @apply rounded-2xl bg-white p-3 shadow-card;
+    @apply rounded-2xl bg-surface p-3 shadow-card;
   }
 
   .btn-primary {
@@ -59,7 +85,7 @@
 
   .btn-secondary {
     @apply inline-flex h-12 items-center justify-center rounded-2xl border
-           border-forest-950/15 bg-white px-5 text-base font-semibold
+           border-divider bg-surface px-5 text-base font-semibold
            text-ink transition active:scale-[0.98];
   }
 
@@ -75,15 +101,15 @@
   }
 
   .input-field {
-    @apply h-12 w-full rounded-2xl border border-forest-950/10 bg-white px-4
+    @apply h-12 w-full rounded-2xl border border-divider bg-surface px-4
            text-base text-ink placeholder-ink-subtle outline-none
-           focus-visible:border-forest-950 focus-visible:ring-2
-           focus-visible:ring-forest-950/15;
+           focus-visible:border-forest-700 focus-visible:ring-2
+           focus-visible:ring-forest-700/20;
   }
 
   .pill-chip {
     @apply inline-flex h-9 items-center rounded-full border
-           border-forest-950/10 bg-white px-3 text-sm font-medium text-ink-muted
+           border-divider bg-surface px-3 text-sm font-medium text-ink-muted
            transition active:scale-[0.98];
   }
 

@@ -97,7 +97,7 @@ export function SubscriptionsStep({
                 autoComplete="off"
                 aria-label={`${s.name} Betrag`}
                 disabled={!s.enabled}
-                className="h-10 w-24 rounded-lg border border-forest-950/15 bg-white px-2 text-right text-sm font-mono outline-none focus-visible:ring-2 focus-visible:ring-forest-700 disabled:opacity-50"
+                className="h-10 w-24 rounded-lg border border-forest-950/15 bg-surface px-2 text-right text-sm font-mono outline-none focus-visible:ring-2 focus-visible:ring-forest-700 disabled:opacity-50"
                 value={String(s.amount)}
                 onChange={(e) =>
                   updateAt(i, {

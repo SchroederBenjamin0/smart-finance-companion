@@ -199,6 +199,17 @@ export interface Loan {
   createdAt: string;
 }
 
+export interface PriceCachePoint {
+  date: string; // ISO YYYY-MM-DD (first of month)
+  close: number;
+}
+
+export interface PriceCacheEntry {
+  ticker: string;
+  monthlyCloses: PriceCachePoint[];
+  fetchedAt: string;
+}
+
 export interface Portfolio {
   positions: InvestmentPosition[];
   totalValue: number;
@@ -275,4 +286,5 @@ export const ALL_CONFIG_KEYS = {
   notificationsTriggers: 'notifications_triggers',
   driftToleranceGlobal: 'drift_tolerance_global',
   hashBackfillComplete: 'hash_backfill_complete',
+  cashflowFunWarnThreshold: 'cashflow_fun_warn_threshold',
 } as const;

@@ -38,7 +38,7 @@ export function BottomNav() {
                 aria-label={tab.label}
                 className={`flex h-[42px] items-center gap-1.5 rounded-[22px] px-3 text-sm font-semibold transition ${
                   isActive
-                    ? 'bg-white text-forest-950'
+                    ? 'bg-surface text-forest-950'
                     : 'text-white/85 hover:text-white'
                 }`}
               >

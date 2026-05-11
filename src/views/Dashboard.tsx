@@ -14,6 +14,8 @@ import {
 import { DueSubscriptionsBanner } from '@/components/feature/subscriptions/DueSubscriptionsBanner';
 import { NewsBanner } from '@/components/feature/dashboard/NewsBanner';
 import { QuarterlyInsightBanner } from '@/components/feature/dashboard/QuarterlyInsightBanner';
+import { CashflowWarningBanner } from '@/components/feature/dashboard/CashflowWarningBanner';
+import { BackupDueBanner } from '@/components/feature/dashboard/BackupDueBanner';
 import { PullToRefresh } from '@/components/ui/PullToRefresh';
 import { fetchQuotes } from '@/services/yahoo';
 import { positionsRepo as positionsRepoForRefresh } from '@/db/repositories/positions';
@@ -32,6 +34,7 @@ import { formatMonthYearDe } from '@/lib/date';
 import { useAccountsStore } from '@/stores/accounts';
 import { useConfigStore } from '@/stores/config';
 import { useNavStore } from '@/stores/navigation';
+import { useStatsNavStore } from '@/stores/statsNav';
 
 export function Dashboard() {
   const accounts = useAccountsStore((s) => s.accounts);
@@ -39,6 +42,7 @@ export function Dashboard() {
   const load = useAccountsStore((s) => s.load);
   const rules = useConfigStore((s) => s.rules);
   const setActiveTab = useNavStore((s) => s.setActiveTab);
+  const setPendingSubTab = useStatsNavStore((s) => s.setPendingSubTab);
 
   const [incomes, setIncomes] = useState<IncomeEntry[]>([]);
   const [expenses, setExpenses] = useState<Transaction[]>([]);
@@ -143,7 +147,7 @@ export function Dashboard() {
             type="button"
             onClick={() => setActiveTab('settings')}
             aria-label="Einstellungen"
-            className="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-white"
+            className="grid h-10 w-10 place-items-center rounded-full bg-surface/10 text-white"
           >
             <SettingsIcon className="h-5 w-5" strokeWidth={2.25} />
           </button>
@@ -159,7 +163,7 @@ export function Dashboard() {
           <div className="mt-3 flex flex-wrap items-center gap-2 text-[13px]">
             {monthDelta > 0 && (
               <>
-                <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 font-medium">
+                <span className="inline-flex items-center gap-1 rounded-full bg-surface/15 px-2.5 py-1 font-medium">
                   <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={3} />
                   +{formatEur(monthDelta)}
                 </span>
@@ -167,7 +171,7 @@ export function Dashboard() {
               </>
             )}
             {portfolioValue > 0 && (
-              <span className="rounded-full bg-white/10 px-2.5 py-1 text-[12px] text-mint-200">
+              <span className="rounded-full bg-surface/10 px-2.5 py-1 text-[12px] text-mint-200">
                 davon Portfolio {formatEur(portfolioValue)}
               </span>
             )}
@@ -176,6 +180,13 @@ export function Dashboard() {
       </HeroHeader>
 
       <div className="space-y-3 px-4 pt-4 animate-view-enter">
+        <BackupDueBanner />
+        <CashflowWarningBanner
+          onClick={() => {
+            setPendingSubTab('cashflow');
+            setActiveTab('stats');
+          }}
+        />
         <DueSubscriptionsBanner />
         <QuarterlyInsightBanner />
         <NewsBanner />

@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ExternalLink, Loader2, Sparkles, X } from 'lucide-react';
 import { Sheet } from '@/components/ui/Sheet';
 import { positionsRepo } from '@/db/repositories/positions';
 import type { InvestmentPosition } from '@/db/types';
 import { DEFAULT_ALLOCATION_TARGET } from '@/db/types';
 import { formatEur } from '@/lib/currency';
+import { BacktestPanel } from '@/components/feature/advisor/BacktestPanel';
+import type { BacktestAllocation } from '@/modules/backtest';
 import {
   recommendAllocation,
   type AdvisorRecommendation,
@@ -31,6 +33,16 @@ export function AdvisorSheet({
   const [error, setError] = useState<string | null>(null);
   const [rec, setRec] = useState<AdvisorRecommendation | null>(null);
   const [positions, setPositions] = useState<InvestmentPosition[]>([]);
+
+  // Derive allocation weights from current portfolio for the backtest panel.
+  const backtestAllocation = useMemo<BacktestAllocation[]>(() => {
+    const total = positions.reduce((s, p) => s + p.currentValue, 0);
+    if (total <= 0) return [];
+    return positions
+      .filter((p) => p.ticker)
+      .map((p) => ({ ticker: p.ticker, weight: p.currentValue / total }))
+      .filter((a) => a.weight > 0.01);
+  }, [positions]);
 
   useEffect(() => {
     if (!open) return;
@@ -142,6 +154,14 @@ export function AdvisorSheet({
 
       {stage === 'ready' && rec && (
         <div className="space-y-3 pb-2">
+          {backtestAllocation.length > 0 && (
+            <BacktestPanel
+              allocation={backtestAllocation}
+              monthlyContribution={investmentAmount > 0 ? investmentAmount : 500}
+              years={10}
+            />
+          )}
+
           <div className="flex items-start gap-3 rounded-2xl bg-mint-100 px-4 py-3">
             <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-forest-950 text-white">
               <Sparkles className="h-4 w-4" strokeWidth={2.25} />
@@ -162,7 +182,7 @@ export function AdvisorSheet({
             </div>
           )}
 
-          <div className="row-divider rounded-[22px] bg-white shadow-card">
+          <div className="row-divider rounded-[22px] bg-surface shadow-card">
             {rec.allocations.map((a, i) => {
               const isin = isinForTicker(a.ticker);
               return (

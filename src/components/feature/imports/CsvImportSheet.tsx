@@ -8,6 +8,8 @@ import {
 } from 'lucide-react';
 import { Sheet } from '@/components/ui/Sheet';
 import { csvImportsRepo } from '@/db/repositories/csvImports';
+import { transactionsRepo } from '@/db/repositories/transactions';
+import { getDB } from '@/db/client';
 import type { CSVImport, Transaction } from '@/db/types';
 import { formatEur } from '@/lib/currency';
 import { generateId } from '@/lib/id';
@@ -17,11 +19,14 @@ import {
   VALID_CATEGORIES,
   type CategorizationOutput,
 } from '@/modules/categorizer';
+import { detectAnomalies, type AnomalyResult } from '@/modules/anomaly';
+import { notifyAnomalies } from '@/modules/notifications';
 import {
   parseRevolutCsv,
   type RevolutTxn,
 } from '@/services/revolutCsvImport';
 import { useToastStore } from '@/stores/toast';
+import { AnomalyBanner } from './AnomalyBanner';
 
 type Stage = 'pick' | 'parsing' | 'review' | 'saving' | 'done';
 
@@ -60,6 +65,7 @@ export function CsvImportSheet({
   const [periodLabel, setPeriodLabel] = useState('');
   const [fileName, setFileName] = useState('');
   const [importSummary, setImportSummary] = useState<ImportSummary | null>(null);
+  const [anomalies, setAnomalies] = useState<AnomalyResult[]>([]);
   const pushToast = useToastStore((s) => s.push);
 
   function reset() {
@@ -69,6 +75,7 @@ export function CsvImportSheet({
     setPeriodLabel('');
     setFileName('');
     setImportSummary(null);
+    setAnomalies([]);
   }
 
   useEffect(() => {
@@ -177,8 +184,30 @@ export function CsvImportSheet({
     pushToast(msg, 'success');
     setImportSummary({ inserted, skipped });
     onImported();
+
+    // Run anomaly detection on the just-imported transactions.
+    const allR = await transactionsRepo.findRecent(5000);
+    if (allR.ok) {
+      const justInserted = allR.value.filter((t) => t.sourceCsvId === csvImportId);
+      const historical = allR.value.filter((t) => t.sourceCsvId !== csvImportId);
+      const detected = detectAnomalies(justInserted, historical);
+      if (detected.length > 0) {
+        const db = await getDB();
+        const dbTx = db.transaction('transactions', 'readwrite');
+        const store = dbTx.objectStore('transactions');
+        const anomalyIds = new Set(detected.map((a) => a.txId));
+        for (const t of justInserted) {
+          if (anomalyIds.has(t.id)) {
+            await store.put({ ...t, isAnomaly: 1 });
+          }
+        }
+        await dbTx.done;
+        setAnomalies(detected);
+        await notifyAnomalies(csvImportId, detected.length);
+      }
+    }
+
     setStage('done');
-    setTimeout(() => onOpenChange(false), 800);
   }
 
   return (
@@ -207,7 +236,7 @@ export function CsvImportSheet({
             sie mit deinen manuellen Einträgen ab. Du kannst alles vor dem
             Speichern noch prüfen.
           </p>
-          <label className="flex h-32 w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-forest-950/20 bg-white text-ink-muted transition active:scale-[0.99]">
+          <label className="flex h-32 w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-forest-950/20 bg-surface text-ink-muted transition active:scale-[0.99]">
             <Upload className="h-6 w-6" strokeWidth={2.25} />
             <span className="text-sm font-medium">CSV auswählen</span>
             <input
@@ -243,17 +272,20 @@ export function CsvImportSheet({
       )}
 
       {stage === 'done' && (
-        <div className="flex h-40 flex-col items-center justify-center gap-3 text-emerald-700">
-          <CheckCircle2 className="h-8 w-8" strokeWidth={2} />
-          <p className="text-sm font-medium">Import abgeschlossen</p>
-          {importSummary && (
-            <p className="text-[12px] text-ink-muted text-center">
-              {importSummary.inserted} Transaktion{importSummary.inserted === 1 ? '' : 'en'} importiert
-              {importSummary.skipped > 0 && (
-                <> · {importSummary.skipped} Duplikat{importSummary.skipped === 1 ? '' : 'e'} übersprungen</>
-              )}
-            </p>
-          )}
+        <div className="space-y-4 pt-2">
+          <AnomalyBanner anomalies={anomalies} onDismiss={() => setAnomalies([])} />
+          <div className="flex flex-col items-center justify-center gap-3 py-8 text-emerald-700">
+            <CheckCircle2 className="h-8 w-8" strokeWidth={2} />
+            <p className="text-sm font-medium">Import abgeschlossen</p>
+            {importSummary && (
+              <p className="text-[12px] text-ink-muted text-center">
+                {importSummary.inserted} Transaktion{importSummary.inserted === 1 ? '' : 'en'} importiert
+                {importSummary.skipped > 0 && (
+                  <> · {importSummary.skipped} Duplikat{importSummary.skipped === 1 ? '' : 'e'} übersprungen</>
+                )}
+              </p>
+            )}
+          </div>
         </div>
       )}
 
@@ -308,7 +340,7 @@ function ReviewRow({
       className={`rounded-2xl border p-3 ${
         draft.isDuplicate
           ? 'border-amber-200 bg-amber-50/30'
-          : 'border-forest-950/10 bg-white'
+          : 'border-forest-950/10 bg-surface'
       }`}
     >
       <div className="flex items-start gap-3">
@@ -368,7 +400,7 @@ function ReviewRow({
             <select
               value={draft.category}
               onChange={(e) => onChange({ category: e.target.value })}
-              className="h-9 flex-1 rounded-xl border border-forest-950/10 bg-white px-2 text-[13px] text-ink outline-none focus-visible:ring-2 focus-visible:ring-forest-700"
+              className="h-9 flex-1 rounded-xl border border-forest-950/10 bg-surface px-2 text-[13px] text-ink outline-none focus-visible:ring-2 focus-visible:ring-forest-700"
             >
               {VALID_CATEGORIES.map((c) => (
                 <option key={c} value={c}>

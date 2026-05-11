@@ -146,7 +146,7 @@ export function EntryDetailsSheet({
                   className={`rounded-xl border px-3 py-2 text-[12px] font-semibold transition active:scale-[0.97] ${
                     account === a
                       ? 'border-forest-950 bg-forest-950 text-white'
-                      : 'border-forest-950/15 bg-white text-ink'
+                      : 'border-forest-950/15 bg-surface text-ink'
                   }`}
                 >
                   {ACCOUNT_LABEL[a]}

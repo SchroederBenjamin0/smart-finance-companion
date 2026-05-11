@@ -151,7 +151,7 @@ export function PdfImportSheet({
             extrahiert Holdings, ISIN, Anteile und aktuellen Kurswert. Du
             kannst alles vor dem Speichern noch prüfen.
           </p>
-          <label className="flex h-32 w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-forest-950/20 bg-white text-ink-muted transition active:scale-[0.99]">
+          <label className="flex h-32 w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-forest-950/20 bg-surface text-ink-muted transition active:scale-[0.99]">
             <Upload className="h-6 w-6" strokeWidth={2.25} />
             <span className="text-sm font-medium">PDF auswählen</span>
             <input
@@ -205,7 +205,7 @@ export function PdfImportSheet({
           {drafts.map((d, i) => (
             <div
               key={`${d.isin}-${i}`}
-              className="rounded-2xl border border-forest-950/10 bg-white p-3"
+              className="rounded-2xl border border-forest-950/10 bg-surface p-3"
             >
               <div className="flex items-start gap-3">
                 <input

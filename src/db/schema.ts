@@ -17,6 +17,7 @@ import type {
   NewsRelevance,
   NotificationLogEntry,
   NotificationTrigger,
+  PriceCacheEntry,
   Recommendation,
   RecommendationTrigger,
   SecretEntry,
@@ -25,7 +26,7 @@ import type {
 } from './types';
 
 export const DB_NAME = 'smart-finance';
-export const DB_VERSION = 3;
+export const DB_VERSION = 4;
 
 export interface SmartFinanceDB extends DBSchema {
   accounts: {
@@ -94,6 +95,11 @@ export interface SmartFinanceDB extends DBSchema {
       'by-date': string;
       'by-relevance': NewsRelevance;
     };
+  };
+  priceCache: {
+    key: string;
+    value: PriceCacheEntry;
+    indexes: { 'by-fetchedAt': string };
   };
   notificationLog: {
     key: string;

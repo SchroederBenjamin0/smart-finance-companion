@@ -12,7 +12,7 @@ export function HeroHeader({ children, className = '' }: HeroHeaderProps) {
       style={{ paddingTop: 'max(env(safe-area-inset-top), 16px)' }}
     >
       <div
-        className="pointer-events-none absolute -right-8 -top-10 h-40 w-40 rounded-full bg-white/[0.06]"
+        className="pointer-events-none absolute -right-8 -top-10 h-40 w-40 rounded-full bg-surface/[0.06]"
         aria-hidden="true"
       />
       <div className="relative px-5 pt-3 text-white">{children}</div>

@@ -2,7 +2,7 @@ import type { Config } from 'tailwindcss';
 
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
-  darkMode: 'class',
+  darkMode: 'media',
   theme: {
     extend: {
       colors: {
@@ -25,11 +25,15 @@ export default {
           100: '#eaf6ee',
           200: '#dcfce7',
         },
-        paper: '#f2f2f7',
+        // Semantic tokens — resolved via CSS variables so dark-mode
+        // overrides in index.css automatically update all usages.
+        paper: 'var(--color-paper)',
+        surface: 'var(--color-surface)',
+        divider: 'var(--color-divider)',
         ink: {
-          DEFAULT: '#0a2e1f',
-          muted: '#3d5a4d',
-          subtle: '#7a8c84',
+          DEFAULT: 'var(--color-ink)',
+          muted: 'var(--color-ink-muted)',
+          subtle: 'var(--color-ink-subtle)',
         },
       },
       fontFamily: {

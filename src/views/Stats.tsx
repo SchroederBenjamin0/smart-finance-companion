@@ -3,14 +3,20 @@ import { BarChart3, FileUp } from 'lucide-react';
 import { HeroHeader } from '@/components/layout/HeroHeader';
 import { CsvImportSheet } from '@/components/feature/imports/CsvImportSheet';
 import { SpendingTab } from '@/components/feature/stats/SpendingTab';
+import { CashflowTab } from '@/components/feature/stats/CashflowTab';
 import { incomeRepo } from '@/db/repositories/income';
 import { transactionsRepo } from '@/db/repositories/transactions';
 import type { IncomeEntry, Transaction } from '@/db/types';
 import { formatEur } from '@/lib/currency';
 import { formatMonthYearDe } from '@/lib/date';
+import { useStatsNavStore } from '@/stores/statsNav';
 
 export function Stats() {
-  const [tab, setTab] = useState<'overview' | 'spending'>('overview');
+  const pendingSubTab = useStatsNavStore((s) => s.pendingSubTab);
+  const clearPendingSubTab = useStatsNavStore((s) => s.clearPendingSubTab);
+  const [tab, setTab] = useState<'overview' | 'spending' | 'cashflow'>(
+    pendingSubTab ?? 'overview',
+  );
   const [entries, setEntries] = useState<IncomeEntry[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [importing, setImporting] = useState(false);
@@ -27,6 +33,14 @@ export function Stats() {
   useEffect(() => {
     void reload();
   }, [reload]);
+
+  // Consume deep-link sub-tab set by Dashboard banner
+  useEffect(() => {
+    if (pendingSubTab) {
+      setTab(pendingSubTab);
+      clearPendingSubTab();
+    }
+  }, [pendingSubTab, clearPendingSubTab]);
 
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
@@ -70,7 +84,7 @@ export function Stats() {
             type="button"
             onClick={() => setImporting(true)}
             aria-label="Revolut CSV importieren"
-            className="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-white"
+            className="grid h-10 w-10 place-items-center rounded-full bg-surface/10 text-white"
           >
             <FileUp className="h-5 w-5" strokeWidth={2.25} />
           </button>
@@ -83,7 +97,7 @@ export function Stats() {
             type="button"
             onClick={() => setTab('overview')}
             className={`flex-1 rounded-full px-3 py-1.5 text-[13px] font-medium transition ${
-              tab === 'overview' ? 'bg-white text-ink shadow-sm' : 'text-ink-muted'
+              tab === 'overview' ? 'bg-surface text-ink shadow-sm' : 'text-ink-muted'
             }`}
           >
             Übersicht
@@ -92,16 +106,25 @@ export function Stats() {
             type="button"
             onClick={() => setTab('spending')}
             className={`flex-1 rounded-full px-3 py-1.5 text-[13px] font-medium transition ${
-              tab === 'spending' ? 'bg-white text-ink shadow-sm' : 'text-ink-muted'
+              tab === 'spending' ? 'bg-surface text-ink shadow-sm' : 'text-ink-muted'
             }`}
           >
             Top-Kategorien
+          </button>
+          <button
+            type="button"
+            onClick={() => setTab('cashflow')}
+            className={`flex-1 rounded-full px-3 py-1.5 text-[13px] font-medium transition ${
+              tab === 'cashflow' ? 'bg-surface text-ink shadow-sm' : 'text-ink-muted'
+            }`}
+          >
+            Cashflow
           </button>
         </div>
 
         {tab === 'overview' && (
           <>
-            <div className="mt-4 rounded-[22px] bg-white p-5 shadow-card">
+            <div className="mt-4 rounded-[22px] bg-surface p-5 shadow-card">
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-[13px] font-medium text-ink-subtle">
@@ -121,7 +144,7 @@ export function Stats() {
             </div>
 
             {Object.keys(bySource).length > 0 && (
-              <div className="mt-5 row-divider rounded-[22px] bg-white shadow-card">
+              <div className="mt-5 row-divider rounded-[22px] bg-surface shadow-card">
                 {Object.entries(bySource).map(([src, amount]) => {
                   const pct = monthIncome > 0 ? (amount / monthIncome) * 100 : 0;
                   const label =
@@ -165,7 +188,7 @@ export function Stats() {
                 <h2 className="mt-6 text-[13px] font-semibold uppercase tracking-wider text-ink-subtle">
                   Ausgaben nach Kategorie
                 </h2>
-                <div className="mt-3 rounded-[22px] bg-white p-4 shadow-card">
+                <div className="mt-3 rounded-[22px] bg-surface p-4 shadow-card">
                   <div className="text-[13px] font-medium text-ink-subtle">
                     Gesamt diesen Monat
                   </div>
@@ -173,7 +196,7 @@ export function Stats() {
                     −{formatEur(totalExpenses)}
                   </div>
                 </div>
-                <div className="mt-3 row-divider rounded-[22px] bg-white shadow-card">
+                <div className="mt-3 row-divider rounded-[22px] bg-surface shadow-card">
                   {sortedCategories.map(([cat, amount]) => {
                     const pct = totalExpenses > 0 ? (amount / totalExpenses) * 100 : 0;
                     return (
@@ -213,6 +236,8 @@ export function Stats() {
         )}
 
         {tab === 'spending' && <SpendingTab />}
+
+        {tab === 'cashflow' && <CashflowTab />}
       </div>
 
       <CsvImportSheet

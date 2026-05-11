@@ -180,7 +180,7 @@ export function PositionForm({
         </p>
 
         <Field label="Typ">
-          <div className="grid h-12 grid-cols-2 rounded-2xl border border-forest-950/10 bg-white p-1">
+          <div className="grid h-12 grid-cols-2 rounded-2xl border border-forest-950/10 bg-surface p-1">
             {(['etf', 'stock'] as AssetType[]).map((t) => (
               <button
                 key={t}
