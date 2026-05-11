@@ -98,7 +98,7 @@ export function BackupSection() {
             disabled={busy}
             className="flex w-full items-center gap-3 px-4 py-3 text-left transition active:bg-paper disabled:opacity-50"
           >
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-forest-800">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-forest-800 dark:bg-forest-900 dark:text-forest-200">
               <Download className="h-4.5 w-4.5" strokeWidth={2.25} />
             </div>
             <div className="min-w-0 flex-1">
@@ -111,7 +111,7 @@ export function BackupSection() {
 
           {/* Import row */}
           <label className="flex w-full cursor-pointer items-center gap-3 px-4 py-3 transition active:bg-paper">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-forest-800">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-forest-800 dark:bg-forest-900 dark:text-forest-200">
               <Upload className="h-4.5 w-4.5" strokeWidth={2.25} />
             </div>
             <div className="min-w-0 flex-1">

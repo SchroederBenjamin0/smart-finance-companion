@@ -274,7 +274,7 @@ export function CsvImportSheet({
       {stage === 'done' && (
         <div className="space-y-4 pt-2">
           <AnomalyBanner anomalies={anomalies} onDismiss={() => setAnomalies([])} />
-          <div className="flex flex-col items-center justify-center gap-3 py-8 text-emerald-700">
+          <div className="flex flex-col items-center justify-center gap-3 py-8 text-emerald-700 dark:text-emerald-400">
             <CheckCircle2 className="h-8 w-8" strokeWidth={2} />
             <p className="text-sm font-medium">Import abgeschlossen</p>
             {importSummary && (
@@ -358,7 +358,7 @@ function ReviewRow({
             </div>
             <div
               className={`shrink-0 text-[14px] font-semibold tabular-nums ${
-                isExpense ? 'text-red-700' : 'text-emerald-700'
+                isExpense ? 'text-red-700 dark:text-red-400' : 'text-emerald-700 dark:text-emerald-400'
               }`}
             >
               {isExpense ? '−' : '+'}
@@ -370,7 +370,7 @@ function ReviewRow({
             <span>·</span>
             <span>{draft.txn.account === 'savings' ? 'Sparkonto' : 'Konto'}</span>
             {draft.source === 'lookup' && (
-              <span className="rounded-full bg-forest-100 px-1.5 py-0.5 text-[10px] font-bold text-forest-800">
+              <span className="rounded-full bg-forest-100 text-forest-800 dark:bg-forest-900 dark:text-forest-200 px-1.5 py-0.5 text-[10px] font-bold">
                 Regel
               </span>
             )}

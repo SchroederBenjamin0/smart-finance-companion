@@ -184,7 +184,7 @@ export function PdfImportSheet({
       )}
 
       {stage === 'done' && (
-        <div className="flex h-40 flex-col items-center justify-center gap-3 text-emerald-700">
+        <div className="flex h-40 flex-col items-center justify-center gap-3 text-emerald-700 dark:text-emerald-400">
           <CheckCircle2 className="h-8 w-8" strokeWidth={2} />
           <p className="text-sm font-medium">Import abgeschlossen</p>
         </div>
@@ -230,7 +230,7 @@ export function PdfImportSheet({
                     <span>{d.shares} Stk.</span>
                     <span>aktuell {formatEur(d.currentValue)}</span>
                     {d.ticker ? (
-                      <span className="rounded-full bg-forest-100 px-1.5 py-0.5 text-[10px] font-bold text-forest-800">
+                      <span className="rounded-full bg-forest-100 text-forest-800 dark:bg-forest-900 dark:text-forest-200 px-1.5 py-0.5 text-[10px] font-bold">
                         {d.ticker}
                       </span>
                     ) : (

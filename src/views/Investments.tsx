@@ -155,8 +155,8 @@ export function Investments() {
               <span
                 className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-semibold ${
                   totals.gainAbs >= 0
-                    ? 'bg-emerald-50 text-emerald-700'
-                    : 'bg-red-50 text-red-700'
+                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
+                    : 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300'
                 }`}
               >
                 {totals.gainAbs >= 0 ? (
@@ -174,7 +174,7 @@ export function Investments() {
 
         {positions.length === 0 && loaded && (
           <div className="mt-5 flex items-start gap-3 rounded-[22px] bg-surface p-4 shadow-card">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-forest-800">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-forest-800 dark:bg-forest-900 dark:text-forest-200">
               <Sparkles className="h-5 w-5" strokeWidth={2.25} />
             </div>
             <div className="min-w-0 flex-1">
@@ -295,7 +295,7 @@ function PositionRow({
             </div>
             <div
               className={`text-[11px] font-medium tabular-nums ${
-                gainAbs >= 0 ? 'text-emerald-700' : 'text-red-700'
+                gainAbs >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-700 dark:text-red-400'
               }`}
             >
               {formatPercent(gainPct)}

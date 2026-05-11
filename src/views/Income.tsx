@@ -204,7 +204,7 @@ export function Income() {
             type="button"
             onClick={() => setMode('income')}
             className={`flex items-center justify-center rounded-xl text-sm font-semibold transition ${
-              mode === 'income' ? 'bg-surface text-forest-950' : 'text-white/85'
+              mode === 'income' ? 'bg-white text-forest-950' : 'text-white/85'
             }`}
           >
             + Einnahme
@@ -214,7 +214,7 @@ export function Income() {
             onClick={() => setMode('expense')}
             className={`flex items-center justify-center rounded-xl text-sm font-semibold transition ${
               mode === 'expense'
-                ? 'bg-surface text-forest-950'
+                ? 'bg-white text-forest-950'
                 : 'text-white/85'
             }`}
           >
@@ -234,7 +234,7 @@ export function Income() {
                   aria-pressed={active}
                   className={`flex flex-col items-center gap-1.5 rounded-2xl px-3 py-3 text-[12px] font-semibold transition ${
                     active
-                      ? 'bg-surface text-forest-950'
+                      ? 'bg-white text-forest-950'
                       : 'bg-surface/10 text-white/85'
                   }`}
                 >
@@ -256,7 +256,7 @@ export function Income() {
                   aria-pressed={active}
                   className={`flex flex-col items-center gap-1 rounded-2xl px-3 py-3 text-[12px] font-semibold transition ${
                     active
-                      ? 'bg-surface text-forest-950'
+                      ? 'bg-white text-forest-950'
                       : 'bg-surface/10 text-white/85'
                   }`}
                 >
@@ -473,14 +473,14 @@ function PreviewRow({
 }) {
   return (
     <div className="flex items-center gap-3 px-4 py-3">
-      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-xl">
+      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 dark:bg-forest-900 text-xl">
         <span aria-hidden="true">{emoji}</span>
       </div>
       <div className="min-w-0 flex-1">
         <div className="text-[15px] font-semibold text-ink">{label}</div>
         <div className="text-[12px] text-ink-subtle">{pct} %</div>
       </div>
-      <div className="text-[15px] font-semibold tabular-nums text-emerald-700">
+      <div className="text-[15px] font-semibold tabular-nums text-emerald-700 dark:text-emerald-400">
         +{formatEur(amount)}
       </div>
     </div>

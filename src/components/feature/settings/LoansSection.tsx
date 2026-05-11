@@ -380,7 +380,7 @@ function LoanRow({ loan, onEdit, onReturn, onDelete }: LoanRowProps) {
   return (
     <div className="flex items-start gap-3 px-4 py-3">
       {/* Icon */}
-      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-forest-800">
+      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-forest-800 dark:bg-forest-900 dark:text-forest-200">
         <Package className="h-4.5 w-4.5" strokeWidth={2.25} />
       </div>
 
@@ -393,7 +393,7 @@ function LoanRow({ loan, onEdit, onReturn, onDelete }: LoanRowProps) {
           <span
             className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
               isOpen
-                ? 'bg-forest-100 text-forest-800'
+                ? 'bg-forest-100 text-forest-800 dark:bg-forest-900 dark:text-forest-200'
                 : 'bg-paper text-ink-subtle'
             }`}
           >
@@ -554,14 +554,14 @@ export function LoansSection() {
         <div className="row-divider overflow-hidden rounded-[22px] bg-surface shadow-card">
           {loading ? (
             <div className="flex items-center gap-3 px-4 py-3">
-              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-forest-800">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-forest-800 dark:bg-forest-900 dark:text-forest-200">
                 <HandCoins className="h-4.5 w-4.5" strokeWidth={2.25} />
               </div>
               <span className="text-[14px] text-ink-subtle">Lade…</span>
             </div>
           ) : loans.length === 0 ? (
             <div className="flex flex-col items-center gap-2 px-4 py-6 text-center">
-              <div className="grid h-12 w-12 place-items-center rounded-full bg-forest-100 text-forest-800">
+              <div className="grid h-12 w-12 place-items-center rounded-full bg-forest-100 text-forest-800 dark:bg-forest-900 dark:text-forest-200">
                 <HandCoins className="h-5 w-5" strokeWidth={2.25} />
               </div>
               <p className="text-[14px] font-medium text-ink">Noch keine Verleihungen</p>
@@ -622,7 +622,7 @@ export function LoansSection() {
               className="flex w-full items-center gap-3 px-4 py-3 text-left transition active:bg-paper"
               onClick={openAdd}
             >
-              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-forest-800">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-forest-800 dark:bg-forest-900 dark:text-forest-200">
                 <User className="h-4.5 w-4.5" strokeWidth={2.25} />
               </div>
               <span className="text-[14px] font-medium text-forest-700">

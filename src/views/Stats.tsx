@@ -137,7 +137,7 @@ export function Stats() {
                     diesen Monat
                   </p>
                 </div>
-                <div className="grid h-12 w-12 place-items-center rounded-full bg-forest-100 text-forest-800">
+                <div className="grid h-12 w-12 place-items-center rounded-full bg-forest-100 text-forest-800 dark:bg-forest-900 dark:text-forest-200">
                   <BarChart3 className="h-5 w-5" strokeWidth={2.25} />
                 </div>
               </div>
