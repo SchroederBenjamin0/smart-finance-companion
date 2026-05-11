@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
-import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
-import { registerRoute } from 'workbox-routing';
+import { precacheAndRoute, cleanupOutdatedCaches, createHandlerBoundToURL } from 'workbox-precaching';
+import { NavigationRoute, registerRoute } from 'workbox-routing';
 import { CacheFirst } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
 
@@ -8,6 +8,14 @@ declare const self: ServiceWorkerGlobalScope;
 
 cleanupOutdatedCaches();
 precacheAndRoute(self.__WB_MANIFEST);
+
+// Navigation fallback: SPA routing — any unmatched navigation request
+// returns the cached index.html so React Router can pick up the path.
+registerRoute(
+  new NavigationRoute(
+    createHandlerBoundToURL('/smart-finance-companion/index.html'),
+  ),
+);
 
 // Runtime cache: Google Fonts (replaces former generateSW config).
 registerRoute(
@@ -36,6 +44,7 @@ self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   const data = (event.notification.data ?? {}) as { route?: string };
   const targetPath = data.route ?? '/';
+  // NB: keep in sync with `base` in vite.config.ts.
   const base = '/smart-finance-companion';
   const url = `${base}${targetPath.startsWith('/') ? targetPath : `/${targetPath}`}`;
   event.waitUntil(
@@ -43,7 +52,6 @@ self.addEventListener('notificationclick', (event) => {
       const clientsList = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
       for (const client of clientsList) {
         if ('focus' in client) {
-          await client.focus();
           if ('navigate' in client) {
             try {
               await (client as WindowClient).navigate(url);
@@ -51,6 +59,7 @@ self.addEventListener('notificationclick', (event) => {
               // tolerate cross-origin navigate-failure
             }
           }
+          await client.focus();
           return;
         }
       }
