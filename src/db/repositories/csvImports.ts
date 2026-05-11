@@ -25,6 +25,8 @@ export const csvImportsRepo = {
    * and skips any row whose hash already exists in `transactions` (via by-hash index).
    * Sets the import record's `expiresAt` to `importedAt + 30 days` for the retention
    * cleanup job. Returns counts for the import-summary UI.
+   * Note: the stored `transactionCount` reflects newly inserted rows after
+   * dedupe, not the total rows in the source CSV.
    */
   async createWithTransactions(
     record: Omit<CSVImport, 'expiresAt' | 'transactionCount'>,
