@@ -8,6 +8,8 @@ import {
 } from 'lucide-react';
 import { Sheet } from '@/components/ui/Sheet';
 import { csvImportsRepo } from '@/db/repositories/csvImports';
+import { transactionsRepo } from '@/db/repositories/transactions';
+import { getDB } from '@/db/client';
 import type { CSVImport, Transaction } from '@/db/types';
 import { formatEur } from '@/lib/currency';
 import { generateId } from '@/lib/id';
@@ -17,11 +19,13 @@ import {
   VALID_CATEGORIES,
   type CategorizationOutput,
 } from '@/modules/categorizer';
+import { detectAnomalies, type AnomalyResult } from '@/modules/anomaly';
 import {
   parseRevolutCsv,
   type RevolutTxn,
 } from '@/services/revolutCsvImport';
 import { useToastStore } from '@/stores/toast';
+import { AnomalyBanner } from './AnomalyBanner';
 
 type Stage = 'pick' | 'parsing' | 'review' | 'saving' | 'done';
 
@@ -60,6 +64,7 @@ export function CsvImportSheet({
   const [periodLabel, setPeriodLabel] = useState('');
   const [fileName, setFileName] = useState('');
   const [importSummary, setImportSummary] = useState<ImportSummary | null>(null);
+  const [anomalies, setAnomalies] = useState<AnomalyResult[]>([]);
   const pushToast = useToastStore((s) => s.push);
 
   function reset() {
@@ -69,6 +74,7 @@ export function CsvImportSheet({
     setPeriodLabel('');
     setFileName('');
     setImportSummary(null);
+    setAnomalies([]);
   }
 
   useEffect(() => {
@@ -177,8 +183,29 @@ export function CsvImportSheet({
     pushToast(msg, 'success');
     setImportSummary({ inserted, skipped });
     onImported();
+
+    // Run anomaly detection on the just-imported transactions.
+    const allR = await transactionsRepo.findRecent(5000);
+    if (allR.ok) {
+      const justInserted = allR.value.filter((t) => t.sourceCsvId === csvImportId);
+      const historical = allR.value.filter((t) => t.sourceCsvId !== csvImportId);
+      const detected = detectAnomalies(justInserted, historical);
+      if (detected.length > 0) {
+        const db = await getDB();
+        const dbTx = db.transaction('transactions', 'readwrite');
+        const store = dbTx.objectStore('transactions');
+        const anomalyIds = new Set(detected.map((a) => a.txId));
+        for (const t of justInserted) {
+          if (anomalyIds.has(t.id)) {
+            await store.put({ ...t, isAnomaly: 1 });
+          }
+        }
+        await dbTx.done;
+        setAnomalies(detected);
+      }
+    }
+
     setStage('done');
-    setTimeout(() => onOpenChange(false), 800);
   }
 
   return (
@@ -243,17 +270,20 @@ export function CsvImportSheet({
       )}
 
       {stage === 'done' && (
-        <div className="flex h-40 flex-col items-center justify-center gap-3 text-emerald-700">
-          <CheckCircle2 className="h-8 w-8" strokeWidth={2} />
-          <p className="text-sm font-medium">Import abgeschlossen</p>
-          {importSummary && (
-            <p className="text-[12px] text-ink-muted text-center">
-              {importSummary.inserted} Transaktion{importSummary.inserted === 1 ? '' : 'en'} importiert
-              {importSummary.skipped > 0 && (
-                <> · {importSummary.skipped} Duplikat{importSummary.skipped === 1 ? '' : 'e'} übersprungen</>
-              )}
-            </p>
-          )}
+        <div className="space-y-4 pt-2">
+          <AnomalyBanner anomalies={anomalies} onDismiss={() => setAnomalies([])} />
+          <div className="flex flex-col items-center justify-center gap-3 py-8 text-emerald-700">
+            <CheckCircle2 className="h-8 w-8" strokeWidth={2} />
+            <p className="text-sm font-medium">Import abgeschlossen</p>
+            {importSummary && (
+              <p className="text-[12px] text-ink-muted text-center">
+                {importSummary.inserted} Transaktion{importSummary.inserted === 1 ? '' : 'en'} importiert
+                {importSummary.skipped > 0 && (
+                  <> · {importSummary.skipped} Duplikat{importSummary.skipped === 1 ? '' : 'e'} übersprungen</>
+                )}
+              </p>
+            )}
+          </div>
         </div>
       )}
 
