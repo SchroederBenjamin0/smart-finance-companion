@@ -24,6 +24,9 @@ export interface NotificationTriggersConfig {
   cashflow: boolean;
 }
 
+// DEFAULT_TRIGGERS keeps anomaly + cashflow as `true` on purpose: the Settings UI
+// (Task 11) reads these defaults to populate sub-toggles, and the corresponding
+// fire paths land in Batch 3. The dispatcher below ignores them for now.
 const DEFAULT_TRIGGERS: NotificationTriggersConfig = {
   allocation: true,
   subscription: true,
@@ -112,26 +115,29 @@ export async function dispatchPendingNotifications(): Promise<void> {
 
     if (positionsR.ok && positionsR.value.length > 0) {
       const totalValue = positionsR.value.reduce((s, p) => s + p.currentValue, 0);
-      for (const pos of positionsR.value) {
-        if (totalValue <= 0) continue;
-        const currentWeight = (pos.currentValue / totalValue) * 100;
-        const r = shouldFireDrift(pos, currentWeight, tolerance);
-        if (!r.shouldFire) continue;
-        const key = buildDriftDedupeKey(pos.id, now);
-        const exists = await notificationLogRepo.findByDedupeKey(key);
-        if (exists.ok && exists.value === null) {
-          pending.push({
-            type: 'drift',
-            title: 'Portfolio-Drift überschritten',
-            body: `${pos.name}: ${currentWeight.toFixed(1)}% (Ziel ${pos.targetPercentage}% ±${tolerance}%) — Rebalancing erwägen`,
-            dedupeKey: key,
-            route: '/investments',
-          });
+      if (totalValue > 0) {
+        for (const pos of positionsR.value) {
+          const currentWeight = (pos.currentValue / totalValue) * 100;
+          const r = shouldFireDrift(pos, currentWeight, tolerance);
+          if (!r.shouldFire) continue;
+          const key = buildDriftDedupeKey(pos.id, now);
+          const exists = await notificationLogRepo.findByDedupeKey(key);
+          if (exists.ok && exists.value === null) {
+            pending.push({
+              type: 'drift',
+              title: 'Portfolio-Drift überschritten',
+              body: `${pos.name}: ${currentWeight.toFixed(1)}% (Ziel ${pos.targetPercentage}% ±${tolerance}%) — Rebalancing erwägen`,
+              dedupeKey: key,
+              route: '/investments',
+            });
+          }
         }
       }
     }
   }
 
+  // Fire BEFORE log: if log-insert fails we tolerate at most one duplicate
+  // notification on the next dispatch run (better than silently dropping a real one).
   for (const n of pending) {
     const fireR = await fireNotification(n);
     if (fireR.ok) {
