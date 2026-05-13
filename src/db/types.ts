@@ -28,12 +28,6 @@ export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 export type RuleSource = 'user' | 'ai' | 'system';
 export type MatchType = 'exact' | 'regex';
 export type SecretKey = 'anthropic_key' | 'marketaux_key';
-export type NotificationTrigger =
-  | 'allocation'
-  | 'subscription'
-  | 'drift'
-  | 'anomaly'
-  | 'cashflow';
 export type LoanStatus = 'lent' | 'returned';
 export type LoanPaymentMethod = 'cash' | 'transfer';
 
@@ -180,13 +174,6 @@ export interface LogEntry {
   contextJson: string | null;
 }
 
-export interface NotificationLogEntry {
-  id: string;
-  type: NotificationTrigger;
-  dedupeKey: string;        // siehe modules/notifications/triggers.ts
-  firedAt: string;
-}
-
 export interface Loan {
   id: string;
   borrowerName: string;
@@ -282,8 +269,6 @@ export const ALL_CONFIG_KEYS = {
   appPinHash: 'app_pin_hash',
   onboardingComplete: 'onboarding_complete',
   themeOverride: 'theme_override',
-  notificationsEnabled: 'notifications_enabled',
-  notificationsTriggers: 'notifications_triggers',
   driftToleranceGlobal: 'drift_tolerance_global',
   hashBackfillComplete: 'hash_backfill_complete',
   cashflowFunWarnThreshold: 'cashflow_fun_warn_threshold',

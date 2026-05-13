@@ -1,5 +1,5 @@
 import { debugWarn } from '@/lib/debug';
-import { openDB, type IDBPDatabase } from 'idb';
+import { openDB, unwrap, type IDBPDatabase } from 'idb';
 import { DB_NAME, DB_VERSION, type SmartFinanceDB } from './schema';
 import { runPostUpgradeBackfill } from './migrations';
 
@@ -88,8 +88,12 @@ export function getDB(): Promise<IDBPDatabase<SmartFinanceDB>> {
             csvImportsStore.createIndex('by-expires', 'expiresAt');
           }
 
-          if (!db.objectStoreNames.contains('notificationLog')) {
-            const notif = db.createObjectStore('notificationLog', { keyPath: 'id' });
+          // notificationLog IDB store is kept to avoid a schema bump (the store
+          // is inert — no TypeScript interface declares it any more).
+          // Use the raw IDBDatabase via idb's `unwrap` to bypass the typed wrapper.
+          const rawDb = unwrap(db);
+          if (!rawDb.objectStoreNames.contains('notificationLog')) {
+            const notif = rawDb.createObjectStore('notificationLog', { keyPath: 'id' });
             notif.createIndex('by-dedupeKey', 'dedupeKey', { unique: true });
             notif.createIndex('by-firedAt', 'firedAt');
             notif.createIndex('by-type', 'type');

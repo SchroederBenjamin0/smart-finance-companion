@@ -1,5 +1,39 @@
 import type { Account, IncomeEntry, Subscription, Transaction } from '@/db/types';
 
+// ---------- shouldFireCashflow (moved from notifications/triggers) ----------
+
+export interface CashflowForecastPoint {
+  weekStartIso: string;
+  funBalance: number;
+}
+
+export interface CashflowCheckResult {
+  shouldFire: boolean;
+  severity: 'yellow' | 'red' | null;
+  earliestWeek: string | null;
+}
+
+export function shouldFireCashflow(
+  forecast: CashflowForecastPoint[],
+  yellowThreshold: number,
+): CashflowCheckResult {
+  let earliestRed: string | null = null;
+  let earliestYellow: string | null = null;
+
+  for (const point of forecast.slice(0, 5)) { // 5 wks = ~30 days
+    if (point.funBalance < 0 && !earliestRed) earliestRed = point.weekStartIso;
+    if (point.funBalance >= 0 && point.funBalance < yellowThreshold && !earliestYellow) {
+      earliestYellow = point.weekStartIso;
+    }
+  }
+
+  if (earliestRed) return { shouldFire: true, severity: 'red', earliestWeek: earliestRed };
+  if (earliestYellow) return { shouldFire: true, severity: 'yellow', earliestWeek: earliestYellow };
+  return { shouldFire: false, severity: null, earliestWeek: null };
+}
+
+// ---------- forecastCashflow ----------
+
 export interface ForecastInput {
   accounts: Account[];
   subscriptions: Subscription[];
