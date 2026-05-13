@@ -323,6 +323,40 @@ export function Income() {
           )}
         </div>
 
+        {mode === 'income' && (
+          <>
+            <h2 className="mt-6 text-[13px] font-semibold uppercase tracking-wider text-ink-subtle">
+              Auto-Split Vorschau
+            </h2>
+            <div className="mt-3 row-divider rounded-[22px] bg-surface shadow-card">
+              <PreviewRow
+                emoji="🎉"
+                label="Fun-Geld"
+                pct={ruleFor(source).funPercentage}
+                amount={preview?.fun ?? 0}
+              />
+              <PreviewRow
+                emoji="🏦"
+                label="Sparkonto"
+                pct={ruleFor(source).savingsPercentage}
+                amount={preview?.savings ?? 0}
+              />
+              <PreviewRow
+                emoji="📈"
+                label="Investment"
+                pct={ruleFor(source).investmentPercentage}
+                amount={preview?.investment ?? 0}
+              />
+            </div>
+
+            {preview?.capApplied && (
+              <p className="mt-3 rounded-2xl bg-amber-50 px-4 py-3 text-[12px] text-amber-800">
+                Notgroschen-Cap erreicht — Überschuss fließt ins Investment.
+              </p>
+            )}
+          </>
+        )}
+
         {mode === 'expense' && (
           <div className="mt-4 grid grid-cols-1 gap-3">
             <label className="block">
@@ -364,7 +398,7 @@ export function Income() {
           </div>
         )}
 
-        <div className="mt-4 grid grid-cols-2 gap-3">
+        <div className="mt-6 grid grid-cols-2 gap-3">
           <label className="block">
             <span className="text-[12px] font-medium text-ink-subtle">
               Datum
@@ -389,40 +423,6 @@ export function Income() {
             />
           </label>
         </div>
-
-        {mode === 'income' && (
-          <>
-            <h2 className="mt-6 text-[13px] font-semibold uppercase tracking-wider text-ink-subtle">
-              Auto-Split Vorschau
-            </h2>
-            <div className="mt-3 row-divider rounded-[22px] bg-surface shadow-card">
-              <PreviewRow
-                emoji="🎉"
-                label="Fun-Geld"
-                pct={ruleFor(source).funPercentage}
-                amount={preview?.fun ?? 0}
-              />
-              <PreviewRow
-                emoji="🏦"
-                label="Sparkonto"
-                pct={ruleFor(source).savingsPercentage}
-                amount={preview?.savings ?? 0}
-              />
-              <PreviewRow
-                emoji="📈"
-                label="Investment"
-                pct={ruleFor(source).investmentPercentage}
-                amount={preview?.investment ?? 0}
-              />
-            </div>
-
-            {preview?.capApplied && (
-              <p className="mt-3 rounded-2xl bg-amber-50 px-4 py-3 text-[12px] text-amber-800">
-                Notgroschen-Cap erreicht — Überschuss fließt ins Investment.
-              </p>
-            )}
-          </>
-        )}
       </div>
 
       <AdvisorSheet
@@ -438,7 +438,6 @@ export function Income() {
         className="sticky inset-x-0 z-30 px-4 pt-3 pb-2"
         style={{ bottom: 'calc(env(safe-area-inset-bottom) + 86px)' }}
       >
-        <div className="absolute inset-x-0 -top-6 h-6 bg-gradient-to-t from-paper to-transparent" />
         <button
           type="button"
           onClick={() =>
