@@ -69,6 +69,58 @@ export const transactionsRepo = {
     }
   },
 
+  /**
+   * Patches annotation fields of an existing transaction (counterparty,
+   * category, date, description). Amount and sourceCsvId are NOT editable
+   * — those would require account-balance reversals.
+   *
+   * Recomputes transactionHash when counterparty or date changes so dedupe
+   * on future CSV re-imports still works.
+   *
+   * Also flips isUserReviewed to 1 and categoryConfidence to 1 since the
+   * user has now confirmed/edited the row.
+   */
+  async updateAnnotation(
+    id: string,
+    patch: {
+      counterparty?: string;
+      category?: string;
+      date?: string;
+      description?: string | null;
+    },
+  ): Promise<Result<Transaction>> {
+    return tryAsync(async () => {
+      const db = await getDB();
+      const tx = db.transaction('transactions', 'readwrite');
+      const store = tx.objectStore('transactions');
+      const existing = await store.get(id);
+      if (!existing) throw new Error('Transaction not found');
+
+      const updated: Transaction = {
+        ...existing,
+        counterparty: patch.counterparty ?? existing.counterparty,
+        category: patch.category ?? existing.category,
+        date: patch.date ?? existing.date,
+        description:
+          patch.description !== undefined ? patch.description : existing.description,
+        isUserReviewed: 1,
+        categoryConfidence: 1,
+      };
+
+      if (patch.counterparty !== undefined || patch.date !== undefined) {
+        updated.transactionHash = await computeTransactionHash({
+          date: updated.date,
+          amount: updated.amount,
+          counterparty: updated.counterparty,
+        });
+      }
+
+      await store.put(updated);
+      await tx.done;
+      return updated;
+    });
+  },
+
   async createManualExpense(
     input: ManualExpenseInput,
   ): Promise<Result<Transaction>> {
