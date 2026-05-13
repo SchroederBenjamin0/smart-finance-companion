@@ -7,8 +7,10 @@ import { transactionsRepo } from '@/db/repositories/transactions';
 import { incomeRepo } from '@/db/repositories/income';
 import { configRepo } from '@/db/repositories/config';
 import { ALL_CONFIG_KEYS } from '@/db/types';
+import { useChartColors } from '@/lib/chart-colors';
 
 export function CashflowTab() {
+  const colors = useChartColors();
   const [forecast, setForecast] = useState<WeeklyForecast[]>([]);
   const [threshold, setThreshold] = useState(100);
 
@@ -54,14 +56,14 @@ export function CashflowTab() {
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={forecast}>
               <XAxis dataKey="weekStartIso" hide />
-              <YAxis />
+              <YAxis tick={{ fill: colors.text }} />
               <Tooltip />
-              <ReferenceLine y={threshold} stroke="#f59e0b" strokeDasharray="4 4" />
-              <ReferenceLine y={0} stroke="#dc2626" strokeDasharray="4 4" />
+              <ReferenceLine y={threshold} stroke={colors.warning} strokeDasharray="4 4" />
+              <ReferenceLine y={0} stroke={colors.danger} strokeDasharray="4 4" />
               <Line
                 type="monotone"
                 dataKey="funBalance"
-                stroke="#0a2e1f"
+                stroke={colors.primary}
                 strokeWidth={2}
                 dot={false}
               />
