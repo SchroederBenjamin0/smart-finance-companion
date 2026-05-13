@@ -13,6 +13,7 @@ import {
   type BacktestAllocation,
   type BacktestResult,
 } from '@/modules/backtest';
+import { useChartColors } from '@/lib/chart-colors';
 
 interface Props {
   allocation: BacktestAllocation[];
@@ -25,6 +26,7 @@ export function BacktestPanel({
   monthlyContribution,
   years = 10,
 }: Props) {
+  const colors = useChartColors();
   const [result, setResult] = useState<BacktestResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -85,13 +87,13 @@ export function BacktestPanel({
             />
             <ReferenceLine
               y={result.totalContributed}
-              stroke="#94a3b8"
+              stroke={colors.reference}
               strokeDasharray="4 4"
             />
             <Line
               type="monotone"
               dataKey="value"
-              stroke="#0a2e1f"
+              stroke={colors.primary}
               strokeWidth={2}
               dot={false}
             />
