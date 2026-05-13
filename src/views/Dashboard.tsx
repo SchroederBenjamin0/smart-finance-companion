@@ -14,13 +14,7 @@ import {
 import { DueSubscriptionsBanner } from '@/components/feature/subscriptions/DueSubscriptionsBanner';
 import { NewsBanner } from '@/components/feature/dashboard/NewsBanner';
 import { QuarterlyInsightBanner } from '@/components/feature/dashboard/QuarterlyInsightBanner';
-import { CashflowWarningBanner } from '@/components/feature/dashboard/CashflowWarningBanner';
 import { BackupDueBanner } from '@/components/feature/dashboard/BackupDueBanner';
-import { PullToRefresh } from '@/components/ui/PullToRefresh';
-import { fetchQuotes } from '@/services/yahoo';
-import { positionsRepo as positionsRepoForRefresh } from '@/db/repositories/positions';
-import { round2 } from '@/lib/currency';
-import { nowIso } from '@/lib/date';
 import { incomeRepo } from '@/db/repositories/income';
 import { positionsRepo } from '@/db/repositories/positions';
 import { transactionsRepo } from '@/db/repositories/transactions';
@@ -34,7 +28,6 @@ import { formatMonthYearDe } from '@/lib/date';
 import { useAccountsStore } from '@/stores/accounts';
 import { useConfigStore } from '@/stores/config';
 import { useNavStore } from '@/stores/navigation';
-import { useStatsNavStore } from '@/stores/statsNav';
 
 export function Dashboard() {
   const accounts = useAccountsStore((s) => s.accounts);
@@ -42,7 +35,6 @@ export function Dashboard() {
   const load = useAccountsStore((s) => s.load);
   const rules = useConfigStore((s) => s.rules);
   const setActiveTab = useNavStore((s) => s.setActiveTab);
-  const setPendingSubTab = useStatsNavStore((s) => s.setPendingSubTab);
 
   const [incomes, setIncomes] = useState<IncomeEntry[]>([]);
   const [expenses, setExpenses] = useState<Transaction[]>([]);
@@ -63,32 +55,6 @@ export function Dashboard() {
     if (tR.ok) setExpenses(tR.value);
     if (pR.ok) setPositions(pR.value);
   };
-
-  async function refreshAll() {
-    await load();
-    const positionsResult = await positionsRepoForRefresh.findAll();
-    const current = positionsResult.ok ? positionsResult.value : [];
-    if (current.length > 0) {
-      const tickers = [...new Set(current.map((p) => p.ticker).filter(Boolean))];
-      const q = await fetchQuotes(tickers);
-      if (q.ok) {
-        const priceBy: Record<string, number> = {};
-        for (const quote of q.value) priceBy[quote.symbol] = quote.price;
-        const ts = nowIso();
-        for (const p of current) {
-          const px = priceBy[p.ticker];
-          if (typeof px === 'number' && px > 0) {
-            await positionsRepoForRefresh.upsert({
-              ...p,
-              currentValue: round2(p.shares * px),
-              lastSyncedPrice: ts,
-            });
-          }
-        }
-      }
-    }
-    await reloadActivity();
-  }
 
   useEffect(() => {
     void reloadActivity();
@@ -132,7 +98,7 @@ export function Dashboard() {
   }, [incomes, expenses]);
 
   return (
-    <PullToRefresh onRefresh={refreshAll}>
+    <>
       <HeroHeader>
         <div className="flex items-start justify-between">
           <div>
@@ -181,17 +147,11 @@ export function Dashboard() {
 
       <div className="space-y-3 px-4 pt-4 animate-view-enter">
         <BackupDueBanner />
-        <CashflowWarningBanner
-          onClick={() => {
-            setPendingSubTab('cashflow');
-            setActiveTab('stats');
-          }}
-        />
         <DueSubscriptionsBanner />
         <QuarterlyInsightBanner />
         <NewsBanner />
         <ClaudeTipCard
-          message="Tippe auf eine Banner-Karte oben für aktuelle Themen. Pull-to-refresh holt frische Yahoo-Preise + News."
+          message="Tippe auf eine Banner-Karte oben für aktuelle Themen."
         />
       </div>
 
@@ -245,6 +205,6 @@ export function Dashboard() {
         selection={selection}
         onDeleted={() => void reloadActivity()}
       />
-    </PullToRefresh>
+    </>
   );
 }
