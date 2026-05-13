@@ -1,6 +1,7 @@
 import { Home, Plus, CreditCard, TrendingUp, BarChart3 } from 'lucide-react';
 import type { ComponentType, SVGProps } from 'react';
 import { useNavStore, type TabId } from '@/stores/navigation';
+import { haptic } from '@/lib/haptic';
 
 interface TabDef {
   id: TabId;
@@ -33,7 +34,10 @@ export function BottomNav() {
             <li key={tab.id} className="contents">
               <button
                 type="button"
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => {
+                  if (!isActive) haptic('light');
+                  setActiveTab(tab.id);
+                }}
                 aria-current={isActive ? 'page' : undefined}
                 aria-label={tab.label}
                 className={`flex h-[42px] items-center gap-1.5 rounded-[22px] px-3 text-sm font-semibold transition ${

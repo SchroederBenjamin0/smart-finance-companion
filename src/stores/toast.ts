@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { generateId } from '@/lib/id';
+import { hapticError, hapticSuccess, haptic } from '@/lib/haptic';
 
 export type ToastVariant = 'success' | 'error' | 'info';
 
@@ -20,6 +21,9 @@ export const useToastStore = create<ToastState>((set, get) => ({
   push: (message, variant = 'success') => {
     const toast: Toast = { id: generateId(), message, variant };
     set({ toasts: [...get().toasts, toast] });
+    if (variant === 'error') hapticError();
+    else if (variant === 'success') hapticSuccess();
+    else haptic('light');
     setTimeout(() => {
       set({ toasts: get().toasts.filter((t) => t.id !== toast.id) });
     }, 3000);
