@@ -271,7 +271,7 @@ export function Income() {
         )}
       </HeroHeader>
 
-      <div className="px-4 pt-5 animate-view-enter">
+      <div className="px-4 pt-5 pb-32 animate-view-enter">
         <div className="rounded-[22px] bg-surface p-5 shadow-card">
           <p className="text-[13px] font-medium text-ink-subtle">
             {mode === 'income' ? 'Du erhältst' : 'Du gibst aus'}
@@ -287,7 +287,6 @@ export function Income() {
             <input
               type="text"
               inputMode="decimal"
-              autoFocus
               autoComplete="off"
               placeholder="0,00"
               aria-label="Betrag in Euro"

@@ -18,7 +18,7 @@ import type { InvestmentPosition } from '@/db/types';
 import { ALL_CONFIG_KEYS } from '@/db/types';
 import { formatEur, formatPercent, round2 } from '@/lib/currency';
 import { hoursSince, nowIso } from '@/lib/date';
-import { fetchQuotes, trDeepLink } from '@/services/yahoo';
+import { fetchNews, fetchQuotes, trDeepLink, type YahooNewsItem } from '@/services/yahoo';
 import { useToastStore } from '@/stores/toast';
 
 export function Investments() {
@@ -29,6 +29,7 @@ export function Investments() {
   const [importing, setImporting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [tolerance, setTolerance] = useState(5);
+  const [news, setNews] = useState<YahooNewsItem[]>([]);
   const pushToast = useToastStore((s) => s.push);
 
   useEffect(() => {
@@ -60,6 +61,19 @@ export function Investments() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loaded]);
+
+  useEffect(() => {
+    if (positions.length === 0) {
+      setNews([]);
+      return;
+    }
+    const tickers = [...new Set(positions.map((p) => p.ticker).filter(Boolean))];
+    if (tickers.length === 0) return;
+    void (async () => {
+      const r = await fetchNews(tickers, 5);
+      if (r.ok) setNews(r.value);
+    })();
+  }, [positions]);
 
   async function refreshPrices(silent = false) {
     if (positions.length === 0) return;
@@ -208,6 +222,46 @@ export function Investments() {
             </ul>
           </>
         )}
+
+        {news.length > 0 && (
+          <>
+            <h2 className="mt-6 text-[13px] font-semibold uppercase tracking-wider text-ink-subtle">
+              News (letzte 5 Tage)
+            </h2>
+            <ul className="mt-3 space-y-2">
+              {news.slice(0, 12).map((n) => (
+                <li key={n.uuid}>
+                  <a
+                    href={n.link}
+                    target="_blank"
+                    rel="noopener"
+                    className="block rounded-[22px] bg-surface p-4 shadow-card transition active:scale-[0.99]"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="text-[14px] font-semibold leading-snug text-ink">
+                          {n.title}
+                        </div>
+                        <div className="mt-1 text-[11px] text-ink-subtle">
+                          {n.publisher || 'Yahoo Finance'}
+                          {' · '}
+                          {formatRelativeDe(n.publishedAt)}
+                          {n.relatedTickers.length > 0 && (
+                            <> · {n.relatedTickers.slice(0, 3).join(', ')}</>
+                          )}
+                        </div>
+                      </div>
+                      <ExternalLink
+                        className="h-4 w-4 shrink-0 text-ink-subtle"
+                        strokeWidth={2.25}
+                      />
+                    </div>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
       </div>
 
       <button
@@ -241,6 +295,17 @@ export function Investments() {
       />
     </>
   );
+}
+
+function formatRelativeDe(iso: string): string {
+  const ms = Date.now() - new Date(iso).getTime();
+  if (ms < 0) return 'gerade eben';
+  const mins = Math.floor(ms / 60_000);
+  if (mins < 60) return `vor ${Math.max(1, mins)} Min`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `vor ${hours} Std`;
+  const days = Math.floor(hours / 24);
+  return `vor ${days} Tag${days === 1 ? '' : 'en'}`;
 }
 
 function PositionRow({

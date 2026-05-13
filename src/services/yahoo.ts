@@ -132,3 +132,81 @@ export function tickerFromIsin(isin: string): string | null {
 export function trDeepLink(isin: string): string {
   return `https://traderepublic.com/de-de/${isin}`;
 }
+
+export interface YahooNewsItem {
+  uuid: string;
+  title: string;
+  publisher: string;
+  link: string;
+  publishedAt: string;
+  relatedTickers: string[];
+}
+
+const SEARCH_ENDPOINT = 'https://query1.finance.yahoo.com/v1/finance/search';
+
+interface SearchResponse {
+  news?: Array<{
+    uuid?: string;
+    title?: string;
+    publisher?: string;
+    link?: string;
+    providerPublishTime?: number;
+    relatedTickers?: string[];
+  }>;
+}
+
+async function fetchNewsForSymbol(symbol: string): Promise<YahooNewsItem[]> {
+  const target = `${SEARCH_ENDPOINT}?q=${encodeURIComponent(symbol)}&newsCount=10&quotesCount=0`;
+  const attempts: string[] = [
+    target,
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}`,
+    `https://corsproxy.io/?${encodeURIComponent(target)}`,
+  ];
+  for (const u of attempts) {
+    try {
+      const res = await fetchOnce(u);
+      if (!res.ok) continue;
+      const data = (await res.json()) as SearchResponse;
+      if (!data.news) continue;
+      const items: YahooNewsItem[] = [];
+      for (const n of data.news) {
+        if (!n.uuid || !n.title || !n.link || !n.providerPublishTime) continue;
+        items.push({
+          uuid: n.uuid,
+          title: n.title,
+          publisher: n.publisher ?? '',
+          link: n.link,
+          publishedAt: new Date(n.providerPublishTime * 1000).toISOString(),
+          relatedTickers: n.relatedTickers ?? [symbol],
+        });
+      }
+      return items;
+    } catch {
+      // try next attempt
+    }
+  }
+  return [];
+}
+
+export async function fetchNews(
+  symbols: string[],
+  maxAgeDays = 5,
+): Promise<Result<YahooNewsItem[]>> {
+  return tryAsync(async () => {
+    if (symbols.length === 0) return [];
+    const arrays = await Promise.all(symbols.map(fetchNewsForSymbol));
+    const cutoff = Date.now() - maxAgeDays * 24 * 60 * 60 * 1000;
+    const seen = new Set<string>();
+    const flat: YahooNewsItem[] = [];
+    for (const arr of arrays) {
+      for (const n of arr) {
+        if (seen.has(n.uuid)) continue;
+        if (new Date(n.publishedAt).getTime() < cutoff) continue;
+        seen.add(n.uuid);
+        flat.push(n);
+      }
+    }
+    flat.sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
+    return flat;
+  });
+}
