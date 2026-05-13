@@ -1,7 +1,6 @@
 import { configRepo } from '@/db/repositories/config';
 import { csvImportsRepo } from '@/db/repositories/csvImports';
 import { newsRepo } from '@/db/repositories/news';
-import { notificationLogRepo } from '@/db/repositories/notificationLog';
 import { positionsRepo } from '@/db/repositories/positions';
 import { recommendationsRepo } from '@/db/repositories/recommendations';
 import { transactionsRepo } from '@/db/repositories/transactions';
@@ -13,15 +12,13 @@ import { debug, debugWarn } from '@/lib/debug';
 import { fetchNewsForSymbols } from '@/services/marketaux';
 import { filterNews } from '@/services/news-filter';
 import { generateQuarterlyInsight } from '@/services/quarterlyInsight';
-import { dispatchPendingNotifications } from '@/modules/notifications';
 import { migrateTickers } from './migrateTickers';
 
 export interface WatchdogReport {
   newsAdded: number;
   newsErrors: number;
   quarterlyGenerated: boolean;
-  retentionCleaned: { csvImports: number; notificationLog: number };
-  notificationsFired: number;
+  retentionCleaned: { csvImports: number };
 }
 
 const DAILY_KEY = ALL_CONFIG_KEYS.lastWatchdogRun;
@@ -31,8 +28,7 @@ export async function runStartupTasks(): Promise<WatchdogReport> {
     newsAdded: 0,
     newsErrors: 0,
     quarterlyGenerated: false,
-    retentionCleaned: { csvImports: 0, notificationLog: 0 },
-    notificationsFired: 0,
+    retentionCleaned: { csvImports: 0 },
   };
 
   // Idempotent migrations run every cold start (cheap, no network).
@@ -138,13 +134,9 @@ export async function runStartupTasks(): Promise<WatchdogReport> {
   // Retention cleanup (idempotent, runs under the 24h throttle):
   const cleanupResult = await runRetentionCleanup().catch((e) => {
     debugWarn('retention cleanup failed', e);
-    return { csvImports: 0, notificationLog: 0 };
+    return { csvImports: 0 };
   });
   report.retentionCleaned = cleanupResult;
-
-  // Notifications dispatch (idempotent via dedupeKey):
-  await dispatchPendingNotifications().catch((e) => debugWarn('notification dispatch failed', e));
-  // Note: dispatchPendingNotifications returns void; report.notificationsFired stays 0 for now.
 
   await configRepo.setRaw(DAILY_KEY, nowIso());
   return report;
@@ -159,9 +151,8 @@ function quarterIdOf(d: Date): string {
   return `${d.getFullYear()}-Q${q}`;
 }
 
-async function runRetentionCleanup(): Promise<{ csvImports: number; notificationLog: number }> {
+async function runRetentionCleanup(): Promise<{ csvImports: number }> {
   let csvImports = 0;
-  let notificationLog = 0;
 
   const csvR = await csvImportsRepo.cleanExpired();
   if (csvR.ok) {
@@ -169,11 +160,5 @@ async function runRetentionCleanup(): Promise<{ csvImports: number; notification
     debug('[retention] csvImports cleaned:', csvR.value);
   }
 
-  const notifR = await notificationLogRepo.cleanOlderThan(90);
-  if (notifR.ok) {
-    notificationLog = notifR.value;
-    debug('[retention] notificationLog cleaned:', notifR.value);
-  }
-
-  return { csvImports, notificationLog };
+  return { csvImports };
 }

@@ -15,8 +15,6 @@ import type {
   LogLevel,
   NewsEvent,
   NewsRelevance,
-  NotificationLogEntry,
-  NotificationTrigger,
   PriceCacheEntry,
   Recommendation,
   RecommendationTrigger,
@@ -100,15 +98,6 @@ export interface SmartFinanceDB extends DBSchema {
     key: string;
     value: PriceCacheEntry;
     indexes: { 'by-fetchedAt': string };
-  };
-  notificationLog: {
-    key: string;
-    value: NotificationLogEntry;
-    indexes: {
-      'by-dedupeKey': string;
-      'by-firedAt': string;
-      'by-type': NotificationTrigger;
-    };
   };
   appConfig: {
     key: string;

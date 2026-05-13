@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import { forecastCashflow } from '@/modules/forecast';
-import { shouldFireCashflow } from '@/modules/notifications/triggers';
+import { forecastCashflow, shouldFireCashflow } from '@/modules/forecast';
 import { accountsRepo } from '@/db/repositories/accounts';
 import { subscriptionsRepo } from '@/db/repositories/subscriptions';
 import { transactionsRepo } from '@/db/repositories/transactions';

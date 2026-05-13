@@ -38,34 +38,3 @@ self.addEventListener('install', () => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(self.clients.claim());
 });
-
-// Open the app on the saved route when a notification is clicked.
-self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
-  const data = (event.notification.data ?? {}) as { route?: string };
-  const targetPath = data.route ?? '/';
-  // NB: keep in sync with `base` in vite.config.ts.
-  const base = '/smart-finance-companion';
-  const url = `${base}${targetPath.startsWith('/') ? targetPath : `/${targetPath}`}`;
-  event.waitUntil(
-    (async () => {
-      const clientsList = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-      for (const client of clientsList) {
-        if ('focus' in client) {
-          if ('navigate' in client) {
-            try {
-              await (client as WindowClient).navigate(url);
-            } catch {
-              // tolerate cross-origin navigate-failure
-            }
-          }
-          await client.focus();
-          return;
-        }
-      }
-      if (self.clients.openWindow) {
-        await self.clients.openWindow(url);
-      }
-    })(),
-  );
-});

@@ -18,7 +18,6 @@ import { BackupSection } from '@/components/feature/settings/BackupSection';
 import { CashflowThresholdSlider } from '@/components/feature/settings/CashflowThresholdSlider';
 import { DriftToleranceSlider } from '@/components/feature/settings/DriftToleranceSlider';
 import { LoansSection } from '@/components/feature/settings/LoansSection';
-import { NotificationsSection } from '@/components/feature/settings/NotificationsSection';
 import { PinSettingsSheet } from '@/components/feature/settings/PinSettingsSheet';
 import { RulesEditorSheet } from '@/components/feature/settings/RulesEditorSheet';
 import { configRepo } from '@/db/repositories/config';
@@ -217,8 +216,6 @@ export function Settings() {
             valueTone="muted"
           />
         </Section>
-
-        <NotificationsSection />
 
         <Section title="Investments">
           <DriftToleranceSlider />
