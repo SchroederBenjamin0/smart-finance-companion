@@ -1,8 +1,13 @@
 import { useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { recategorizeWithLLM } from '@/modules/categorizer';
+import { suggestRuleFromChange, type SuggestedRule } from '@/modules/categorization-memory';
 import { getDB } from '@/db/client';
+import { categoryRulesRepo } from '@/db/repositories/categoryRules';
 import type { Transaction } from '@/db/types';
+import { RuleSuggestionPrompt } from '@/components/feature/categorization/RuleSuggestionPrompt';
+import { generateId } from '@/lib/id';
+import { nowIso } from '@/lib/date';
 
 interface Props {
   category: string | null;
@@ -13,6 +18,7 @@ interface Props {
 
 export function CategoryDrilldownSheet({ category, transactions, onClose, onRecategorized }: Props) {
   const [running, setRunning] = useState(false);
+  const [suggestions, setSuggestions] = useState<SuggestedRule[]>([]);
 
   const sorted = [...transactions].sort((a, b) => b.date.localeCompare(a.date));
   const lowConfidence = sorted.filter((t) => t.categoryConfidence < 0.7);
@@ -30,22 +36,35 @@ export function CategoryDrilldownSheet({ category, transactions, onClose, onReca
       }));
       const r = await recategorizeWithLLM(inputs);
       if (r.ok) {
+        const rulesR = await categoryRulesRepo.findAll();
+        const existingRules = rulesR.ok ? rulesR.value : [];
+
+        const newSuggestions = new Map<string, SuggestedRule>();
         const db = await getDB();
         const tx = db.transaction('transactions', 'readwrite');
         const store = tx.objectStore('transactions');
-        await Promise.all(
-          r.value.map(async (out) => {
-            const original = lowConfidence[out.localId];
-            if (!original) return;
-            const updated: Transaction = {
-              ...original,
-              category: out.category,
-              categoryConfidence: out.confidence,
-            };
-            await store.put(updated);
-          }),
-        );
+
+        for (const out of r.value) {
+          const original = lowConfidence[out.localId];
+          if (!original) continue;
+          if (out.category !== original.category) {
+            const s = suggestRuleFromChange({
+              counterparty: original.counterparty,
+              oldCategory: original.category,
+              newCategory: out.category,
+              existingRules,
+            });
+            if (s) newSuggestions.set(`${s.counterpartyPattern}|${s.category}`, s);
+          }
+          const updated: Transaction = {
+            ...original,
+            category: out.category,
+            categoryConfidence: out.confidence,
+          };
+          await store.put(updated);
+        }
         await tx.done;
+        setSuggestions(Array.from(newSuggestions.values()));
         onRecategorized();
       }
     } finally {
@@ -53,8 +72,34 @@ export function CategoryDrilldownSheet({ category, transactions, onClose, onReca
     }
   };
 
+  const acceptSuggestion = async (sug: SuggestedRule) => {
+    await categoryRulesRepo.upsert({
+      id: generateId(),
+      counterpartyPattern: sug.counterpartyPattern,
+      matchType: sug.matchType,
+      category: sug.category,
+      createdBy: 'user',
+      hitCount: 0,
+      lastUsed: null,
+      createdAt: nowIso(),
+    });
+    setSuggestions((prev) => prev.filter((s) => s !== sug));
+  };
+
+  const dismissSuggestion = (sug: SuggestedRule) => {
+    setSuggestions((prev) => prev.filter((s) => s !== sug));
+  };
+
   return (
-    <Dialog.Root open={category !== null} onOpenChange={(o) => !o && onClose()}>
+    <Dialog.Root
+      open={category !== null}
+      onOpenChange={(o) => {
+        if (!o) {
+          setSuggestions([]);
+          onClose();
+        }
+      }}
+    >
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-40 bg-black/40" />
         <Dialog.Content
@@ -73,6 +118,19 @@ export function CategoryDrilldownSheet({ category, transactions, onClose, onReca
               Schließen
             </button>
           </div>
+
+          {suggestions.length > 0 && (
+            <div className="mb-3 mt-3 space-y-2">
+              {suggestions.map((s) => (
+                <RuleSuggestionPrompt
+                  key={`${s.counterpartyPattern}|${s.category}`}
+                  suggestion={s}
+                  onAccept={() => void acceptSuggestion(s)}
+                  onDismiss={() => dismissSuggestion(s)}
+                />
+              ))}
+            </div>
+          )}
 
           {lowConfidence.length > 0 && (
             <button
