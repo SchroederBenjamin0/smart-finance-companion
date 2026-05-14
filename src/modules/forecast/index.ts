@@ -1,4 +1,5 @@
 import type { Account, IncomeEntry, Subscription, Transaction } from '@/db/types';
+import { isNonSpending } from '@/modules/spending';
 
 // ---------- shouldFireCashflow (moved from notifications/triggers) ----------
 
@@ -66,9 +67,13 @@ export function forecastCashflow(input: ForecastInput): WeeklyForecast[] {
   let savingsBalance = savings?.balance ?? 0;
   let investmentBalance = investment?.balance ?? 0;
 
-  // Variable spending: weekly median over last 90 days
+  // Variable spending: weekly median over last 90 days. Internal
+  // transfers between own accounts (transfer category) are NOT spending
+  // and would massively distort the median.
   const cutoff90 = isoDateDaysAgo(input.now, 90);
-  const recentExpenses = input.transactions.filter((t) => t.amount < 0 && t.date >= cutoff90);
+  const recentExpenses = input.transactions.filter(
+    (t) => t.amount < 0 && t.date >= cutoff90 && !isNonSpending(t.category),
+  );
   const weeklyVariableSpend = computeWeeklyMedianSpend(recentExpenses);
 
   // Expected weekly income (median per-week over last 90d income entries)

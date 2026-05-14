@@ -9,6 +9,7 @@ import { transactionsRepo } from '@/db/repositories/transactions';
 import type { IncomeEntry, Transaction } from '@/db/types';
 import { formatEur } from '@/lib/currency';
 import { formatMonthYearDe } from '@/lib/date';
+import { isNonSpending } from '@/modules/spending';
 import { useStatsNavStore } from '@/stores/statsNav';
 
 export function Stats() {
@@ -54,8 +55,10 @@ export function Stats() {
     return acc;
   }, {});
 
+  // Internal transfers (Revolut Personal ↔ Savings, etc.) carry a
+  // negative amount but aren't spending — strip them here.
   const monthExpenses = transactions.filter(
-    (t) => t.date >= monthStart && t.amount < 0,
+    (t) => t.date >= monthStart && t.amount < 0 && !isNonSpending(t.category),
   );
   const totalExpenses = monthExpenses.reduce(
     (sum, t) => sum + Math.abs(t.amount),
