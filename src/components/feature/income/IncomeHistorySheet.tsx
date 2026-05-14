@@ -4,6 +4,7 @@ import { Sheet } from '@/components/ui/Sheet';
 import type { Allocation, IncomeSource } from '@/db/types';
 import { formatEur } from '@/lib/currency';
 import { formatDateDe } from '@/lib/date';
+import { RecommendationCard } from '@/components/feature/advisor/RecommendationCard';
 import type { IncomeHistoryItem } from './IncomeHistoryList';
 import type { AdvisorRecommendation } from '@/services/advisor';
 
@@ -111,25 +112,16 @@ export function IncomeHistorySheet({ open, onOpenChange, item }: Props) {
             {showAdvisor && (
               <div className="mt-3 space-y-2">
                 {advisor.allocations.map((a, i) => (
-                  <div
-                    key={`${a.ticker}-${i}`}
-                    className="rounded-xl bg-surface px-3 py-2"
-                  >
-                    <div className="flex items-baseline justify-between gap-2">
-                      <div className="truncate text-[13px] font-semibold text-ink">
-                        {a.name}
-                      </div>
-                      <div className="shrink-0 text-[13px] font-semibold tabular-nums text-emerald-700 dark:text-emerald-400">
-                        {formatEur(a.amountEur)}
-                      </div>
-                    </div>
-                    <div className="text-[11px] text-ink-muted">{a.ticker}</div>
-                    {a.reason && (
-                      <div className="mt-1 text-[11px] leading-snug text-ink-subtle">
-                        {a.reason}
-                      </div>
-                    )}
-                  </div>
+                  <RecommendationCard
+                    key={`${a.isin || a.ticker}-${i}`}
+                    data={{
+                      isin: a.isin || '',
+                      ticker: a.ticker,
+                      name: a.name,
+                      amountEur: a.amountEur,
+                      reason: a.reason,
+                    }}
+                  />
                 ))}
                 <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-[11px] text-ink-subtle">
                   <span>

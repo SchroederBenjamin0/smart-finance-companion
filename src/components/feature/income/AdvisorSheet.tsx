@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ExternalLink, Loader2, Sparkles, X } from 'lucide-react';
+import { Loader2, Sparkles, X } from 'lucide-react';
 import { Sheet } from '@/components/ui/Sheet';
 import { positionsRepo } from '@/db/repositories/positions';
 import { recommendationsRepo } from '@/db/repositories/recommendations';
@@ -9,13 +9,13 @@ import { formatEur } from '@/lib/currency';
 import { nowIso } from '@/lib/date';
 import { generateId } from '@/lib/id';
 import { BacktestPanel } from '@/components/feature/advisor/BacktestPanel';
+import { RecommendationCard } from '@/components/feature/advisor/RecommendationCard';
 import type { BacktestAllocation } from '@/modules/backtest';
 import {
   recommendAllocation,
   type AdvisorRecommendation,
 } from '@/services/advisor';
 import { CLAUDE_MODELS } from '@/services/claude';
-import { trDeepLink } from '@/services/yahoo';
 
 interface Props {
   open: boolean;
@@ -98,19 +98,16 @@ export function AdvisorSheet({
     })();
   }, [open, investmentAmount, incomeEntryId]);
 
-  // ISIN comes straight from the advisor service (constrained to the
-  // TR_UNIVERSE whitelist). The user's own positions are still consulted
-  // as a fallback for legacy recommendations without isin set.
-  function isinForAllocation(a: { isin?: string; ticker?: string }): string | null {
+  // Resolve a missing isin against the user's own positions — covers legacy
+  // recommendations that pre-date the TR-universe whitelist.
+  function resolveIsin(a: { isin?: string; ticker?: string }): string {
     if (a.isin) return a.isin;
-    if (!a.ticker) return null;
+    if (!a.ticker) return '';
     const own = positions.find(
       (p) => p.ticker.toUpperCase() === a.ticker?.toUpperCase(),
     );
-    return own?.isin ?? null;
+    return own?.isin ?? '';
   }
-  // Unused fallback variables for backward-compat — keep `positions` referenced.
-  void positions;
 
   return (
     <Sheet
@@ -199,42 +196,19 @@ export function AdvisorSheet({
             </div>
           )}
 
-          <div className="row-divider rounded-[22px] bg-surface shadow-card">
-            {rec.allocations.map((a, i) => {
-              const isin = isinForAllocation(a);
-              return (
-                <div
-                  key={`${a.isin || a.ticker}-${i}`}
-                  className="flex items-start gap-3 px-4 py-3"
-                >
-                  <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-forest-800 dark:bg-forest-900 dark:text-forest-200 text-[12px] font-bold">
-                    {a.ticker.slice(0, 4) || 'ETF'}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-[14px] font-semibold text-ink">
-                      {a.name}
-                    </div>
-                    <div className="mt-0.5 text-[11px] text-ink-subtle">
-                      {a.reason}
-                    </div>
-                    {isin && (
-                      <a
-                        href={trDeepLink(isin)}
-                        target="_blank"
-                        rel="noopener"
-                        className="mt-2 inline-flex items-center gap-1 rounded-full bg-forest-950 px-2.5 py-0.5 text-[11px] font-semibold text-white"
-                      >
-                        In TR öffnen{' '}
-                        <ExternalLink className="h-3 w-3" strokeWidth={2.5} />
-                      </a>
-                    )}
-                  </div>
-                  <div className="text-right text-[14px] font-semibold tabular-nums text-emerald-700 dark:text-emerald-400">
-                    {formatEur(a.amountEur)}
-                  </div>
-                </div>
-              );
-            })}
+          <div className="space-y-2">
+            {rec.allocations.map((a, i) => (
+              <RecommendationCard
+                key={`${a.isin || a.ticker}-${i}`}
+                data={{
+                  isin: resolveIsin(a),
+                  ticker: a.ticker,
+                  name: a.name,
+                  amountEur: a.amountEur,
+                  reason: a.reason,
+                }}
+              />
+            ))}
           </div>
 
           <div className="flex items-center justify-between rounded-xl bg-paper px-3 py-2 text-[12px]">

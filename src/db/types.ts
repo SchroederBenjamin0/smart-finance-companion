@@ -205,6 +205,21 @@ export interface PriceCacheEntry {
   fetchedAt: string;
 }
 
+export interface NewsCacheItem {
+  uuid: string;
+  title: string;
+  publisher: string;
+  link: string;
+  publishedAt: string;
+}
+
+export interface NewsCacheEntry {
+  /** Yahoo ticker symbol (e.g. IWDA.AS, NVD.DE). */
+  ticker: string;
+  items: NewsCacheItem[];
+  fetchedAt: string;
+}
+
 export interface Portfolio {
   positions: InvestmentPosition[];
   totalValue: number;

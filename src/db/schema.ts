@@ -21,10 +21,11 @@ import type {
   SecretEntry,
   Subscription,
   Transaction,
+  NewsCacheEntry,
 } from './types';
 
 export const DB_NAME = 'smart-finance';
-export const DB_VERSION = 5;
+export const DB_VERSION = 6;
 
 export interface SmartFinanceDB extends DBSchema {
   accounts: {
@@ -97,6 +98,11 @@ export interface SmartFinanceDB extends DBSchema {
   priceCache: {
     key: string;
     value: PriceCacheEntry;
+    indexes: { 'by-fetchedAt': string };
+  };
+  newsCache: {
+    key: string;
+    value: NewsCacheEntry;
     indexes: { 'by-fetchedAt': string };
   };
   appConfig: {
