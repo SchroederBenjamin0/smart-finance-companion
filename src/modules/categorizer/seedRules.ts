@@ -8,6 +8,31 @@ export interface SeedRule {
 }
 
 /**
+ * Counterparty regexes that identify a move BETWEEN the user's own
+ * accounts (no third party involved). Shared with the migration that
+ * re-classifies historical `transfer`-rows to `umbuchung`.
+ */
+export const INTERNAL_TRANSFER_PATTERNS: string[] = [
+  '^(To|From) Instant Access Savings$',
+  '^(To|From) Personal Account$',
+  '^(To|From) Savings( Vault| Account)?$',
+  '^(To|From) (Vault|Pocket|Money Pot|Group Account)\\b',
+  '^(Übertrag|Umbuchung) (zu|von) ',
+];
+
+export function matchesInternalTransfer(counterparty: string): boolean {
+  const text = counterparty.trim();
+  for (const p of INTERNAL_TRANSFER_PATTERNS) {
+    try {
+      if (new RegExp(p, 'i').test(text)) return true;
+    } catch {
+      // ignore bad regex — pattern would also fail at seed time
+    }
+  }
+  return false;
+}
+
+/**
  * Default category rules seeded on first use. Patterns are matched
  * (case-insensitive) against the counterparty / description text.
  */
@@ -48,15 +73,18 @@ export const SEED_RULES: SeedRule[] = [
   { pattern: '^(GEHALT|LOHN|SALARY|TOP[- ]?UP)\\b', matchType: 'regex', category: 'einkommen', createdBy: 'system' },
   { pattern: '\\b(MAHNGEB(?:ÜHR|UEHR)|KONTO[- ]?GEB(?:Ü|UE)HR|ÜBERZIEHUNG|UEBERZIEHUNG|FINANZAMT|STEUER)\\b', matchType: 'regex', category: 'gebühren', createdBy: 'system' },
 
-  // Internal Revolut transfers — money moved between the user's own
-  // accounts (Personal ↔ Savings Vault, Pockets, Vaults). These show as
-  // negative on the source account and positive on the destination, but
-  // are NOT spending.
-  { pattern: '^(To|From) Instant Access Savings$', matchType: 'regex', category: 'transfer', createdBy: 'system' },
-  { pattern: '^(To|From) Personal Account$', matchType: 'regex', category: 'transfer', createdBy: 'system' },
-  { pattern: '^(To|From) Savings( Vault| Account)?$', matchType: 'regex', category: 'transfer', createdBy: 'system' },
-  { pattern: '^(To|From) (Vault|Pocket|Money Pot|Group Account)\\b', matchType: 'regex', category: 'transfer', createdBy: 'system' },
-  { pattern: '^(Transfer|Übertrag|Umbuchung) (to|from|zu|von) ', matchType: 'regex', category: 'transfer', createdBy: 'system' },
+  // Internal own-account moves — money shifted between the user's own
+  // Revolut buckets (Personal ↔ Savings Vault, Pockets, Vaults). These
+  // appear as negative on the source side and positive on the destination
+  // and must NOT be counted as spending. They live in their own
+  // `umbuchung` category (≠ `transfer`, which is reserved for outgoing
+  // payments to third parties like rent or friends).
+  ...INTERNAL_TRANSFER_PATTERNS.map((pattern) => ({
+    pattern,
+    matchType: 'regex' as const,
+    category: 'umbuchung',
+    createdBy: 'system' as const,
+  })),
 
   { pattern: '^Top[- ]?up by ', matchType: 'regex', category: 'einkommen', createdBy: 'system' },
 ];

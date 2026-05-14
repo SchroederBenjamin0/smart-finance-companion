@@ -297,4 +297,5 @@ export const ALL_CONFIG_KEYS = {
   cashflowFunWarnThreshold: 'cashflow_fun_warn_threshold',
   legacyInvestmentBalance: 'legacy_investment_balance',
   legacyInvestmentBannerDismissed: 'legacy_investment_banner_dismissed',
+  internalTransferReclassifyV1: 'internal_transfer_reclassify_v1',
 } as const;
