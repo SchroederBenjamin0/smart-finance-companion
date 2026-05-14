@@ -114,6 +114,9 @@ export function getDB(): Promise<IDBPDatabase<SmartFinanceDB>> {
             cache.createIndex('by-fetchedAt', 'fetchedAt');
           }
         }
+
+        // v5: investment-Account-Removal läuft im post-upgrade backfill,
+        // weil hier nur Schema-Änderungen sicher synchron passieren dürfen.
       },
       blocked() {
         debugWarn('IndexedDB upgrade blocked by another tab');

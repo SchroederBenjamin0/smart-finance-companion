@@ -29,10 +29,13 @@ const SOURCES: { id: IncomeSource; label: string; Icon: LucideIcon }[] = [
   { id: 'other', label: 'Sonstiges', Icon: MoreHorizontal },
 ];
 
-const ACCOUNTS: { id: AccountType; label: string; emoji: string }[] = [
+// Manuelle Ausgaben können nur aus Bank-Buckets kommen — das Portfolio
+// ist kein Konto, aus dem direkt im Alltag bezahlt wird.
+type BankAccountType = Extract<AccountType, 'fun' | 'savings'>;
+
+const ACCOUNTS: { id: BankAccountType; label: string; emoji: string }[] = [
   { id: 'fun', label: 'Fun-Geld', emoji: '🎉' },
   { id: 'savings', label: 'Sparkonto', emoji: '🏦' },
-  { id: 'investment', label: 'Investment', emoji: '📈' },
 ];
 
 const QUICK_AMOUNTS = [10, 25, 50, 100];
@@ -51,7 +54,7 @@ export function Income() {
   const [mode, setMode] = useState<Mode>('income');
   const [amountText, setAmountText] = useState('');
   const [source, setSource] = useState<IncomeSource>('main_job');
-  const [fromAccount, setFromAccount] = useState<AccountType>('fun');
+  const [fromAccount, setFromAccount] = useState<BankAccountType>('fun');
   const [counterparty, setCounterparty] = useState('');
   const [category, setCategory] = useState('');
   const [date, setDate] = useState(todayIso());
@@ -245,7 +248,7 @@ export function Income() {
             })}
           </div>
         ) : (
-          <div className="mt-4 grid grid-cols-3 gap-2">
+          <div className="mt-4 grid grid-cols-2 gap-2">
             {ACCOUNTS.map((a) => {
               const active = a.id === fromAccount;
               return (
@@ -454,8 +457,8 @@ export function Income() {
   );
 }
 
-function labelFor(t: AccountType): string {
-  return t === 'fun' ? 'Fun-Geld' : t === 'savings' ? 'Sparkonto' : 'Investment';
+function labelFor(t: BankAccountType): string {
+  return t === 'fun' ? 'Fun-Geld' : 'Sparkonto';
 }
 
 function PreviewRow({

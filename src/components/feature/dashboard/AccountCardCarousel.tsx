@@ -1,44 +1,39 @@
 import type { Account, AccountType } from '@/db/types';
 import { formatEur } from '@/lib/currency';
 
+type BankAccountType = Extract<AccountType, 'fun' | 'savings'>;
+
 interface Props {
   accounts: Account[];
   funPct: number;
   savingsPct: number;
-  investmentPct: number;
   portfolioValue?: number;
   portfolioPositionCount?: number;
 }
 
 const META: Record<
-  AccountType,
+  BankAccountType,
   { emoji: string; label: string; gradient: string }
 > = {
   fun: { emoji: '🎉', label: 'Fun-Geld', gradient: 'bg-card-fun' },
   savings: { emoji: '🏦', label: 'Sparkonto', gradient: 'bg-card-savings' },
-  investment: {
-    emoji: '📈',
-    label: 'Investment',
-    gradient: 'bg-card-investment',
-  },
 };
 
-const ORDER: AccountType[] = ['fun', 'savings', 'investment'];
+const ORDER: BankAccountType[] = ['fun', 'savings'];
 
 export function AccountCardCarousel({
   accounts,
   funPct,
   savingsPct,
-  investmentPct,
   portfolioValue = 0,
   portfolioPositionCount = 0,
 }: Props) {
-  const pct: Record<AccountType, number> = {
+  const pct: Record<BankAccountType, number> = {
     fun: funPct,
     savings: savingsPct,
-    investment: investmentPct,
   };
-  const showPortfolio = portfolioPositionCount > 0;
+  // Portfolio-Card immer zeigen, sie ist die dritte Net-Worth-Kategorie.
+  const showPortfolio = true;
 
   return (
     <div className="-mx-4 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -80,9 +75,9 @@ export function AccountCardCarousel({
               aria-hidden="true"
             />
             <div className="relative">
-              <div className="text-[22px] leading-none">📊</div>
+              <div className="text-[22px] leading-none">📈</div>
               <div className="mt-2 text-[13px] font-medium opacity-90">
-                TR Portfolio
+                Portfolio (TR)
               </div>
             </div>
             <div className="relative">
@@ -90,8 +85,9 @@ export function AccountCardCarousel({
                 {formatEur(portfolioValue)}
               </div>
               <div className="mt-1 text-[11px] font-medium opacity-80">
-                {portfolioPositionCount} Position
-                {portfolioPositionCount === 1 ? '' : 'en'}
+                {portfolioPositionCount > 0
+                  ? `${portfolioPositionCount} Position${portfolioPositionCount === 1 ? '' : 'en'}`
+                  : 'PDF-Import oder Position hinzufügen'}
               </div>
             </div>
           </li>

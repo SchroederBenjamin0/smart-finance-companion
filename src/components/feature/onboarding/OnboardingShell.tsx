@@ -78,7 +78,8 @@ export function OnboardingShell() {
         if (!mRes.ok) throw mRes.error;
       }
 
-      // 2. Accounts
+      // 2. Accounts — nur Bank-Buckets. Das Portfolio (Investment-Wahrheit)
+      // kommt aus dem TR-PDF-Import, nicht aus einem internen Konto.
       const accounts: Account[] = [
         {
           id: generateId(),
@@ -92,13 +93,6 @@ export function OnboardingShell() {
           type: 'savings',
           balance: 0,
           goalAmount: state.emergencyFundTarget,
-          lastUpdated: nowIso(),
-        },
-        {
-          id: generateId(),
-          type: 'investment',
-          balance: 0,
-          goalAmount: null,
           lastUpdated: nowIso(),
         },
       ];

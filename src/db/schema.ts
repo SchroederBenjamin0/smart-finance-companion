@@ -24,7 +24,7 @@ import type {
 } from './types';
 
 export const DB_NAME = 'smart-finance';
-export const DB_VERSION = 4;
+export const DB_VERSION = 5;
 
 export interface SmartFinanceDB extends DBSchema {
   accounts: {

@@ -4,6 +4,8 @@ import { Sheet } from '@/components/ui/Sheet';
 import { subscriptionsRepo } from '@/db/repositories/subscriptions';
 import { transactionsRepo } from '@/db/repositories/transactions';
 import type { AccountType, Subscription } from '@/db/types';
+
+type BankAccountType = Extract<AccountType, 'fun' | 'savings'>;
 import {
   advanceCycle,
   findDueSubscriptions,
@@ -13,10 +15,9 @@ import { formatDateDe } from '@/lib/date';
 import { useAccountsStore } from '@/stores/accounts';
 import { useToastStore } from '@/stores/toast';
 
-const ACCOUNT_LABEL: Record<AccountType, string> = {
+const ACCOUNT_LABEL: Record<BankAccountType, string> = {
   fun: 'Fun-Geld',
   savings: 'Sparkonto',
-  investment: 'Investment',
 };
 
 export function DueSubscriptionsBanner() {
@@ -89,12 +90,12 @@ function DueSubscriptionsSheet({
   onProcessed,
   pushToast,
 }: SheetProps) {
-  const [accountFor, setAccountFor] = useState<Record<string, AccountType>>(
+  const [accountFor, setAccountFor] = useState<Record<string, BankAccountType>>(
     {},
   );
   const [busyId, setBusyId] = useState<string | null>(null);
 
-  function getAccount(s: Subscription): AccountType {
+  function getAccount(s: Subscription): BankAccountType {
     return accountFor[s.id] ?? 'fun';
   }
 
@@ -177,8 +178,8 @@ function DueSubscriptionsSheet({
                   −{formatEur(s.amount)}
                 </div>
               </div>
-              <div className="mt-3 grid grid-cols-3 gap-1.5">
-                {(['fun', 'savings', 'investment'] as AccountType[]).map(
+              <div className="mt-3 grid grid-cols-2 gap-1.5">
+                {(['fun', 'savings'] as BankAccountType[]).map(
                   (a) => (
                     <button
                       key={a}

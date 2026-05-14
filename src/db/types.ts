@@ -272,4 +272,6 @@ export const ALL_CONFIG_KEYS = {
   driftToleranceGlobal: 'drift_tolerance_global',
   hashBackfillComplete: 'hash_backfill_complete',
   cashflowFunWarnThreshold: 'cashflow_fun_warn_threshold',
+  legacyInvestmentBalance: 'legacy_investment_balance',
+  legacyInvestmentBannerDismissed: 'legacy_investment_banner_dismissed',
 } as const;
