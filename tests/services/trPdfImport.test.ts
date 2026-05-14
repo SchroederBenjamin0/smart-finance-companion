@@ -67,7 +67,8 @@ describe('TR PDF parser', () => {
     expect(nvda.shares).toBeCloseTo(0.525373, 5);
     expect(nvda.pricePerShare).toBe(177.24);
     expect(nvda.currentValue).toBe(93.12);
-    expect(nvda.name).toContain('NVIDIA');
+    // NVDA is on the TR-universe whitelist → its canonical displayName wins.
+    expect(nvda.name).toBe('NVIDIA Corporation');
 
     const dro = r.holdings[3]!;
     expect(dro.isin).toBe('AU000000DRO2');
@@ -107,5 +108,42 @@ describe('TR PDF parser', () => {
     expect(r.holdings[0]!.name).toBe('DAX EUR (Acc)');
     expect(r.holdings[1]!.name).toBe('thyssenkrupp AG Inhaber-Aktien o.N.');
     expect(r.holdings[3]!.name).toBe('DroneShield Limited Registered Shares o.N.');
+  });
+
+  // Regression: a real TR PDF (2026-05-14) had price+date+value on separate
+  // lines AFTER the ISIN, and a name containing a digit ("NASDAQ100").
+  // The previous parser picked up the "100" inside the name as the first
+  // number-before-ISIN and the price 1.458,00 as the second, so it
+  // persisted 1458 € as the position's current value instead of the real
+  // 189,69 €.
+  it('handles the "after-ISIN, name-with-digits" layout (NASDAQ100)', () => {
+    const lines = [
+      '0,130103 Stk. NASDAQ100 USD (Acc)',
+      'ISIN: IE00B53SZB19',
+      'Wertpapierrechnung in Deutschland',
+      'Lagerland: Irland',
+      '1.458,00',
+      '14.05.2026',
+      '189,69',
+      '2,670415 Stk. DAX EUR (Acc)',
+      'ISIN: LU0252633754',
+      '222,45',
+      '14.05.2026',
+      '594,03',
+    ];
+    const r = parseLines(lines);
+    expect(r.holdings).toHaveLength(2);
+
+    const nasdaq = r.holdings[0]!;
+    expect(nasdaq.isin).toBe('IE00B53SZB19');
+    expect(nasdaq.shares).toBeCloseTo(0.130103, 5);
+    expect(nasdaq.pricePerShare).toBe(1458);
+    expect(nasdaq.currentValue).toBe(189.69);
+    // Whitelist-backed displayName.
+    expect(nasdaq.name).toBe('iShares Nasdaq 100 UCITS ETF');
+
+    const dax = r.holdings[1]!;
+    expect(dax.pricePerShare).toBe(222.45);
+    expect(dax.currentValue).toBe(594.03);
   });
 });

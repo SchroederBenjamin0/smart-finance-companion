@@ -1,6 +1,7 @@
 import { debug } from '@/lib/debug';
 import { tryAsync, type Result } from '@/lib/result';
 import { tickerFromIsin } from './yahoo';
+import { findByIsin } from '@/data/tr-universe';
 
 export interface ParsedHolding {
   isin: string;
@@ -168,7 +169,7 @@ export function parseHoldings(rawText: string): ParsedHolding[] {
   }
 
   const isinPattern = /\b([A-Z]{2}[A-Z0-9]{9}\d)\b/;
-  const numberRe = /\d[\d.,]*\d|\d/g;
+  const pureNumberToken = /^-?\d[\d.,]*$/;
   const datePattern = /^\d{2}\.\d{2}\.\d{4}$/;
 
   const holdings: ParsedHolding[] = [];
@@ -183,33 +184,37 @@ export function parseHoldings(rawText: string): ParsedHolding[] {
     if (!isinMatch) continue;
     const isin = isinMatch[1]!;
     const isinIdx = isinMatch.index ?? 0;
-    const isinEndIdx = isinIdx + isin.length;
 
     const shares = parseGermanNumber(hit.sharesText) ?? 0;
 
-    // Numbers in the body, excluding ISIN-internal digits and dates.
-    const numbers: { value: number; pos: number }[] = [];
-    for (const numMatch of body.matchAll(numberRe)) {
-      const raw = numMatch[0] ?? '';
-      const pos = numMatch.index ?? 0;
-      if (pos >= isinIdx && pos < isinEndIdx) continue;
-      if (datePattern.test(raw)) continue;
-      const n = parseGermanNumber(raw);
+    // Walk the body token-by-token (whitespace-delimited). A token only
+    // counts as a number if the ENTIRE token is numeric — that way
+    // "NASDAQ100" stays one non-numeric token and we don't accidentally
+    // treat "100" as a value. Works for both TR PDF layouts (price+value
+    // either before the ISIN or after it on separate lines).
+    const tokens = body.split(/\s+/).filter(Boolean);
+    const numbers: number[] = [];
+    for (const tok of tokens) {
+      if (datePattern.test(tok)) continue;
+      if (!pureNumberToken.test(tok)) continue;
+      const n = parseGermanNumber(tok);
       if (n === null) continue;
-      numbers.push({ value: n, pos });
+      numbers.push(n);
+      if (numbers.length >= 2) break;
     }
+    const price = numbers[0] ?? 0;
+    const value = numbers[1] ?? 0;
 
-    // Prefer numbers BEFORE the ISIN (price + value, document order).
-    const beforeIsin = numbers.filter((nx) => nx.pos < isinIdx);
-    const candidates = beforeIsin.length >= 2 ? beforeIsin : numbers;
-    const price = candidates[0]?.value ?? 0;
-    const value = candidates[1]?.value ?? 0;
-
+    const whitelisted = findByIsin(isin);
     const nameRaw = body.slice(0, isinIdx);
-    const name = cleanName(stripNumbers(nameRaw));
+    const parsedName = cleanName(stripNumbers(nameRaw));
+    // Prefer the canonical TR-universe displayName so the UI matches
+    // exactly what the user sees inside Trade Republic.
+    const name = whitelisted?.displayName || parsedName;
 
     const isEtf =
-      /\bETF\b|\(Acc\)|UCITS|MSCI|S&P|Nasdaq|DAX/i.test(name) ||
+      whitelisted?.type === 'etf' ||
+      /\bETF\b|\(Acc\)|UCITS|MSCI|S&P|Nasdaq|DAX/i.test(parsedName) ||
       isin.startsWith('IE') ||
       isin.startsWith('LU');
 
