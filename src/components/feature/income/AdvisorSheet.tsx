@@ -2,15 +2,19 @@ import { useEffect, useMemo, useState } from 'react';
 import { ExternalLink, Loader2, Sparkles, X } from 'lucide-react';
 import { Sheet } from '@/components/ui/Sheet';
 import { positionsRepo } from '@/db/repositories/positions';
-import type { InvestmentPosition } from '@/db/types';
+import { recommendationsRepo } from '@/db/repositories/recommendations';
+import type { InvestmentPosition, Recommendation } from '@/db/types';
 import { DEFAULT_ALLOCATION_TARGET } from '@/db/types';
 import { formatEur } from '@/lib/currency';
+import { nowIso } from '@/lib/date';
+import { generateId } from '@/lib/id';
 import { BacktestPanel } from '@/components/feature/advisor/BacktestPanel';
 import type { BacktestAllocation } from '@/modules/backtest';
 import {
   recommendAllocation,
   type AdvisorRecommendation,
 } from '@/services/advisor';
+import { CLAUDE_MODELS } from '@/services/claude';
 import { tickerFromIsin, trDeepLink } from '@/services/yahoo';
 
 interface Props {
@@ -18,6 +22,8 @@ interface Props {
   onOpenChange: (open: boolean) => void;
   /** Newly allocated investment amount from this income split. */
   investmentAmount: number;
+  /** If set, the resulting recommendation is persisted and linked to this income. */
+  incomeEntryId?: string | null;
   onSkip?: () => void;
 }
 
@@ -27,6 +33,7 @@ export function AdvisorSheet({
   open,
   onOpenChange,
   investmentAmount,
+  incomeEntryId,
   onSkip,
 }: Props) {
   const [stage, setStage] = useState<Stage>('loading');
@@ -71,8 +78,25 @@ export function AdvisorSheet({
       }
       setRec(r.value);
       setStage('ready');
+
+      // Persist for income history (one recommendation per income entry).
+      if (incomeEntryId) {
+        const record: Recommendation = {
+          id: generateId(),
+          date: nowIso(),
+          trigger: 'income_event',
+          availableAmount: investmentAmount,
+          suggestionJson: JSON.stringify(r.value),
+          rationale: r.value.summary,
+          status: 'pending',
+          userActionAt: null,
+          incomeEntryId,
+          modelName: CLAUDE_MODELS.SONNET,
+        };
+        void recommendationsRepo.upsert(record);
+      }
     })();
-  }, [open, investmentAmount]);
+  }, [open, investmentAmount, incomeEntryId]);
 
   function isinForTicker(ticker: string): string | null {
     // Reverse-lookup: scan known map and the user's own positions.

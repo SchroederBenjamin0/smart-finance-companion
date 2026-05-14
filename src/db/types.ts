@@ -136,6 +136,14 @@ export interface Recommendation {
   rationale: string;
   status: RecommendationStatus;
   userActionAt: string | null;
+  /**
+   * Optional link to the income entry that produced this recommendation.
+   * Used by the income view to render history with the LLM proposal that
+   * was issued at the time. Older recommendations may not carry this id.
+   */
+  incomeEntryId?: string;
+  /** Claude model name at the time of the call (e.g. claude-sonnet-4-6). */
+  modelName?: string;
 }
 
 export interface NewsEvent {

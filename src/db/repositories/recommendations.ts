@@ -30,6 +30,21 @@ export const recommendationsRepo = {
     });
   },
 
+  /**
+   * One recommendation per income entry (the one persisted by AdvisorSheet
+   * directly after the LLM responded). Returns null when none exists.
+   */
+  async findByIncomeEntry(
+    incomeEntryId: string,
+  ): Promise<Result<Recommendation | null>> {
+    return tryAsync(async () => {
+      const db = await getDB();
+      const all = await db.getAll('recommendations');
+      const match = all.find((r) => r.incomeEntryId === incomeEntryId) ?? null;
+      return match;
+    });
+  },
+
   async upsert(rec: Recommendation): Promise<Result<void>> {
     return tryAsync(async () => {
       const db = await getDB();
