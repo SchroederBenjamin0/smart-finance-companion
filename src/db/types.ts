@@ -136,6 +136,14 @@ export interface Recommendation {
   rationale: string;
   status: RecommendationStatus;
   userActionAt: string | null;
+  /**
+   * Optional link to the income entry that produced this recommendation.
+   * Used by the income view to render history with the LLM proposal that
+   * was issued at the time. Older recommendations may not carry this id.
+   */
+  incomeEntryId?: string;
+  /** Claude model name at the time of the call (e.g. claude-sonnet-4-6). */
+  modelName?: string;
 }
 
 export interface NewsEvent {
@@ -194,6 +202,21 @@ export interface PriceCachePoint {
 export interface PriceCacheEntry {
   ticker: string;
   monthlyCloses: PriceCachePoint[];
+  fetchedAt: string;
+}
+
+export interface NewsCacheItem {
+  uuid: string;
+  title: string;
+  publisher: string;
+  link: string;
+  publishedAt: string;
+}
+
+export interface NewsCacheEntry {
+  /** Yahoo ticker symbol (e.g. IWDA.AS, NVD.DE). */
+  ticker: string;
+  items: NewsCacheItem[];
   fetchedAt: string;
 }
 
@@ -272,4 +295,6 @@ export const ALL_CONFIG_KEYS = {
   driftToleranceGlobal: 'drift_tolerance_global',
   hashBackfillComplete: 'hash_backfill_complete',
   cashflowFunWarnThreshold: 'cashflow_fun_warn_threshold',
+  legacyInvestmentBalance: 'legacy_investment_balance',
+  legacyInvestmentBannerDismissed: 'legacy_investment_banner_dismissed',
 } as const;

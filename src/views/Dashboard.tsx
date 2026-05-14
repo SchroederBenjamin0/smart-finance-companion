@@ -15,6 +15,7 @@ import { DueSubscriptionsBanner } from '@/components/feature/subscriptions/DueSu
 import { NewsBanner } from '@/components/feature/dashboard/NewsBanner';
 import { QuarterlyInsightBanner } from '@/components/feature/dashboard/QuarterlyInsightBanner';
 import { BackupDueBanner } from '@/components/feature/dashboard/BackupDueBanner';
+import { LegacyInvestmentBanner } from '@/components/feature/dashboard/LegacyInvestmentBanner';
 import { incomeRepo } from '@/db/repositories/income';
 import { positionsRepo } from '@/db/repositories/positions';
 import { transactionsRepo } from '@/db/repositories/transactions';
@@ -81,7 +82,11 @@ export function Dashboard() {
     (sum, p) => sum + p.currentValue,
     0,
   );
-  const accountsTotal = accounts.reduce((sum, a) => sum + a.balance, 0);
+  // Net Worth = Fun + Sparkonto + Portfolio. accountsTotal enthält
+  // konstruktionsbedingt keine investment-Buckets mehr (Migration v5).
+  const accountsTotal = accounts
+    .filter((a) => a.type === 'fun' || a.type === 'savings')
+    .reduce((sum, a) => sum + a.balance, 0);
   const total = accountsTotal + portfolioValue;
   const monthDelta = useMemo(() => {
     const now = new Date();
@@ -146,6 +151,7 @@ export function Dashboard() {
       </HeroHeader>
 
       <div className="space-y-3 px-4 pt-4 animate-view-enter">
+        <LegacyInvestmentBanner />
         <BackupDueBanner />
         <DueSubscriptionsBanner />
         <QuarterlyInsightBanner />
@@ -171,7 +177,6 @@ export function Dashboard() {
             accounts={accounts}
             funPct={rules.main_job.funPercentage}
             savingsPct={rules.main_job.savingsPercentage}
-            investmentPct={rules.main_job.investmentPercentage}
             portfolioValue={portfolioValue}
             portfolioPositionCount={positions.length}
           />

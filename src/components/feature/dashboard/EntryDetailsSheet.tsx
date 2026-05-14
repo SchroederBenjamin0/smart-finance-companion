@@ -32,10 +32,13 @@ const INCOME_SOURCE_LABEL: Record<IncomeSource, string> = {
   other: 'Sonstiges',
 };
 
-const ACCOUNT_LABEL: Record<AccountType, string> = {
+// Manuelle Ausgaben kommen nur aus Fun oder Sparkonto — alte
+// 'investment'-Allokationen sind Plan-Einträge, nicht echte Account-Belastungen.
+type BankAccountType = Extract<AccountType, 'fun' | 'savings'>;
+
+const ACCOUNT_LABEL: Record<BankAccountType, string> = {
   fun: 'Fun-Geld',
   savings: 'Sparkonto',
-  investment: 'Investment',
 };
 
 export function EntryDetailsSheet({
@@ -46,7 +49,7 @@ export function EntryDetailsSheet({
 }: Props) {
   const [deleting, setDeleting] = useState(false);
   const [picking, setPicking] = useState(false);
-  const [account, setAccount] = useState<AccountType>('fun');
+  const [account, setAccount] = useState<BankAccountType>('fun');
   const [editing, setEditing] = useState(false);
   const [editCounterparty, setEditCounterparty] = useState('');
   const [editCategory, setEditCategory] = useState('');
@@ -238,8 +241,8 @@ export function EntryDetailsSheet({
               Aus welchem Konto kam die Ausgabe? Der Betrag wird dort wieder
               gutgeschrieben.
             </p>
-            <div className="mt-2 grid grid-cols-3 gap-2">
-              {(['fun', 'savings', 'investment'] as AccountType[]).map((a) => (
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              {(['fun', 'savings'] as BankAccountType[]).map((a) => (
                 <button
                   key={a}
                   type="button"

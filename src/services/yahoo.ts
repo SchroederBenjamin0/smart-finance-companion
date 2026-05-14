@@ -155,7 +155,7 @@ interface SearchResponse {
   }>;
 }
 
-async function fetchNewsForSymbol(symbol: string): Promise<YahooNewsItem[]> {
+export async function fetchNewsForSymbol(symbol: string): Promise<YahooNewsItem[]> {
   const target = `${SEARCH_ENDPOINT}?q=${encodeURIComponent(symbol)}&newsCount=10&quotesCount=0`;
   const attempts: string[] = [
     target,

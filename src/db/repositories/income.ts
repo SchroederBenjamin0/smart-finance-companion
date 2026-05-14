@@ -61,14 +61,18 @@ export const incomeRepo = {
         .getAll(id);
       const accountStore = tx.objectStore('accounts');
       for (const a of allocations) {
-        const matches: Account[] = await accountStore
-          .index('by-type')
-          .getAll(a.accountType);
-        const account = matches[0];
-        if (account) {
-          account.balance = round2(account.balance - a.amount);
-          account.lastUpdated = nowIso();
-          await accountStore.put(account);
+        // 'investment' is a plan-only allocation (no Account row exists for it).
+        // We delete the allocation record but never touch a balance.
+        if (a.accountType !== 'investment') {
+          const matches: Account[] = await accountStore
+            .index('by-type')
+            .getAll(a.accountType);
+          const account = matches[0];
+          if (account) {
+            account.balance = round2(account.balance - a.amount);
+            account.lastUpdated = nowIso();
+            await accountStore.put(account);
+          }
         }
         await tx.objectStore('allocations').delete(a.id);
       }
@@ -112,10 +116,12 @@ export const incomeRepo = {
       }
 
       const accountStore = tx.objectStore('accounts');
+      // Investment-Allokation ist nur Plan-Eintrag — sie wird in Allocations
+      // protokolliert, aktualisiert aber keine Account-Balance (das Portfolio
+      // ist die Investment-Wahrheit, gefüllt aus dem TR-PDF-Import).
       await Promise.all([
         addToBalance(accountStore, 'fun', input.funAmount),
         addToBalance(accountStore, 'savings', input.savingsAmount),
-        addToBalance(accountStore, 'investment', input.investmentAmount),
       ]);
 
       await tx.done;

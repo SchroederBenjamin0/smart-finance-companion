@@ -8,6 +8,11 @@ import {
 } from 'lucide-react';
 import { HeroHeader } from '@/components/layout/HeroHeader';
 import { AdvisorSheet } from '@/components/feature/income/AdvisorSheet';
+import {
+  IncomeHistoryList,
+  type IncomeHistoryItem,
+} from '@/components/feature/income/IncomeHistoryList';
+import { IncomeHistorySheet } from '@/components/feature/income/IncomeHistorySheet';
 import { incomeRepo } from '@/db/repositories/income';
 import { transactionsRepo } from '@/db/repositories/transactions';
 import type { AccountType, IncomeSource } from '@/db/types';
@@ -29,10 +34,13 @@ const SOURCES: { id: IncomeSource; label: string; Icon: LucideIcon }[] = [
   { id: 'other', label: 'Sonstiges', Icon: MoreHorizontal },
 ];
 
-const ACCOUNTS: { id: AccountType; label: string; emoji: string }[] = [
+// Manuelle Ausgaben können nur aus Bank-Buckets kommen — das Portfolio
+// ist kein Konto, aus dem direkt im Alltag bezahlt wird.
+type BankAccountType = Extract<AccountType, 'fun' | 'savings'>;
+
+const ACCOUNTS: { id: BankAccountType; label: string; emoji: string }[] = [
   { id: 'fun', label: 'Fun-Geld', emoji: '🎉' },
   { id: 'savings', label: 'Sparkonto', emoji: '🏦' },
-  { id: 'investment', label: 'Investment', emoji: '📈' },
 ];
 
 const QUICK_AMOUNTS = [10, 25, 50, 100];
@@ -51,7 +59,7 @@ export function Income() {
   const [mode, setMode] = useState<Mode>('income');
   const [amountText, setAmountText] = useState('');
   const [source, setSource] = useState<IncomeSource>('main_job');
-  const [fromAccount, setFromAccount] = useState<AccountType>('fun');
+  const [fromAccount, setFromAccount] = useState<BankAccountType>('fun');
   const [counterparty, setCounterparty] = useState('');
   const [category, setCategory] = useState('');
   const [date, setDate] = useState(todayIso());
@@ -59,6 +67,9 @@ export function Income() {
   const [submitting, setSubmitting] = useState(false);
   const [advisorOpen, setAdvisorOpen] = useState(false);
   const [advisorAmount, setAdvisorAmount] = useState(0);
+  const [advisorIncomeId, setAdvisorIncomeId] = useState<string | null>(null);
+  const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
+  const [historyItem, setHistoryItem] = useState<IncomeHistoryItem | null>(null);
 
   const ruleFor = useConfigStore((s) => s.ruleFor);
   const thresholds = useConfigStore((s) => s.thresholds);
@@ -125,11 +136,13 @@ export function Income() {
       if (!r.ok) throw r.error;
 
       await reloadAccounts();
-      pushToast(`${formatEur(amount)} verteilt auf 3 Konten`, 'success');
+      pushToast(`${formatEur(amount)} verteilt — Plan steht`, 'success');
       // Always show the AI sparplan advisor after a successful split,
       // regardless of amount — per user preference.
       setAdvisorAmount(preview.investment);
+      setAdvisorIncomeId(r.value.income.id);
       setAdvisorOpen(true);
+      setHistoryRefreshKey((k) => k + 1);
       resetForm();
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
@@ -245,7 +258,7 @@ export function Income() {
             })}
           </div>
         ) : (
-          <div className="mt-4 grid grid-cols-3 gap-2">
+          <div className="mt-4 grid grid-cols-2 gap-2">
             {ACCOUNTS.map((a) => {
               const active = a.id === fromAccount;
               return (
@@ -354,6 +367,19 @@ export function Income() {
                 Notgroschen-Cap erreicht — Überschuss fließt ins Investment.
               </p>
             )}
+
+            <h2 className="mt-7 text-[13px] font-semibold uppercase tracking-wider text-ink-subtle">
+              Letzte Einnahmen
+            </h2>
+            <p className="mt-1 text-[12px] text-ink-subtle">
+              Tippe für Split-Details und den gespeicherten Sparplan-Vorschlag.
+            </p>
+            <div className="mt-3">
+              <IncomeHistoryList
+                refreshKey={historyRefreshKey}
+                onSelect={setHistoryItem}
+              />
+            </div>
           </>
         )}
 
@@ -429,9 +455,21 @@ export function Income() {
         open={advisorOpen}
         onOpenChange={(o) => {
           setAdvisorOpen(o);
-          if (!o) setActiveTab('home');
+          if (!o) {
+            setHistoryRefreshKey((k) => k + 1);
+            setActiveTab('home');
+          }
         }}
         investmentAmount={advisorAmount}
+        incomeEntryId={advisorIncomeId}
+      />
+
+      <IncomeHistorySheet
+        open={historyItem !== null}
+        onOpenChange={(o) => {
+          if (!o) setHistoryItem(null);
+        }}
+        item={historyItem}
       />
 
       <div
@@ -454,8 +492,8 @@ export function Income() {
   );
 }
 
-function labelFor(t: AccountType): string {
-  return t === 'fun' ? 'Fun-Geld' : t === 'savings' ? 'Sparkonto' : 'Investment';
+function labelFor(t: BankAccountType): string {
+  return t === 'fun' ? 'Fun-Geld' : 'Sparkonto';
 }
 
 function PreviewRow({

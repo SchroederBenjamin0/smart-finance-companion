@@ -9,7 +9,9 @@ import {
 import { Sheet } from '@/components/ui/Sheet';
 import { csvImportsRepo } from '@/db/repositories/csvImports';
 import { transactionsRepo } from '@/db/repositories/transactions';
+import { accountsRepo } from '@/db/repositories/accounts';
 import { getDB } from '@/db/client';
+import { useAccountsStore } from '@/stores/accounts';
 import type { CSVImport, Transaction } from '@/db/types';
 import { formatEur } from '@/lib/currency';
 import { generateId } from '@/lib/id';
@@ -65,7 +67,12 @@ export function CsvImportSheet({
   const [fileName, setFileName] = useState('');
   const [importSummary, setImportSummary] = useState<ImportSummary | null>(null);
   const [anomalies, setAnomalies] = useState<AnomalyResult[]>([]);
+  const [finalBalances, setFinalBalances] = useState<{
+    current: number | null;
+    savings: number | null;
+  }>({ current: null, savings: null });
   const pushToast = useToastStore((s) => s.push);
+  const reloadAccounts = useAccountsStore((s) => s.load);
 
   function reset() {
     setStage('pick');
@@ -94,7 +101,8 @@ export function CsvImportSheet({
       setStage('pick');
       return;
     }
-    const { transactions, periodStart, periodEnd } = parseR.value;
+    const { transactions, periodStart, periodEnd, finalBalances: fb } = parseR.value;
+    setFinalBalances(fb);
     if (transactions.length === 0) {
       setError(
         'Keine Transaktionen erkannt. Achte darauf dass die Datei eine Revolut-CSV ist.',
@@ -182,6 +190,18 @@ export function CsvImportSheet({
       : `${inserted} Transaktionen importiert`;
     pushToast(msg, 'success');
     setImportSummary({ inserted, skipped });
+
+    // Authoritative bank balances from the CSV overwrite local best-guess
+    // balances. The investment account never participates here — the
+    // portfolio is the Trade-Republic source of truth and lives elsewhere.
+    if (finalBalances.current !== null) {
+      await accountsRepo.setBalance('fun', finalBalances.current);
+    }
+    if (finalBalances.savings !== null) {
+      await accountsRepo.setBalance('savings', finalBalances.savings);
+    }
+    await reloadAccounts();
+
     onImported();
 
     // Run anomaly detection on the just-imported transactions.

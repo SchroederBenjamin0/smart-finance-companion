@@ -50,15 +50,19 @@ export function RecentList({ items, onSelect }: Props) {
             />
           );
         }
+        // Sign of the persisted transaction amount decides direction —
+        // a Revolut top-up is stored with a positive amount and must render
+        // as an incoming arrow + emerald, not the default expense red.
+        const isIncoming = it.transaction.amount >= 0;
         return (
           <RecentRow
             key={`t-${it.transaction.id}`}
-            icon={ArrowDownLeft}
+            icon={isIncoming ? ArrowUpRight : ArrowDownLeft}
             title={it.transaction.counterparty}
             subtitle={it.transaction.category}
             amount={it.transaction.amount}
             when={formatRelativeDate(it.transaction.date)}
-            positive={false}
+            positive={isIncoming}
             index={i}
             onClick={onSelect ? () => onSelect(it) : undefined}
           />

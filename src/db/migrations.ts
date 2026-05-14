@@ -46,4 +46,33 @@ export async function runPostUpgradeBackfill(db: IDBPDatabase<SmartFinanceDB>): 
     value: 'true',
     updatedAt: new Date().toISOString(),
   });
+
+  await migrateInvestmentAccountAway(db);
+}
+
+/**
+ * Net-Worth-Refactor: das interne `investment`-Konto wird nicht mehr als
+ * Bucket geführt — die einzige Investment-Wahrheit ist das Portfolio
+ * (TR-PDF-Import). Beim Upgrade wird der vorhandene Saldo nach
+ * `legacy_investment_balance` in appConfig archiviert und das Account-Record
+ * gelöscht. Idempotent über das Vorhandensein des Account-Records gesteuert.
+ */
+async function migrateInvestmentAccountAway(
+  db: IDBPDatabase<SmartFinanceDB>,
+): Promise<void> {
+  const all = await db.getAllFromIndex('accounts', 'by-type', 'investment');
+  if (all.length === 0) return;
+  const archived = all.reduce((sum, a) => sum + (a.balance ?? 0), 0);
+  if (archived > 0) {
+    await db.put('appConfig', {
+      key: ALL_CONFIG_KEYS.legacyInvestmentBalance,
+      value: JSON.stringify(archived),
+      updatedAt: new Date().toISOString(),
+    });
+  }
+  const tx = db.transaction('accounts', 'readwrite');
+  await Promise.all([
+    ...all.map((a) => tx.objectStore('accounts').delete(a.id)),
+    tx.done,
+  ]);
 }

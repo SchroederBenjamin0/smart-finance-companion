@@ -9,9 +9,11 @@ import {
   Layout,
   Lock as LockIcon,
   PieChart,
+  PiggyBank,
   RefreshCw,
   Shield,
   Tag,
+  Wallet,
   type LucideIcon,
 } from 'lucide-react';
 import { BackupSection } from '@/components/feature/settings/BackupSection';
@@ -20,6 +22,7 @@ import { DriftToleranceSlider } from '@/components/feature/settings/DriftToleran
 import { LoansSection } from '@/components/feature/settings/LoansSection';
 import { PinSettingsSheet } from '@/components/feature/settings/PinSettingsSheet';
 import { RulesEditorSheet } from '@/components/feature/settings/RulesEditorSheet';
+import { accountsRepo } from '@/db/repositories/accounts';
 import { configRepo } from '@/db/repositories/config';
 import { resetDB } from '@/db/client';
 import { secretsRepo } from '@/db/repositories/secrets';
@@ -106,9 +109,28 @@ export function Settings() {
   const savings = useAccountsStore((s) =>
     s.accounts.find((a) => a.type === 'savings'),
   );
+  const fun = useAccountsStore((s) =>
+    s.accounts.find((a) => a.type === 'fun'),
+  );
+  const reloadAccounts = useAccountsStore((s) => s.load);
 
   const rule = config.rules.main_job;
   const splitLabel = `${rule.investmentPercentage} / ${rule.savingsPercentage} / ${rule.funPercentage}`;
+
+  async function setBalance(type: 'fun' | 'savings', raw: string) {
+    const n = parseEurInput(raw);
+    if (n === null || n < 0) {
+      pushToast('Ungültiger Saldo', 'error');
+      return;
+    }
+    const r = await accountsRepo.setBalance(type, n);
+    if (!r.ok) {
+      pushToast(`Fehler: ${r.error.message}`, 'error');
+      return;
+    }
+    await reloadAccounts();
+    pushToast('Saldo aktualisiert ✓', 'success');
+  }
 
   return (
     <div className="min-h-[100dvh] bg-paper">
@@ -128,6 +150,27 @@ export function Settings() {
       </header>
 
       <div className="px-4 pt-2">
+        <Section title="Konten-Salden">
+          <p className="px-4 pt-3 text-[12px] leading-snug text-ink-subtle">
+            Die Salden werden beim Revolut-CSV-Import automatisch auf den
+            jüngsten Wert aus der Datei gesetzt. Hier kannst du sie zwischen
+            den Imports manuell anpassen, wenn der angezeigte Wert von der
+            Revolut-App abweicht.
+          </p>
+          <BalanceRow
+            Icon={Wallet}
+            label="Fun-Geld"
+            currentBalance={fun?.balance ?? 0}
+            onSave={(v) => void setBalance('fun', v)}
+          />
+          <BalanceRow
+            Icon={PiggyBank}
+            label="Sparkonto"
+            currentBalance={savings?.balance ?? 0}
+            onSave={(v) => void setBalance('savings', v)}
+          />
+        </Section>
+
         <Section title="Allokation">
           <Row
             Icon={PieChart}
@@ -383,6 +426,56 @@ function RowEditable({
         <div className="text-[15px] font-semibold text-ink">{label}</div>
       </div>
       {children}
+    </div>
+  );
+}
+
+function BalanceRow({
+  Icon,
+  label,
+  currentBalance,
+  onSave,
+}: {
+  Icon: LucideIcon;
+  label: string;
+  currentBalance: number;
+  onSave: (raw: string) => void;
+}) {
+  const [text, setText] = useState(currentBalance.toFixed(2));
+  useEffect(() => {
+    setText(currentBalance.toFixed(2));
+  }, [currentBalance]);
+  return (
+    <div className="px-4 py-3">
+      <div className="flex items-center gap-3">
+        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-forest-800 dark:bg-forest-900 dark:text-forest-200">
+          <Icon className="h-4.5 w-4.5" strokeWidth={2.25} />
+        </div>
+        <div className="min-w-0 flex-1 text-[15px] font-semibold text-ink">
+          {label}
+        </div>
+        <div className="text-[13px] font-medium tabular-nums text-ink-subtle">
+          aktuell {formatEur(currentBalance)}
+        </div>
+      </div>
+      <div className="mt-3 flex items-center gap-2">
+        <input
+          type="text"
+          inputMode="decimal"
+          autoComplete="off"
+          className="input-field flex-1 tabular-nums"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          aria-label={`Saldo ${label}`}
+        />
+        <button
+          type="button"
+          className="btn-primary px-4"
+          onClick={() => onSave(text)}
+        >
+          Setzen
+        </button>
+      </div>
     </div>
   );
 }
