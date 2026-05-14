@@ -14,6 +14,16 @@ export interface ParsedRevolutCsv {
   periodStart: string;
   periodEnd: string;
   transactions: RevolutTxn[];
+  /**
+   * Latest known balance per Revolut account, derived from the last booking
+   * (by date, with file order as tiebreaker) in each section. These mirror
+   * what the user sees in the Revolut app and are the authoritative balances
+   * for the corresponding Fun / Sparkonto buckets.
+   */
+  finalBalances: {
+    current: number | null;
+    savings: number | null;
+  };
 }
 
 const MONTH_INDEX: Record<string, number> = {
@@ -66,6 +76,16 @@ export async function parseRevolutCsv(
     let periodStart = '';
     let periodEnd = '';
 
+    interface LatestBalance {
+      date: string;
+      rowIdx: number;
+      balance: number;
+    }
+    const latest: Record<'current' | 'savings', LatestBalance | null> = {
+      current: null,
+      savings: null,
+    };
+
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i] ?? [];
       const first = (row[0] ?? '').trim();
@@ -81,7 +101,8 @@ export async function parseRevolutCsv(
       const description = second;
       const revolutCategory = (row[2] ?? '').trim() || 'Uncategorized';
       const amount = parseMoney(row[3] ?? '');
-      const balance = parseMoney(row[4] ?? '') ?? 0;
+      const parsedBalance = parseMoney(row[4] ?? '');
+      const balance = parsedBalance ?? 0;
       if (amount === null) continue;
 
       transactions.push({
@@ -93,10 +114,29 @@ export async function parseRevolutCsv(
         account: currentAccount,
       });
 
+      if (parsedBalance !== null) {
+        const prev = latest[currentAccount];
+        if (
+          !prev ||
+          date > prev.date ||
+          (date === prev.date && i > prev.rowIdx)
+        ) {
+          latest[currentAccount] = { date, rowIdx: i, balance: parsedBalance };
+        }
+      }
+
       if (!periodStart || date < periodStart) periodStart = date;
       if (!periodEnd || date > periodEnd) periodEnd = date;
     }
 
-    return { periodStart, periodEnd, transactions };
+    return {
+      periodStart,
+      periodEnd,
+      transactions,
+      finalBalances: {
+        current: latest.current ? latest.current.balance : null,
+        savings: latest.savings ? latest.savings.balance : null,
+      },
+    };
   });
 }

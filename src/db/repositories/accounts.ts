@@ -64,6 +64,35 @@ export const accountsRepo = {
       return err(e instanceof Error ? e : new Error(String(e)));
     }
   },
+
+  /**
+   * Overwrite the balance of an existing bank account. Used by the Revolut
+   * CSV import (authoritative ground truth) and the manual Settings override.
+   */
+  async setBalance(
+    type: AccountType,
+    balance: number,
+  ): Promise<Result<Account>> {
+    try {
+      const db = await getDB();
+      const tx = db.transaction('accounts', 'readwrite');
+      const matches = await tx.store
+        .index('by-type')
+        .getAll(type);
+      const account = matches[0];
+      if (!account) {
+        await tx.done;
+        return err(new Error(`No account of type ${type}`));
+      }
+      account.balance = round2(balance);
+      account.lastUpdated = nowIso();
+      await tx.store.put(account);
+      await tx.done;
+      return ok(account);
+    } catch (e) {
+      return err(e instanceof Error ? e : new Error(String(e)));
+    }
+  },
 };
 
 const round2 = (n: number): number => Math.round(n * 100) / 100;
