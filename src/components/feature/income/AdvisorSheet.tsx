@@ -15,7 +15,7 @@ import {
   type AdvisorRecommendation,
 } from '@/services/advisor';
 import { CLAUDE_MODELS } from '@/services/claude';
-import { tickerFromIsin, trDeepLink } from '@/services/yahoo';
+import { trDeepLink } from '@/services/yahoo';
 
 interface Props {
   open: boolean;
@@ -98,26 +98,19 @@ export function AdvisorSheet({
     })();
   }, [open, investmentAmount, incomeEntryId]);
 
-  function isinForTicker(ticker: string): string | null {
-    // Reverse-lookup: scan known map and the user's own positions.
+  // ISIN comes straight from the advisor service (constrained to the
+  // TR_UNIVERSE whitelist). The user's own positions are still consulted
+  // as a fallback for legacy recommendations without isin set.
+  function isinForAllocation(a: { isin?: string; ticker?: string }): string | null {
+    if (a.isin) return a.isin;
+    if (!a.ticker) return null;
     const own = positions.find(
-      (p) => p.ticker.toUpperCase() === ticker.toUpperCase(),
+      (p) => p.ticker.toUpperCase() === a.ticker?.toUpperCase(),
     );
-    if (own?.isin) return own.isin;
-    // Hard-coded known ISINs that map back to common tickers
-    const KNOWN: Record<string, string> = {
-      'IWDA.AS': 'IE00B4L5Y983',
-      'EIMI.DE': 'IE00BKM4GZ66',
-      'CSNDX.DE': 'IE00B53SZB19',
-      'IUSA.DE': 'IE00B0M62Q58',
-    };
-    if (KNOWN[ticker.toUpperCase()]) return KNOWN[ticker.toUpperCase()]!;
-    return null;
+    return own?.isin ?? null;
   }
-
-  // Suppress unused tickerFromIsin import — useful if we later add the
-  // reverse-lookup. This noop keeps the import for tree-shaking clarity.
-  void tickerFromIsin;
+  // Unused fallback variables for backward-compat — keep `positions` referenced.
+  void positions;
 
   return (
     <Sheet
@@ -208,10 +201,10 @@ export function AdvisorSheet({
 
           <div className="row-divider rounded-[22px] bg-surface shadow-card">
             {rec.allocations.map((a, i) => {
-              const isin = isinForTicker(a.ticker);
+              const isin = isinForAllocation(a);
               return (
                 <div
-                  key={`${a.ticker}-${i}`}
+                  key={`${a.isin || a.ticker}-${i}`}
                   className="flex items-start gap-3 px-4 py-3"
                 >
                   <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-forest-800 dark:bg-forest-900 dark:text-forest-200 text-[12px] font-bold">

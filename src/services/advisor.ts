@@ -4,8 +4,10 @@ import type {
   AllocationTarget,
   InvestmentPosition,
 } from '@/db/types';
+import { TR_UNIVERSE, findByIsin } from '@/data/tr-universe';
 
 export interface AdvisorAllocation {
+  isin: string;
   ticker: string;
   name: string;
   amountEur: number;
@@ -19,32 +21,33 @@ export interface AdvisorRecommendation {
   summary: string;
 }
 
-const SYSTEM_PROMPT = `Du bist ein konservativer Investment-Advisor für einen Privatanleger
+const BASE_SYSTEM_PROMPT = `Du bist ein konservativer Investment-Advisor für einen Privatanleger
 in Deutschland mit langfristigem Anlagehorizont (10+ Jahre).
 
 Deine Regeln (NIEMALS brechen):
 1. Niemals Markt-Timing oder kurzfristige Trades empfehlen
 2. Niemals Krypto vorschlagen
-3. Niemals Einzelaktien empfehlen außer der Nutzer fragt explizit
-4. Empfehlungen IMMER als ETF-Sparplan-Anpassungen
+3. Einzelaktien nur sparsam, max 30% der Empfehlungs-Summe, Bevorzugung von ETFs
+4. Empfehlungen IMMER als Sparplan-Anpassungen (Käufe, keine Verkäufe)
 5. Begründungen kurz halten (max 2 Sätze pro Position)
 6. Auf Deutsch antworten
 7. Niemals Garantien aussprechen ("dieser ETF wird steigen")
 8. Niemals Verkaufs-Empfehlungen geben
 
-Deine einzige Aufgabe in dieser Session:
-Empfehle Sparplan-Beträge so, dass die Ziel-Allokation des Nutzers
-besser getroffen wird. Berücksichtige Drift-Korrektur, NICHT
-Markt-Timing.
+WICHTIG — Werteuniversum:
+Du darfst AUSSCHLIESSLICH Werte aus der unten gelieferten Liste (TR-Universum)
+auswählen. Jede Empfehlung MUSS eine ISIN aus dieser Liste enthalten. Wenn
+keine geeignete Auswahl möglich ist, gib eine leere allocations-Liste zurück
+und erkläre warum in summary.
 
 Antwort-Format (strikt JSON, kein Markdown-Code-Block):
 {
   "allocations": [
     {
+      "isin": "IE00B4L5Y983",
       "ticker": "IWDA.AS",
-      "name": "iShares Core MSCI World",
       "amount_eur": 230,
-      "reason": "Hauptbaustein bleibt"
+      "reason": "Hauptbaustein bleibt das MSCI World."
     }
   ],
   "total_eur": 470,
@@ -54,10 +57,12 @@ Antwort-Format (strikt JSON, kein Markdown-Code-Block):
 
 Antworte nur mit dem JSON-Objekt, ohne Erklärungen außerhalb.`;
 
-const ETF_SUGGESTIONS = `Falls der Nutzer noch keine ETFs hält, schlage Standard-Bausteine vor:
-- IWDA.AS (iShares Core MSCI World, ISIN IE00B4L5Y983) — Welt-ETF
-- EIMI.DE (iShares Core MSCI EM IMI, ISIN IE00BKM4GZ66) — Schwellenländer
-- CSNDX.DE (iShares Nasdaq 100, ISIN IE00B53SZB19) — US-Tech-Übergewichtung`;
+function universeMessage(): string {
+  const lines = TR_UNIVERSE.map(
+    (u) => `- ${u.isin} | ${u.tickerYahoo} | ${u.type} | ${u.displayName}`,
+  ).join('\n');
+  return `TR-Universum (zulässige Werte):\n${lines}`;
+}
 
 export async function recommendAllocation(input: {
   availableEur: number;
@@ -74,38 +79,40 @@ export async function recommendAllocation(input: {
     });
   }
 
-  const totalValue = portfolio.reduce((sum, p) => sum + p.currentValue, 0);
-  const portfolioLines = portfolio
-    .map(
-      (p) =>
-        `- ${p.name} (${p.ticker || p.isin}): ${p.currentValue.toFixed(2)} EUR (${
-          totalValue > 0 ? Math.round((p.currentValue / totalValue) * 100) : 0
-        }%)${p.targetPercentage > 0 ? ` · Ziel ${p.targetPercentage}%` : ''}`,
-    )
-    .join('\n');
+  const userMessage = buildUserMessage({ availableEur, portfolio, target });
 
-  const userMessage = `
-Verfügbar diesen Monat: ${availableEur.toFixed(2)} EUR.
+  // First attempt — strict prompt, may still drift into off-list ISINs.
+  const first = await runAdvisor(userMessage, false);
+  if (!first.ok) return first;
 
-Ziel-Allokation:
-- MSCI World: ${target.msciWorld}%
-- MSCI EM: ${target.msciEm}%
-- Nasdaq 100: ${target.nasdaq}%
-- Cash: ${target.cash}%
+  if (first.value.allocations.length > 0) {
+    return ok(first.value);
+  }
 
-Aktuelles Portfolio (Marktwerte in EUR):
-${portfolio.length === 0 ? '(noch leer — schlage Standard-ETFs vor)' : portfolioLines}
+  // The post-filter dropped everything → retry once with an explicit hint.
+  const retried = await runAdvisor(userMessage, true);
+  if (!retried.ok) return retried;
+  return ok(retried.value);
+}
 
-${portfolio.length === 0 ? ETF_SUGGESTIONS : ''}
-
-Schlage Sparplan-Aufteilung vor.
-`.trim();
+async function runAdvisor(
+  userMessage: string,
+  isRetry: boolean,
+): Promise<Result<AdvisorRecommendation>> {
+  const system = isRetry
+    ? `${BASE_SYSTEM_PROMPT}\n\nHINWEIS: Beim ersten Versuch wurden Werte ausserhalb der Liste vorgeschlagen — bitte AUSSCHLIESSLICH die gelieferten ISINs benutzen.`
+    : BASE_SYSTEM_PROMPT;
 
   const r = await callClaude({
     model: CLAUDE_MODELS.SONNET,
-    max_tokens: 800,
-    system: SYSTEM_PROMPT,
-    messages: [{ role: 'user', content: userMessage }],
+    max_tokens: 900,
+    system,
+    messages: [
+      {
+        role: 'user',
+        content: `${universeMessage()}\n\n${userMessage}`,
+      },
+    ],
   });
   if (!r.ok) return err(r.error);
 
@@ -116,24 +123,89 @@ Schlage Sparplan-Aufteilung vor.
     parsed = JSON.parse(cleaned) as Record<string, unknown>;
   } catch (e) {
     return err(
-      new Error(`Advisor returned non-JSON: ${e instanceof Error ? e.message : String(e)}`),
+      new Error(
+        `Advisor returned non-JSON: ${e instanceof Error ? e.message : String(e)}`,
+      ),
     );
   }
 
+  return ok(normalizeAndFilter(parsed));
+}
+
+function buildUserMessage(input: {
+  availableEur: number;
+  portfolio: InvestmentPosition[];
+  target: AllocationTarget;
+}): string {
+  const { availableEur, portfolio, target } = input;
+  const totalValue = portfolio.reduce((sum, p) => sum + p.currentValue, 0);
+  const portfolioLines = portfolio
+    .map(
+      (p) =>
+        `- ${p.name} (${p.ticker || p.isin}): ${p.currentValue.toFixed(2)} EUR (${
+          totalValue > 0 ? Math.round((p.currentValue / totalValue) * 100) : 0
+        }%)${p.targetPercentage > 0 ? ` · Ziel ${p.targetPercentage}%` : ''}`,
+    )
+    .join('\n');
+
+  return `
+Verfügbar diesen Monat: ${availableEur.toFixed(2)} EUR.
+
+Ziel-Allokation:
+- MSCI World: ${target.msciWorld}%
+- MSCI EM: ${target.msciEm}%
+- Nasdaq 100: ${target.nasdaq}%
+- Cash: ${target.cash}%
+
+Aktuelles Portfolio (Marktwerte in EUR):
+${portfolio.length === 0 ? '(noch leer — schlage geeignete Welt+EM-Bausteine aus dem TR-Universum vor)' : portfolioLines}
+
+Schlage Sparplan-Aufteilung vor — ausschließlich Werte aus dem TR-Universum.
+`.trim();
+}
+
+/**
+ * Normalize the LLM response and drop any allocation that isn't in
+ * TR_UNIVERSE. Display name + ticker are overwritten from the whitelist
+ * so the UI always shows the exact Trade-Republic-Name the user sees.
+ *
+ * Exported for tests.
+ */
+export function normalizeAndFilter(
+  parsed: Record<string, unknown>,
+): AdvisorRecommendation {
   const rawAllocations = Array.isArray(parsed['allocations'])
     ? (parsed['allocations'] as Array<Record<string, unknown>>)
     : [];
 
   const allocations: AdvisorAllocation[] = rawAllocations
     .map((a) => ({
+      isin: typeof a['isin'] === 'string' ? a['isin'] : '',
       ticker: typeof a['ticker'] === 'string' ? a['ticker'] : '',
       name: typeof a['name'] === 'string' ? a['name'] : '',
       amountEur: Number(a['amount_eur'] ?? 0),
       reason: typeof a['reason'] === 'string' ? a['reason'] : '',
     }))
-    .filter((a) => Number.isFinite(a.amountEur) && a.amountEur > 0);
+    .map((a) => {
+      const match = findByIsin(a.isin);
+      if (!match) return null;
+      return {
+        ...a,
+        ticker: match.tickerYahoo,
+        name: match.displayName,
+      };
+    })
+    .filter(
+      (a): a is AdvisorAllocation =>
+        a !== null && Number.isFinite(a.amountEur) && a.amountEur > 0,
+    );
 
-  const totalEur = Number(parsed['total_eur'] ?? 0);
+  const reportedTotal = Number(parsed['total_eur'] ?? 0);
+  const totalEur =
+    Number.isFinite(reportedTotal) && reportedTotal > 0
+      ? reportedTotal
+      : allocations.reduce((s, a) => s + a.amountEur, 0);
+
   const driftWarning =
     typeof parsed['drift_warning'] === 'string'
       ? parsed['drift_warning']
@@ -143,12 +215,5 @@ Schlage Sparplan-Aufteilung vor.
       ? parsed['summary']
       : 'Empfehlung erstellt.';
 
-  return ok({
-    allocations,
-    totalEur: Number.isFinite(totalEur) && totalEur > 0
-      ? totalEur
-      : allocations.reduce((s, a) => s + a.amountEur, 0),
-    driftWarning,
-    summary,
-  });
+  return { allocations, totalEur, driftWarning, summary };
 }
