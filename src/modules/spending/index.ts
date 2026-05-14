@@ -1,5 +1,18 @@
 import type { Transaction } from '@/db/types';
 
+/**
+ * Categories that look like outflows on the bank statement but don't
+ * represent real spending — money moved between the user's own accounts.
+ * Excluded from spending stats, cashflow forecasts and anomaly detection.
+ */
+export const NON_SPENDING_CATEGORIES: ReadonlySet<string> = new Set([
+  'transfer',
+]);
+
+export function isNonSpending(category: string): boolean {
+  return NON_SPENDING_CATEGORIES.has(category);
+}
+
 export type SpendingRange = 30 | 90 | 365 | 'all';
 
 export interface CategoryAggregateRow {
@@ -23,6 +36,7 @@ export function aggregateByCategory(txs: Transaction[]): CategoryAggregateRow[] 
 
   for (const t of txs) {
     if (t.amount >= 0) continue;
+    if (isNonSpending(t.category)) continue;
     let bucket = buckets.get(t.category);
     if (!bucket) {
       bucket = { total: 0, count: 0, counterparties: new Map() };

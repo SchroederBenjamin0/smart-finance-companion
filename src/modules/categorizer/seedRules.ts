@@ -48,8 +48,16 @@ export const SEED_RULES: SeedRule[] = [
   { pattern: '^(GEHALT|LOHN|SALARY|TOP[- ]?UP)\\b', matchType: 'regex', category: 'einkommen', createdBy: 'system' },
   { pattern: '\\b(MAHNGEB(?:ÜHR|UEHR)|KONTO[- ]?GEB(?:Ü|UE)HR|ÜBERZIEHUNG|UEBERZIEHUNG|FINANZAMT|STEUER)\\b', matchType: 'regex', category: 'gebühren', createdBy: 'system' },
 
-  // Internal Revolut transfers
+  // Internal Revolut transfers — money moved between the user's own
+  // accounts (Personal ↔ Savings Vault, Pockets, Vaults). These show as
+  // negative on the source account and positive on the destination, but
+  // are NOT spending.
   { pattern: '^(To|From) Instant Access Savings$', matchType: 'regex', category: 'transfer', createdBy: 'system' },
+  { pattern: '^(To|From) Personal Account$', matchType: 'regex', category: 'transfer', createdBy: 'system' },
+  { pattern: '^(To|From) Savings( Vault| Account)?$', matchType: 'regex', category: 'transfer', createdBy: 'system' },
+  { pattern: '^(To|From) (Vault|Pocket|Money Pot|Group Account)\\b', matchType: 'regex', category: 'transfer', createdBy: 'system' },
+  { pattern: '^(Transfer|Übertrag|Umbuchung) (to|from|zu|von) ', matchType: 'regex', category: 'transfer', createdBy: 'system' },
+
   { pattern: '^Top[- ]?up by ', matchType: 'regex', category: 'einkommen', createdBy: 'system' },
 ];
 

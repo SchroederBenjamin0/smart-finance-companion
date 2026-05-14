@@ -88,4 +88,15 @@ describe('aggregateByCategory', () => {
   it('returns empty array for empty input', () => {
     expect(aggregateByCategory([])).toEqual([]);
   });
+
+  it('excludes the "transfer" category — internal moves are not spending', () => {
+    const txs = [
+      mkTx({ id: 'a', category: 'lebensmittel', amount: -50 }),
+      mkTx({ id: 'b', category: 'transfer', amount: -500, counterparty: 'To Personal Account' }),
+      mkTx({ id: 'c', category: 'transfer', amount: -1200, counterparty: 'To Instant Access Savings' }),
+    ];
+    const rows = aggregateByCategory(txs);
+    expect(rows.map((r) => r.category)).toEqual(['lebensmittel']);
+    expect(rows[0]!.total).toBe(50);
+  });
 });
