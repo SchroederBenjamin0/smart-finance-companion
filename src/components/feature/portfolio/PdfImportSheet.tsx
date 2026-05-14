@@ -75,6 +75,15 @@ export function PdfImportSheet({
     let removed = 0;
 
     // 1. Upsert every PDF holding.
+    //
+    // totalInvested is RESET to currentValue on every PDF import. The TR
+    // PDF doesn't expose your cost basis, so any previously stored value
+    // is either (a) the current value of an earlier snapshot or (b) a
+    // manual edit the user made via PositionForm. Both are stale once a
+    // new PDF lands. Keeping them around produces fake performance
+    // numbers (e.g. -42% from a buggy first import). Resetting means
+    // performance % reflects "how the portfolio moved since the last
+    // PDF import" — honest and meaningful.
     for (const h of result.value.holdings) {
       const prior = existingByIsin.get(h.isin.toUpperCase());
       const pos: InvestmentPosition = prior
@@ -83,8 +92,7 @@ export function PdfImportSheet({
             ticker: prior.ticker || h.ticker,
             name: h.name || prior.name,
             shares: h.shares,
-            // totalInvested is preserved across imports so performance %
-            // stays meaningful — TR PDFs don't expose your cost basis.
+            totalInvested: round2(h.currentValue),
             currentValue: round2(h.currentValue),
             lastSyncedPrice: ts,
           }
