@@ -1,5 +1,11 @@
 import { useState } from 'react';
-import { CheckCircle2, FileText, Loader2, Upload } from 'lucide-react';
+import {
+  CheckCircle2,
+  FileText,
+  Loader2,
+  Trash2,
+  Upload,
+} from 'lucide-react';
 import { Sheet } from '@/components/ui/Sheet';
 import { positionsRepo } from '@/db/repositories/positions';
 import type { InvestmentPosition } from '@/db/types';
@@ -24,6 +30,17 @@ interface DraftRow extends ParsedHolding {
   enabled: boolean;
 }
 
+/**
+ * An existing position in the DB whose ISIN is NOT present in the freshly
+ * imported PDF. The PDF is treated as the full portfolio snapshot, so
+ * anything missing is — by default — removed. The user can override per
+ * row (e.g. for a manually-tracked position TR doesn't see).
+ */
+interface StaleRow {
+  position: InvestmentPosition;
+  remove: boolean;
+}
+
 export function PdfImportSheet({
   open,
   onOpenChange,
@@ -33,6 +50,7 @@ export function PdfImportSheet({
   const [stage, setStage] = useState<Stage>('pick');
   const [error, setError] = useState<string | null>(null);
   const [drafts, setDrafts] = useState<DraftRow[]>([]);
+  const [stale, setStale] = useState<StaleRow[]>([]);
   const [date, setDate] = useState('');
   const pushToast = useToastStore((s) => s.push);
 
@@ -40,6 +58,7 @@ export function PdfImportSheet({
     setStage('pick');
     setError(null);
     setDrafts([]);
+    setStale([]);
     setDate('');
   }
 
@@ -62,6 +81,9 @@ export function PdfImportSheet({
       return;
     }
     setDate(result.value.date);
+    const pdfIsins = new Set(
+      result.value.holdings.map((h) => h.isin.toUpperCase()),
+    );
     setDrafts(
       result.value.holdings.map((h) => {
         const existing = existingPositions.find(
@@ -77,6 +99,11 @@ export function PdfImportSheet({
         };
       }),
     );
+    setStale(
+      existingPositions
+        .filter((p) => !pdfIsins.has(p.isin.toUpperCase()))
+        .map((p) => ({ position: p, remove: true })),
+    );
     setStage('review');
   }
 
@@ -84,6 +111,7 @@ export function PdfImportSheet({
     setStage('saving');
     let created = 0;
     let updated = 0;
+    let removed = 0;
     for (const d of drafts) {
       if (!d.enabled) continue;
       const invested = parseEurInput(d.totalInvestedText) ?? d.currentValue;
@@ -114,8 +142,15 @@ export function PdfImportSheet({
         d.existing ? updated++ : created++;
       }
     }
+    for (const s of stale) {
+      if (!s.remove) continue;
+      const r = await positionsRepo.remove(s.position.id);
+      if (r.ok) removed++;
+    }
     onImported();
-    pushToast(`${created} neu, ${updated} aktualisiert`, 'success');
+    const parts = [`${created} neu`, `${updated} aktualisiert`];
+    if (removed > 0) parts.push(`${removed} entfernt`);
+    pushToast(parts.join(', '), 'success');
     setStage('done');
     setTimeout(() => {
       onOpenChange(false);
@@ -137,9 +172,17 @@ export function PdfImportSheet({
             type="button"
             className="btn-primary w-full"
             onClick={() => void importAll()}
-            disabled={drafts.every((d) => !d.enabled)}
+            disabled={
+              drafts.every((d) => !d.enabled) &&
+              stale.every((s) => !s.remove)
+            }
           >
-            {drafts.filter((d) => d.enabled).length} Position(en) übernehmen
+            {(() => {
+              const keep = drafts.filter((d) => d.enabled).length;
+              const drop = stale.filter((s) => s.remove).length;
+              if (drop === 0) return `${keep} Position(en) übernehmen`;
+              return `${keep} übernehmen · ${drop} entfernen`;
+            })()}
           </button>
         ) : undefined
       }
@@ -195,13 +238,21 @@ export function PdfImportSheet({
           <div className="flex items-center gap-2 rounded-xl bg-paper px-3 py-2 text-[12px] text-ink-muted">
             <FileText className="h-4 w-4" strokeWidth={2.25} />
             Vermögensübersicht zum {date} · {drafts.length} Holdings erkannt
+            {stale.length > 0 && (
+              <> · {stale.length} nicht mehr im PDF</>
+            )}
           </div>
           <p className="text-[12px] text-ink-subtle">
-            Eingezahlt-Wert ist standardmäßig der aktuelle Kurswert. Wenn du
-            deinen tatsächlichen Kaufpreis kennst, hier eintragen — sonst
-            zeigt die Performance erstmal 0 %.
+            Das PDF ist die Portfolio-Wahrheit: alles im PDF wird übernommen,
+            alles was hier <strong>fehlt</strong> aber bislang in der App
+            stand, wird unten zum Entfernen vorgeschlagen. Eingezahlt-Wert
+            ist standardmäßig der aktuelle Kurswert — wenn du deinen
+            tatsächlichen Kaufpreis kennst, hier eintragen.
           </p>
 
+          <h3 className="mt-3 text-[11px] font-semibold uppercase tracking-wider text-ink-subtle">
+            Aus dem PDF · {drafts.length}
+          </h3>
           {drafts.map((d, i) => (
             <div
               key={`${d.isin}-${i}`}
@@ -276,6 +327,59 @@ export function PdfImportSheet({
               )}
             </div>
           ))}
+
+          {stale.length > 0 && (
+            <>
+              <h3 className="mt-5 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-amber-800">
+                <Trash2 className="h-3.5 w-3.5" strokeWidth={2.5} />
+                Nicht mehr im PDF · {stale.length}
+              </h3>
+              <p className="text-[12px] text-ink-subtle">
+                Standardmäßig werden diese Positionen entfernt. Häkchen
+                rausnehmen, wenn du sie manuell weiter tracken willst (z. B.
+                ausserhalb von TR).
+              </p>
+              {stale.map((s, i) => (
+                <div
+                  key={s.position.id}
+                  className={`rounded-2xl border p-3 ${
+                    s.remove
+                      ? 'border-amber-200 bg-amber-50/40'
+                      : 'border-forest-950/10 bg-surface'
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      checked={s.remove}
+                      onChange={(e) =>
+                        setStale((arr) =>
+                          arr.map((x, idx) =>
+                            idx === i ? { ...x, remove: e.target.checked } : x,
+                          ),
+                        )
+                      }
+                      className="mt-1 h-4 w-4 accent-amber-700"
+                      aria-label={`${s.position.name} entfernen`}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-[14px] font-semibold text-ink">
+                        {s.position.name}
+                      </div>
+                      <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] text-ink-subtle">
+                        <span>{s.position.isin}</span>
+                        <span>{s.position.shares} Stk.</span>
+                        <span>aktuell {formatEur(s.position.currentValue)}</span>
+                      </div>
+                      <div className="mt-1 text-[11px] text-amber-800">
+                        {s.remove ? 'wird entfernt' : 'bleibt manuell erhalten'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </>
+          )}
         </div>
       )}
     </Sheet>
