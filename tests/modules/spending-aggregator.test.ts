@@ -89,14 +89,18 @@ describe('aggregateByCategory', () => {
     expect(aggregateByCategory([])).toEqual([]);
   });
 
-  it('excludes the "transfer" category — internal moves are not spending', () => {
+  it('excludes the "umbuchung" category but keeps real "transfer" spending', () => {
     const txs = [
       mkTx({ id: 'a', category: 'lebensmittel', amount: -50 }),
-      mkTx({ id: 'b', category: 'transfer', amount: -500, counterparty: 'To Personal Account' }),
-      mkTx({ id: 'c', category: 'transfer', amount: -1200, counterparty: 'To Instant Access Savings' }),
+      // own-account move — should NOT count
+      mkTx({ id: 'b', category: 'umbuchung', amount: -500, counterparty: 'To Personal Account' }),
+      mkTx({ id: 'c', category: 'umbuchung', amount: -1200, counterparty: 'To Instant Access Savings' }),
+      // SEPA transfer to a third party (rent) — IS spending
+      mkTx({ id: 'd', category: 'transfer', amount: -800, counterparty: 'Miete Vermieter' }),
     ];
     const rows = aggregateByCategory(txs);
-    expect(rows.map((r) => r.category)).toEqual(['lebensmittel']);
-    expect(rows[0]!.total).toBe(50);
+    expect(rows.map((r) => r.category).sort()).toEqual(['lebensmittel', 'transfer']);
+    expect(rows.find((r) => r.category === 'transfer')!.total).toBe(800);
+    expect(rows.find((r) => r.category === 'lebensmittel')!.total).toBe(50);
   });
 });

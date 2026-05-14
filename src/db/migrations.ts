@@ -1,7 +1,12 @@
 import type { IDBPDatabase } from 'idb';
 import { computeTransactionHash } from '@/lib/hash';
-import { addDays } from '@/lib/date';
+import { addDays, nowIso } from '@/lib/date';
+import { generateId } from '@/lib/id';
 import { ALL_CONFIG_KEYS } from './types';
+import {
+  INTERNAL_TRANSFER_PATTERNS,
+  matchesInternalTransfer,
+} from '@/modules/categorizer/seedRules';
 import type { SmartFinanceDB } from './schema';
 
 export async function runPostUpgradeBackfill(db: IDBPDatabase<SmartFinanceDB>): Promise<void> {
@@ -48,6 +53,79 @@ export async function runPostUpgradeBackfill(db: IDBPDatabase<SmartFinanceDB>): 
   });
 
   await migrateInvestmentAccountAway(db);
+  await reclassifyInternalTransfers(db);
+}
+
+/**
+ * Existing transactions categorized as `transfer` whose counterparty looks
+ * like an internal Revolut/own-account move get re-labelled to the new
+ * `umbuchung` category. After this, the spending stats only filter out
+ * actual own-account moves — outgoing payments to third parties
+ * (still `transfer`) remain visible as real spending. Idempotent via a
+ * config flag so this only runs once per user.
+ */
+async function reclassifyInternalTransfers(
+  db: IDBPDatabase<SmartFinanceDB>,
+): Promise<void> {
+  const flag = await db.get(
+    'appConfig',
+    ALL_CONFIG_KEYS.internalTransferReclassifyV1,
+  );
+  if (flag?.value === 'true') return;
+
+  const all = await db.getAll('transactions');
+  const toRelabel = all.filter(
+    (t) => t.category === 'transfer' && matchesInternalTransfer(t.counterparty),
+  );
+  if (toRelabel.length > 0) {
+    const tx = db.transaction('transactions', 'readwrite');
+    await Promise.all([
+      ...toRelabel.map((t) =>
+        tx.objectStore('transactions').put({ ...t, category: 'umbuchung' }),
+      ),
+      tx.done,
+    ]);
+  }
+
+  // Also fix the rule store: existing rules that match an INTERNAL_TRANSFER
+  // pattern but are stored with the legacy `transfer` category get their
+  // category flipped to `umbuchung`; missing patterns get added so future
+  // imports classify own-account moves correctly without the LLM.
+  const existingRules = await db.getAll('categoryRules');
+  const internalSet = new Set(INTERNAL_TRANSFER_PATTERNS);
+  const tx2 = db.transaction('categoryRules', 'readwrite');
+  const store = tx2.objectStore('categoryRules');
+  for (const rule of existingRules) {
+    if (
+      internalSet.has(rule.counterpartyPattern) &&
+      rule.category === 'transfer'
+    ) {
+      await store.put({ ...rule, category: 'umbuchung' });
+    }
+  }
+  const havePattern = new Set(
+    existingRules.map((r) => r.counterpartyPattern),
+  );
+  for (const pattern of INTERNAL_TRANSFER_PATTERNS) {
+    if (havePattern.has(pattern)) continue;
+    await store.put({
+      id: generateId(),
+      counterpartyPattern: pattern,
+      matchType: 'regex',
+      category: 'umbuchung',
+      createdBy: 'system',
+      hitCount: 0,
+      lastUsed: null,
+      createdAt: nowIso(),
+    });
+  }
+  await tx2.done;
+
+  await db.put('appConfig', {
+    key: ALL_CONFIG_KEYS.internalTransferReclassifyV1,
+    value: 'true',
+    updatedAt: new Date().toISOString(),
+  });
 }
 
 /**

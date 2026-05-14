@@ -32,6 +32,7 @@ export const VALID_CATEGORIES = [
   'gebühren',
   'einkommen',
   'transfer',
+  'umbuchung',
   'sonstiges',
 ] as const;
 
@@ -147,7 +148,12 @@ Verfügbare Kategorien (genau eine pro Buchung):
 - gesundheit    (Apotheke, Arzt, Sport, Fitness)
 - gebühren      (Bankgebühren, Mahnungen, Steuern)
 - einkommen     (positive Buchungen wie Gehalt, Top-up, Refund)
-- transfer      (interne Umbuchungen zwischen eigenen Konten)
+- transfer      (Überweisungen an DRITTE — Miete, Freunde, externe IBANs.
+                  Echte Ausgabe, fließt in die Spending-Stats.)
+- umbuchung     (Umbuchungen zwischen EIGENEN Konten, z.B. Revolut
+                  Personal ↔ Savings Vault, "To Personal Account",
+                  "From Savings". KEINE Ausgabe — das Geld bleibt
+                  in der eigenen Tasche.)
 - sonstiges
 
 Antwort-Format (strikt JSON, kein Markdown-Code-Block):

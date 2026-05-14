@@ -2,11 +2,14 @@ import type { Transaction } from '@/db/types';
 
 /**
  * Categories that look like outflows on the bank statement but don't
- * represent real spending — money moved between the user's own accounts.
- * Excluded from spending stats, cashflow forecasts and anomaly detection.
+ * represent real spending — money moved between the user's own accounts
+ * ("umbuchung"). Excluded from spending stats, cashflow forecasts and
+ * anomaly detection. The `transfer` category — outgoing payments to
+ * third parties (rent, friends, SEPA-Überweisungen) — IS real spending
+ * and is NOT in this set.
  */
 export const NON_SPENDING_CATEGORIES: ReadonlySet<string> = new Set([
-  'transfer',
+  'umbuchung',
 ]);
 
 export function isNonSpending(category: string): boolean {
