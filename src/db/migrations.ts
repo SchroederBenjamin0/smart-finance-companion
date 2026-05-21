@@ -7,6 +7,7 @@ import {
   INTERNAL_TRANSFER_PATTERNS,
   matchesInternalTransfer,
 } from '@/modules/categorizer/seedRules';
+import { isHeatsAmount } from '@/modules/categorizer/heatsDetector';
 import type { SmartFinanceDB } from './schema';
 
 export async function runPostUpgradeBackfill(db: IDBPDatabase<SmartFinanceDB>): Promise<void> {
@@ -54,6 +55,66 @@ export async function runPostUpgradeBackfill(db: IDBPDatabase<SmartFinanceDB>): 
 
   await migrateInvestmentAccountAway(db);
   await reclassifyInternalTransfers(db);
+  await reclassifyHeatsAndInstantSavings(db);
+}
+
+/**
+ * Retroactively flips two types of misclassified transactions:
+ *   1. Expense rows with amount = 7,80 € or 15,60 € → `tabak`.
+ *   2. ANY row (regardless of current category, sign of amount) whose
+ *      counterparty matches one of the internal-transfer patterns now
+ *      that the list has been broadened to include `To/From Instant
+ *      Savings`. The patterns are anchored regex (`^…$`) and specific
+ *      enough that hitting them is a definitive signal — a real expense
+ *      will never have a counterparty literally named "To Personal
+ *      Account" or "From Instant Savings".
+ *
+ * Idempotent via its own config flag, separate from the v1 internal-
+ * transfer migration which is also marked done by now.
+ */
+async function reclassifyHeatsAndInstantSavings(
+  db: IDBPDatabase<SmartFinanceDB>,
+): Promise<void> {
+  const flag = await db.get(
+    'appConfig',
+    ALL_CONFIG_KEYS.heatsAndInstantSavingsReclassifyV1,
+  );
+  if (flag?.value === 'true') return;
+
+  const txAll = await db.getAll('transactions');
+  const updates = new Map<string, (typeof txAll)[number]>();
+  for (const t of txAll) {
+    if (
+      t.amount < 0 &&
+      t.category !== 'tabak' &&
+      isHeatsAmount(t.amount)
+    ) {
+      updates.set(t.id, { ...t, category: 'tabak' });
+      continue;
+    }
+    if (
+      t.category !== 'umbuchung' &&
+      matchesInternalTransfer(t.counterparty)
+    ) {
+      updates.set(t.id, { ...t, category: 'umbuchung' });
+    }
+  }
+
+  if (updates.size > 0) {
+    const tx = db.transaction('transactions', 'readwrite');
+    await Promise.all([
+      ...Array.from(updates.values()).map((t) =>
+        tx.objectStore('transactions').put(t),
+      ),
+      tx.done,
+    ]);
+  }
+
+  await db.put('appConfig', {
+    key: ALL_CONFIG_KEYS.heatsAndInstantSavingsReclassifyV1,
+    value: 'true',
+    updatedAt: new Date().toISOString(),
+  });
 }
 
 /**

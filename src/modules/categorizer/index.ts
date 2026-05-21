@@ -2,6 +2,7 @@ import { ok, err, type Result } from '@/lib/result';
 import type { CategoryRule } from '@/db/types';
 import { categoryRulesRepo } from '@/db/repositories/categoryRules';
 import { CLAUDE_MODELS, callClaude } from '@/services/claude';
+import { HEATS_CATEGORY, isHeatsAmount } from './heatsDetector';
 
 export interface CategorizationInput {
   localId: number;
@@ -30,6 +31,7 @@ export const VALID_CATEGORIES = [
   'kleidung',
   'gesundheit',
   'gebühren',
+  'tabak',
   'einkommen',
   'transfer',
   'umbuchung',
@@ -51,12 +53,23 @@ export async function categorize(
   if (!rulesResult.ok) return rulesResult;
   const rules = rulesResult.value;
 
-  // Stage 1: lookup against rules.
+  // Stage 1: heats fast-path + rule lookup.
   const outputs: (CategorizationOutput | null)[] = inputs.map(() => null);
   const unresolvedIdx: number[] = [];
 
   for (let i = 0; i < inputs.length; i++) {
     const t = inputs[i]!;
+
+    if (t.amount < 0 && isHeatsAmount(t.amount)) {
+      outputs[i] = {
+        localId: t.localId,
+        category: HEATS_CATEGORY,
+        confidence: 0.95,
+        source: 'lookup',
+      };
+      continue;
+    }
+
     const hit = matchAgainstRules(t, rules);
     if (hit) {
       outputs[i] = {
@@ -147,6 +160,9 @@ Verfügbare Kategorien (genau eine pro Buchung):
 - kleidung      (Mode, Schuhe, Accessoires)
 - gesundheit    (Apotheke, Arzt, Sport, Fitness)
 - gebühren      (Bankgebühren, Mahnungen, Steuern)
+- tabak         (Tabakwaren, Zigaretten, Heats. Wird i.d.R. schon vor dem
+                  LLM-Aufruf via Betrag (7,80 € / 15,60 €) markiert; hier
+                  nur falls Counterparty eindeutig Tabakladen.)
 - einkommen     (positive Buchungen wie Gehalt, Top-up, Refund)
 - transfer      (Überweisungen an DRITTE — Miete, Freunde, externe IBANs.
                   Echte Ausgabe, fließt in die Spending-Stats.)
@@ -242,9 +258,27 @@ export async function recategorizeWithLLM(
 ): Promise<Result<CategorizationOutput[]>> {
   if (inputs.length === 0) return ok([]);
 
+  // Heats short-circuits the LLM call entirely — pure amount-based signal.
   const outputs: (CategorizationOutput | null)[] = inputs.map(() => null);
-  for (let start = 0; start < inputs.length; start += BATCH_SIZE) {
-    const batch = inputs.slice(start, start + BATCH_SIZE);
+  const llmIdx: number[] = [];
+  for (let i = 0; i < inputs.length; i++) {
+    const t = inputs[i]!;
+    if (t.amount < 0 && isHeatsAmount(t.amount)) {
+      outputs[i] = {
+        localId: t.localId,
+        category: HEATS_CATEGORY,
+        confidence: 0.95,
+        source: 'lookup',
+      };
+      continue;
+    }
+    llmIdx.push(i);
+  }
+
+  for (let start = 0; start < llmIdx.length; start += BATCH_SIZE) {
+    const batch = llmIdx
+      .slice(start, start + BATCH_SIZE)
+      .map((i) => inputs[i]!);
     const r = await llmCategorize(batch);
     if (r.ok) {
       for (const out of r.value) {
@@ -253,6 +287,7 @@ export async function recategorizeWithLLM(
       }
     }
   }
+
   // Fallback for anything still null.
   for (let i = 0; i < outputs.length; i++) {
     if (outputs[i] === null) {
