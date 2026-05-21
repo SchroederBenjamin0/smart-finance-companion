@@ -9,9 +9,10 @@ type BankAccountType = Extract<AccountType, 'fun' | 'savings'>;
 import {
   advanceCycle,
   findDueSubscriptions,
+  rollForwardOverdue,
 } from '@/modules/subscriptions/dueDetector';
 import { formatEur } from '@/lib/currency';
-import { formatDateDe } from '@/lib/date';
+import { formatDateDe, todayIso } from '@/lib/date';
 import { useAccountsStore } from '@/stores/accounts';
 import { useToastStore } from '@/stores/toast';
 
@@ -28,7 +29,18 @@ export function DueSubscriptionsBanner() {
 
   const reload = async () => {
     const r = await subscriptionsRepo.findActive();
-    if (r.ok) setDue(findDueSubscriptions(r.value));
+    if (!r.ok) return;
+    const today = todayIso();
+    const updates: Subscription[] = [];
+    const rolled = r.value.map((sub) => {
+      const next = rollForwardOverdue(sub, today);
+      if (next !== sub) updates.push(next);
+      return next;
+    });
+    if (updates.length > 0) {
+      await subscriptionsRepo.upsertMany(updates);
+    }
+    setDue(findDueSubscriptions(rolled));
   };
 
   useEffect(() => {
