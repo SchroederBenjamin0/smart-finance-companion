@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
   advanceCycle,
-  findDueSubscriptions,
   markBilledOn,
   rollForwardOverdue,
 } from '@/modules/subscriptions/dueDetector';
@@ -22,26 +21,6 @@ function sub(partial: Partial<Subscription> = {}): Subscription {
     ...partial,
   };
 }
-
-describe('findDueSubscriptions', () => {
-  it('treats today as due', () => {
-    const today = new Date('2026-05-21T12:00:00Z');
-    const s = sub({ nextBillDate: '2026-05-21T00:00:00.000Z' });
-    expect(findDueSubscriptions([s], today)).toEqual([s]);
-  });
-
-  it('skips ended subs', () => {
-    const today = new Date('2026-05-21T12:00:00Z');
-    const s = sub({ endDate: '2026-04-30T00:00:00.000Z' });
-    expect(findDueSubscriptions([s], today)).toEqual([]);
-  });
-
-  it('skips inactive subs', () => {
-    const today = new Date('2026-05-21T12:00:00Z');
-    const s = sub({ isActive: 0 });
-    expect(findDueSubscriptions([s], today)).toEqual([]);
-  });
-});
 
 describe('advanceCycle', () => {
   it('moves a monthly sub one month forward and records lastBilled', () => {
@@ -76,9 +55,12 @@ describe('markBilledOn', () => {
 });
 
 describe('rollForwardOverdue', () => {
-  it('leaves a sub due today unchanged', () => {
+  it('rolls a sub due today forward one cycle', () => {
     const s = sub({ nextBillDate: '2026-05-21T00:00:00.000Z' });
-    expect(rollForwardOverdue(s, '2026-05-21')).toBe(s);
+    const next = rollForwardOverdue(s, '2026-05-21');
+    expect(next).not.toBe(s);
+    expect(next.lastBilledDate).toBe('2026-05-21T00:00:00.000Z');
+    expect(next.nextBillDate.slice(0, 10)).toBe('2026-06-21');
   });
 
   it('leaves a future sub unchanged', () => {

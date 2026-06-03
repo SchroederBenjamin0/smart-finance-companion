@@ -11,7 +11,6 @@ import {
   EntryDetailsSheet,
   type EntrySelection,
 } from '@/components/feature/dashboard/EntryDetailsSheet';
-import { DueSubscriptionsBanner } from '@/components/feature/subscriptions/DueSubscriptionsBanner';
 import { NewsBanner } from '@/components/feature/dashboard/NewsBanner';
 import { QuarterlyInsightBanner } from '@/components/feature/dashboard/QuarterlyInsightBanner';
 import { BackupDueBanner } from '@/components/feature/dashboard/BackupDueBanner';
@@ -153,7 +152,6 @@ export function Dashboard() {
       <div className="space-y-3 px-4 pt-4 animate-view-enter">
         <LegacyInvestmentBanner />
         <BackupDueBanner />
-        <DueSubscriptionsBanner />
         <QuarterlyInsightBanner />
         <NewsBanner />
         <ClaudeTipCard
