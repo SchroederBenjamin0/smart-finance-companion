@@ -11,8 +11,10 @@ import {
   PieChart,
   PiggyBank,
   RefreshCw,
+  Repeat,
   Shield,
   Tag,
+  Trash2,
   Wallet,
   type LucideIcon,
 } from 'lucide-react';
@@ -25,6 +27,7 @@ import { RulesEditorSheet } from '@/components/feature/settings/RulesEditorSheet
 import { accountsRepo } from '@/db/repositories/accounts';
 import { configRepo } from '@/db/repositories/config';
 import { resetDB } from '@/db/client';
+import { dataMaintenanceRepo } from '@/db/repositories/dataMaintenance';
 import { secretsRepo } from '@/db/repositories/secrets';
 import { ALL_CONFIG_KEYS } from '@/db/types';
 import { formatEur, parseEurInput } from '@/lib/currency';
@@ -130,6 +133,67 @@ export function Settings() {
     }
     await reloadAccounts();
     pushToast('Saldo aktualisiert ✓', 'success');
+  }
+
+  async function handleClearSubscriptions() {
+    if (
+      !window.confirm(
+        'Alle Abos löschen? Deine Subscription-Liste wird entfernt. Andere Daten bleiben erhalten.',
+      )
+    )
+      return;
+    const r = await dataMaintenanceRepo.clearSubscriptions();
+    if (!r.ok) {
+      pushToast(`Fehler: ${r.error.message}`, 'error');
+      return;
+    }
+    pushToast('Abos gelöscht ✓', 'success');
+  }
+
+  async function handleClearRevolut() {
+    if (
+      !window.confirm(
+        'Alle Transaktionen und CSV-Importe löschen? Die Konten-Salden bleiben unverändert (anpassbar oben unter „Konten-Salden").',
+      )
+    )
+      return;
+    const r = await dataMaintenanceRepo.clearRevolutData();
+    if (!r.ok) {
+      pushToast(`Fehler: ${r.error.message}`, 'error');
+      return;
+    }
+    pushToast('Revolut-Daten gelöscht ✓', 'success');
+  }
+
+  async function handleClearPositions() {
+    if (
+      !window.confirm(
+        'Alle Trade-Republic-Positionen löschen? Kurs- und News-Cache werden ebenfalls geleert.',
+      )
+    )
+      return;
+    const r = await dataMaintenanceRepo.clearInvestmentPositions();
+    if (!r.ok) {
+      pushToast(`Fehler: ${r.error.message}`, 'error');
+      return;
+    }
+    pushToast('Positionen gelöscht ✓', 'success');
+  }
+
+  async function handleClearAll() {
+    if (
+      !window.confirm(
+        'ALLE Finanzdaten löschen? Transaktionen, Abos, Positionen, Einnahmen und Salden werden entfernt. API-Key, PIN und Einstellungen bleiben erhalten.',
+      )
+    )
+      return;
+    const r = await dataMaintenanceRepo.clearAllFinancialData();
+    if (!r.ok) {
+      pushToast(`Fehler: ${r.error.message}`, 'error');
+      return;
+    }
+    await reloadAccounts();
+    pushToast('Alle Finanzdaten gelöscht ✓', 'success');
   }
 
   return (
@@ -276,6 +340,37 @@ export function Settings() {
             value={pinIsSet ? 'Aktiv' : 'Aus'}
             valueTone={pinIsSet ? 'good' : 'muted'}
             onClick={() => setEditingPin(true)}
+          />
+        </Section>
+
+        <Section title="Daten löschen">
+          <Row
+            Icon={Repeat}
+            label="Nur Abos löschen"
+            value=""
+            destructive
+            onClick={() => void handleClearSubscriptions()}
+          />
+          <Row
+            Icon={FileJson}
+            label="Nur Revolut-CSV löschen"
+            value=""
+            destructive
+            onClick={() => void handleClearRevolut()}
+          />
+          <Row
+            Icon={Database}
+            label="Nur Trade-Republic-Positionen löschen"
+            value=""
+            destructive
+            onClick={() => void handleClearPositions()}
+          />
+          <Row
+            Icon={Trash2}
+            label="Alle Finanzdaten löschen"
+            value=""
+            destructive
+            onClick={() => void handleClearAll()}
           />
         </Section>
 
