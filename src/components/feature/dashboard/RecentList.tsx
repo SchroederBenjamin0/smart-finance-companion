@@ -1,10 +1,12 @@
 import {
   ArrowDownLeft,
+  ArrowLeftRight,
   ArrowUpRight,
   type LucideIcon,
 } from 'lucide-react';
 import type { IncomeEntry, IncomeSource, Transaction } from '@/db/types';
 import { formatEur } from '@/lib/currency';
+import { isInternalTransfer } from '@/modules/spending';
 
 export type RecentItem =
   | { kind: 'income'; entry: IncomeEntry }
@@ -50,19 +52,28 @@ export function RecentList({ items, onSelect }: Props) {
             />
           );
         }
-        // Sign of the persisted transaction amount decides direction —
-        // a Revolut top-up is stored with a positive amount and must render
-        // as an incoming arrow + emerald, not the default expense red.
-        const isIncoming = it.transaction.amount >= 0;
+        // Sign of the persisted transaction amount decides direction — a
+        // Revolut top-up is stored positive and renders incoming/emerald.
+        // Umbuchungen (own-account moves) render neutral: no red/green.
+        const tx = it.transaction;
+        const isTransfer = isInternalTransfer(tx.category);
+        const isIncoming = tx.amount >= 0;
         return (
           <RecentRow
-            key={`t-${it.transaction.id}`}
-            icon={isIncoming ? ArrowUpRight : ArrowDownLeft}
-            title={it.transaction.counterparty}
-            subtitle={it.transaction.category}
-            amount={it.transaction.amount}
-            when={formatRelativeDate(it.transaction.date)}
+            key={`t-${tx.id}`}
+            icon={
+              isTransfer
+                ? ArrowLeftRight
+                : isIncoming
+                  ? ArrowUpRight
+                  : ArrowDownLeft
+            }
+            title={tx.counterparty}
+            subtitle={tx.category}
+            amount={tx.amount}
+            when={formatRelativeDate(tx.date)}
             positive={isIncoming}
+            neutral={isTransfer}
             index={i}
             onClick={onSelect ? () => onSelect(it) : undefined}
           />
@@ -79,6 +90,7 @@ interface RowProps {
   amount: number;
   when: string;
   positive: boolean;
+  neutral?: boolean;
   index: number;
   onClick?: () => void;
 }
@@ -90,10 +102,23 @@ function RecentRow({
   amount,
   when,
   positive,
+  neutral = false,
   index,
   onClick,
 }: RowProps) {
   const Element = (onClick ? 'button' : 'div') as 'button';
+  const bubbleClass = neutral
+    ? 'bg-paper text-ink-muted'
+    : positive
+      ? 'bg-forest-100 text-forest-800 dark:bg-forest-900 dark:text-forest-200'
+      : 'bg-red-50 text-red-600';
+  const amountClass = neutral
+    ? 'text-ink-muted'
+    : positive
+      ? 'text-emerald-700 dark:text-emerald-400'
+      : 'text-ink';
+  const prefix = neutral ? '' : positive ? '+' : '';
+  const shownAmount = neutral ? Math.abs(amount) : amount;
   return (
     <Element
       type={onClick ? 'button' : undefined}
@@ -102,11 +127,7 @@ function RecentRow({
       style={{ animationDelay: `${index * 35}ms` }}
     >
       <div
-        className={`grid h-10 w-10 shrink-0 place-items-center rounded-full ${
-          positive
-            ? 'bg-forest-100 text-forest-800 dark:bg-forest-900 dark:text-forest-200'
-            : 'bg-red-50 text-red-600'
-        }`}
+        className={`grid h-10 w-10 shrink-0 place-items-center rounded-full ${bubbleClass}`}
       >
         <Icon className="h-4 w-4" strokeWidth={2.5} />
       </div>
@@ -118,12 +139,10 @@ function RecentRow({
       </div>
       <div className="text-right">
         <div
-          className={`text-[15px] font-semibold tabular-nums ${
-            positive ? 'text-emerald-700 dark:text-emerald-400' : 'text-ink'
-          }`}
+          className={`text-[15px] font-semibold tabular-nums ${amountClass}`}
         >
-          {positive ? '+' : ''}
-          {formatEur(amount)}
+          {prefix}
+          {formatEur(shownAmount)}
         </div>
         <div className="text-[11px] text-ink-subtle">{when}</div>
       </div>
