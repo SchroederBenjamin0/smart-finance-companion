@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { CheckCircle2, HandCoins, Package, Pencil, Plus, Trash2, User } from 'lucide-react';
+import { Archive, CheckCircle2, HandCoins, Package, Pencil, Plus, Trash2, User } from 'lucide-react';
 import { getDB } from '@/db/client';
 import { accountsRepo } from '@/db/repositories/accounts';
 import { loansRepo } from '@/db/repositories/loans';
@@ -456,6 +456,59 @@ function LoanRow({ loan, onEdit, onReturn, onDelete }: LoanRowProps) {
 }
 
 // ---------------------------------------------------------------------------
+// ReturnedLoansModal — pop-up listing the already-returned items
+// ---------------------------------------------------------------------------
+
+interface ReturnedLoansModalProps {
+  loans: Loan[];
+  onClose: () => void;
+  onDelete: (loan: Loan) => void;
+}
+
+function ReturnedLoansModal({ loans, onClose, onDelete }: ReturnedLoansModalProps) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-forest-950/40 backdrop-blur-[2px]">
+      <div className="flex max-h-[80vh] w-full max-w-lg flex-col rounded-t-[28px] bg-paper shadow-nav">
+        <div className="mx-auto mt-3 h-1 w-12 rounded-full bg-forest-950/15" />
+        <header className="flex items-center justify-between px-5 pb-2 pt-3">
+          <h2 className="text-lg font-semibold text-ink">
+            Zurückerhalten ({loans.length})
+          </h2>
+          <button
+            type="button"
+            className="grid h-9 w-9 place-items-center rounded-full bg-surface text-ink shadow-card"
+            onClick={onClose}
+            aria-label="Schließen"
+          >
+            <span className="text-lg leading-none">×</span>
+          </button>
+        </header>
+        <div
+          className="row-divider flex-1 overflow-y-auto"
+          style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 16px)' }}
+        >
+          {loans.length === 0 ? (
+            <p className="px-5 py-8 text-center text-[14px] text-ink-subtle">
+              Noch nichts zurückerhalten.
+            </p>
+          ) : (
+            loans.map((loan) => (
+              <LoanRow
+                key={loan.id}
+                loan={loan}
+                onEdit={() => {}}
+                onReturn={() => {}}
+                onDelete={() => onDelete(loan)}
+              />
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // LoansSection (main export)
 // ---------------------------------------------------------------------------
 
@@ -466,6 +519,7 @@ export function LoansSection() {
   const [formOpen, setFormOpen] = useState(false);
   const [editingLoan, setEditingLoan] = useState<Loan | undefined>(undefined);
   const [returnLoan, setReturnLoan] = useState<Loan | undefined>(undefined);
+  const [showReturned, setShowReturned] = useState(false);
 
   const open = loans.filter((l) => l.status === 'lent');
   const returned = loans.filter((l) => l.status === 'returned');
@@ -571,64 +625,56 @@ export function LoansSection() {
             </div>
           ) : (
             <>
-              {/* Open loans */}
-              {open.length > 0 && (
-                <>
-                  {open.length > 0 && returned.length > 0 && (
-                    <div className="px-4 pb-1 pt-3">
-                      <span className="text-[11px] font-semibold uppercase tracking-wider text-ink-subtle">
-                        Offen ({open.length})
-                      </span>
-                    </div>
-                  )}
-                  {open.map((loan) => (
-                    <LoanRow
-                      key={loan.id}
-                      loan={loan}
-                      onEdit={() => openEdit(loan)}
-                      onReturn={() => handleReturnClick(loan)}
-                      onDelete={() => void deleteLoan(loan)}
-                    />
-                  ))}
-                </>
+              {/* Open loans only — returned ones live behind the button below */}
+              {open.length > 0 ? (
+                open.map((loan) => (
+                  <LoanRow
+                    key={loan.id}
+                    loan={loan}
+                    onEdit={() => openEdit(loan)}
+                    onReturn={() => handleReturnClick(loan)}
+                    onDelete={() => void deleteLoan(loan)}
+                  />
+                ))
+              ) : (
+                <div className="px-4 py-5 text-center text-[13px] text-ink-subtle">
+                  Keine offenen Verleihungen.
+                </div>
               )}
 
-              {/* Returned loans */}
+              {/* Returned-items viewer — opens a pop-up */}
               {returned.length > 0 && (
-                <>
-                  <div className="px-4 pb-1 pt-3">
-                    <span className="text-[11px] font-semibold uppercase tracking-wider text-ink-subtle">
-                      Zurückerhalten ({returned.length})
-                    </span>
+                <button
+                  type="button"
+                  className="flex w-full items-center gap-3 px-4 py-3 text-left transition active:bg-paper"
+                  onClick={() => setShowReturned(true)}
+                >
+                  <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-paper text-ink-muted">
+                    <Archive className="h-4.5 w-4.5" strokeWidth={2.25} />
                   </div>
-                  {returned.map((loan) => (
-                    <LoanRow
-                      key={loan.id}
-                      loan={loan}
-                      onEdit={() => openEdit(loan)}
-                      onReturn={() => handleReturnClick(loan)}
-                      onDelete={() => void deleteLoan(loan)}
-                    />
-                  ))}
-                </>
+                  <span className="flex-1 text-[14px] font-medium text-ink">
+                    Zurückerhalten ansehen
+                  </span>
+                  <span className="rounded-full bg-paper px-2 py-0.5 text-[12px] font-semibold tabular-nums text-ink-subtle">
+                    {returned.length}
+                  </span>
+                </button>
               )}
-            </>
-          )}
 
-          {/* "Add" row when there are already loans */}
-          {loans.length > 0 && (
-            <button
-              type="button"
-              className="flex w-full items-center gap-3 px-4 py-3 text-left transition active:bg-paper"
-              onClick={openAdd}
-            >
-              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-forest-800 dark:bg-forest-900 dark:text-forest-200">
-                <User className="h-4.5 w-4.5" strokeWidth={2.25} />
-              </div>
-              <span className="text-[14px] font-medium text-forest-700">
-                + Neue Verleihung
-              </span>
-            </button>
+              {/* "Add" row */}
+              <button
+                type="button"
+                className="flex w-full items-center gap-3 px-4 py-3 text-left transition active:bg-paper"
+                onClick={openAdd}
+              >
+                <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-forest-800 dark:bg-forest-900 dark:text-forest-200">
+                  <User className="h-4.5 w-4.5" strokeWidth={2.25} />
+                </div>
+                <span className="text-[14px] font-medium text-forest-700">
+                  + Neue Verleihung
+                </span>
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -647,6 +693,15 @@ export function LoansSection() {
           loan={returnLoan}
           onClose={() => setReturnLoan(undefined)}
           onConfirmed={() => void onTransferConfirmed()}
+        />
+      )}
+
+      {/* Returned-loans pop-up */}
+      {showReturned && (
+        <ReturnedLoansModal
+          loans={returned}
+          onClose={() => setShowReturned(false)}
+          onDelete={(loan) => void deleteLoan(loan)}
         />
       )}
     </>
