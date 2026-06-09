@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { ArrowUpRight, Settings as SettingsIcon } from 'lucide-react';
 import { HeroHeader } from '@/components/layout/HeroHeader';
 import { AccountCardCarousel } from '@/components/feature/dashboard/AccountCardCarousel';
-import { ClaudeTipCard } from '@/components/feature/dashboard/ClaudeTipCard';
 import {
   RecentList,
   type RecentItem,
@@ -13,7 +12,6 @@ import {
 } from '@/components/feature/dashboard/EntryDetailsSheet';
 import { NewsBanner } from '@/components/feature/dashboard/NewsBanner';
 import { QuarterlyInsightBanner } from '@/components/feature/dashboard/QuarterlyInsightBanner';
-import { BackupDueBanner } from '@/components/feature/dashboard/BackupDueBanner';
 import { LegacyInvestmentBanner } from '@/components/feature/dashboard/LegacyInvestmentBanner';
 import { incomeRepo } from '@/db/repositories/income';
 import { positionsRepo } from '@/db/repositories/positions';
@@ -151,12 +149,8 @@ export function Dashboard() {
 
       <div className="space-y-3 px-4 pt-4 animate-view-enter">
         <LegacyInvestmentBanner />
-        <BackupDueBanner />
         <QuarterlyInsightBanner />
         <NewsBanner />
-        <ClaudeTipCard
-          message="Tippe auf eine Banner-Karte oben für aktuelle Themen."
-        />
       </div>
 
       <section className="mt-5">
