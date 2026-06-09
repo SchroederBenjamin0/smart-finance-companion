@@ -16,6 +16,16 @@ export function isNonSpending(category: string): boolean {
   return NON_SPENDING_CATEGORIES.has(category);
 }
 
+/**
+ * True for moves between the user's OWN accounts (umbuchung). These are
+ * neither spending nor income and must render neutrally in the UI — no red
+ * "expense" / green "income" styling. `transfer` (payments to third parties)
+ * is NOT internal and stays a real expense.
+ */
+export function isInternalTransfer(category: string): boolean {
+  return category === 'umbuchung';
+}
+
 export type SpendingRange = 30 | 90 | 365 | 'all';
 
 export interface CategoryAggregateRow {
