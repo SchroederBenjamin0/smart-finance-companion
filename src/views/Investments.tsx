@@ -10,6 +10,8 @@ import {
 } from 'lucide-react';
 import { HeroHeader } from '@/components/layout/HeroHeader';
 import { DriftBar } from '@/components/feature/investments/DriftBar';
+import { SectorBreakdownCard } from '@/components/feature/investments/SectorBreakdownCard';
+import { analyzePortfolio, SECTOR_CAP_PCT, SINGLE_STOCK_CAP_PCT } from '@/modules/portfolio-analysis';
 import { PdfImportSheet } from '@/components/feature/portfolio/PdfImportSheet';
 import { PositionForm } from '@/components/feature/portfolio/PositionForm';
 import { configRepo } from '@/db/repositories/config';
@@ -123,6 +125,16 @@ export function Investments() {
     };
   }, [positions]);
 
+  const analysis = useMemo(
+    () =>
+      analyzePortfolio(positions, {
+        sectorCapPct: SECTOR_CAP_PCT,
+        singleStockCapPct: SINGLE_STOCK_CAP_PCT,
+        driftTolerancePp: tolerance,
+      }),
+    [positions, tolerance],
+  );
+
   return (
     <>
       <HeroHeader>
@@ -228,6 +240,17 @@ export function Investments() {
               ))}
             </ul>
           </>
+        )}
+
+        {positions.length > 0 && (
+          <div className="mt-6">
+            <h2 className="text-label font-semibold uppercase tracking-wider text-ink-subtle">
+              Diversifikation
+            </h2>
+            <div className="mt-3">
+              <SectorBreakdownCard analysis={analysis} />
+            </div>
+          </div>
         )}
 
         {news.length > 0 && (
