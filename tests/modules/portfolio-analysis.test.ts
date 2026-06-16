@@ -105,4 +105,27 @@ describe('analyzePortfolio', () => {
     const sorted = [...headrooms].sort((x, y) => y - x);
     expect(headrooms).toEqual(sorted);
   });
+
+  it('does NOT flag a broad-market sector even above the cap', () => {
+    const a = analyzePortfolio(
+      [
+        pos({ isin: 'IE00B4L5Y983', currentValue: 800 }), // Global Equity 80% (broad)
+        pos({ isin: 'IE00B53SZB19', currentValue: 200 }), // US Tech 20% (narrow, under cap)
+      ],
+      OPTS,
+    );
+    expect(a.flags.find((f) => f.kind === 'sector' && f.ref === 'Global Equity')).toBeUndefined();
+  });
+
+  it('still flags a narrow sector above the cap', () => {
+    const a = analyzePortfolio(
+      [
+        pos({ isin: 'IE00B53SZB19', currentValue: 500 }), // US Tech 50% (narrow)
+        pos({ isin: 'IE00B4L5Y983', currentValue: 500 }), // Global Equity 50% (broad, exempt)
+      ],
+      OPTS,
+    );
+    expect(a.flags.find((f) => f.kind === 'sector' && f.ref === 'US Tech')).toBeDefined();
+    expect(a.flags.find((f) => f.kind === 'sector' && f.ref === 'Global Equity')).toBeUndefined();
+  });
 });

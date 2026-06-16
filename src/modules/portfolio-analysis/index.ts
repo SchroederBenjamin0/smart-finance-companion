@@ -4,6 +4,21 @@ import { findByIsin } from '@/data/tr-universe';
 export const SECTOR_CAP_PCT = 35;
 export const SINGLE_STOCK_CAP_PCT = 30;
 
+/**
+ * Broad, internally-diversified building blocks. A high weight here is NOT a
+ * concentration risk (a world ETF at 60% is diversification), so these sectors
+ * are exempt from sector over-concentration flagging. Tracks the broad-market
+ * ETF sectors in TR_UNIVERSE. Narrow/thematic sectors (Tech, Semiconductors,
+ * single industries, Gold) remain flaggable.
+ */
+export const BROAD_SECTORS: ReadonlySet<string> = new Set([
+  'Global Equity',
+  'Emerging Markets',
+  'US Equity',
+  'European Equity',
+  'Euro Government Bonds',
+]);
+
 export interface SectorSlice {
   sector: string;
   valueEur: number;
@@ -67,7 +82,11 @@ export function analyzePortfolio(
   const flags: ConcentrationFlag[] = [];
 
   for (const s of sectors) {
-    if (s.pct > opts.sectorCapPct) {
+    if (
+      s.pct > opts.sectorCapPct &&
+      !BROAD_SECTORS.has(s.sector) &&
+      s.sector !== 'Sonstige'
+    ) {
       flags.push({
         kind: 'sector',
         ref: s.sector,

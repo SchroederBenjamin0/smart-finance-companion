@@ -273,14 +273,12 @@ export function normalizeAndFilter(
 
 function trimHeadroom(position: InvestmentPosition, flags: ConcentrationFlag[]): number {
   const sector = sectorOf(position);
-  const isStock = isTrimmableStock(position);
   let headroom = 0;
   for (const f of flags) {
-    // sector and single-stock flags only justify trimming stocks (not broad ETFs)
     const justifies =
       (f.kind === 'position' && f.ref.toUpperCase() === position.isin.toUpperCase()) ||
-      (f.kind === 'sector' && isStock && f.ref === sector) ||
-      (f.kind === 'single-stock' && isStock);
+      (f.kind === 'sector' && f.ref === sector) ||
+      (f.kind === 'single-stock' && isTrimmableStock(position));
     if (justifies) headroom = Math.max(headroom, f.overByEur);
   }
   return headroom;
