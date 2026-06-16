@@ -243,7 +243,7 @@ export function EntryDetailsSheet({
         )}
 
         {picking && selection.kind === 'expense' && !editing && (
-          <div className="rounded-2xl border border-amber-200 bg-amber-50 p-3">
+          <div className="rounded-control border border-amber-200 bg-amber-50 p-3">
             <p className="text-meta font-medium text-amber-800">
               Aus welchem Konto kam die Ausgabe? Der Betrag wird dort wieder
               gutgeschrieben.
@@ -254,7 +254,7 @@ export function EntryDetailsSheet({
                   key={a}
                   type="button"
                   onClick={() => setAccount(a)}
-                  className={`rounded-xl border px-3 py-2 text-meta font-semibold transition active:scale-[0.97] ${
+                  className={`rounded-chip border px-3 py-2 text-meta font-semibold transition active:scale-[0.97] ${
                     account === a
                       ? 'border-forest-950 bg-forest-950 text-white'
                       : 'border-forest-950/15 bg-surface text-ink'

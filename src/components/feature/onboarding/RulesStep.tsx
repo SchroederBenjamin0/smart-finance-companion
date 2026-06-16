@@ -80,7 +80,7 @@ function RuleEditor({ title, rule, onChange }: EditorProps) {
   };
 
   return (
-    <div className="mt-6 rounded-xl border border-forest-950/10 p-4">
+    <div className="mt-6 rounded-chip border border-forest-950/10 p-4">
       <h3 className="text-sm font-semibold text-ink">
         {title}
       </h3>
@@ -119,7 +119,7 @@ function RuleEditor({ title, rule, onChange }: EditorProps) {
         </div>
       </div>
 
-      <div className="mt-4 rounded-lg bg-paper px-3 py-2 text-sm">
+      <div className="mt-4 rounded-chip bg-paper px-3 py-2 text-sm">
         <span className="inline-flex items-center gap-1.5"><Sparkles className="h-4 w-4" strokeWidth={2.25} /> Fun-Geld</span>
         <span className="ml-2 font-mono font-semibold">
           {rule.funPercentage} %

@@ -29,7 +29,7 @@ export function LegacyInvestmentBanner() {
   if (amount === null) return null;
 
   return (
-    <div className="flex items-start gap-3 rounded-2xl bg-mint-100 px-4 py-3 text-sm text-forest-900 shadow-card">
+    <div className="flex items-start gap-3 rounded-control bg-mint-100 px-4 py-3 text-sm text-forest-900 shadow-card">
       <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-forest-950 text-white">
         <Info className="h-4 w-4" strokeWidth={2.25} />
       </div>

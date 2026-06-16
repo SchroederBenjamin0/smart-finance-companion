@@ -102,7 +102,7 @@ function RuleEditor({
   };
 
   return (
-    <div className="rounded-2xl border border-forest-950/10 bg-surface p-4">
+    <div className="rounded-control border border-forest-950/10 bg-surface p-4">
       <h3 className="text-body font-semibold text-ink">{title}</h3>
 
       <div className="mt-3">
@@ -139,7 +139,7 @@ function RuleEditor({
         </div>
       </div>
 
-      <div className="mt-3 rounded-lg bg-paper px-3 py-2 text-sm">
+      <div className="mt-3 rounded-chip bg-paper px-3 py-2 text-sm">
         <span className="inline-flex items-center gap-1.5"><Sparkles className="h-4 w-4" strokeWidth={2.25} /> Fun-Geld</span>
         <span className="ml-2 font-mono font-semibold">
           {rule.funPercentage} %

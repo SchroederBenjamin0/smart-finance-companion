@@ -127,7 +127,7 @@ export function Stats() {
 
         {tab === 'overview' && (
           <>
-            <div className="mt-4 rounded-[22px] bg-surface p-5 shadow-card">
+            <div className="card mt-4 p-5">
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-label font-medium text-ink-subtle">
@@ -147,7 +147,7 @@ export function Stats() {
             </div>
 
             {Object.keys(bySource).length > 0 && (
-              <div className="mt-5 row-divider rounded-[22px] bg-surface shadow-card">
+              <div className="card mt-5 row-divider p-0">
                 {Object.entries(bySource).map(([src, amount]) => {
                   const pct = monthIncome > 0 ? (amount / monthIncome) * 100 : 0;
                   const label =
@@ -191,7 +191,7 @@ export function Stats() {
                 <h2 className="mt-6 text-label font-semibold uppercase tracking-wider text-ink-subtle">
                   Ausgaben nach Kategorie
                 </h2>
-                <div className="mt-3 rounded-[22px] bg-surface p-4 shadow-card">
+                <div className="card mt-3">
                   <div className="text-label font-medium text-ink-subtle">
                     Gesamt diesen Monat
                   </div>
@@ -199,7 +199,7 @@ export function Stats() {
                     −{formatEur(totalExpenses)}
                   </div>
                 </div>
-                <div className="mt-3 row-divider rounded-[22px] bg-surface shadow-card">
+                <div className="card mt-3 row-divider p-0">
                   {sortedCategories.map(([cat, amount]) => {
                     const pct = totalExpenses > 0 ? (amount / totalExpenses) * 100 : 0;
                     return (

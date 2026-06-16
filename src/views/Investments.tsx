@@ -161,7 +161,7 @@ export function Investments() {
       </HeroHeader>
 
       <div className="px-4 pt-4 animate-view-enter">
-        <div className="rounded-[22px] bg-surface p-5 shadow-card">
+        <div className="card p-5">
           <p className="text-label font-medium text-ink-subtle">
             Aktuell investiert
           </p>
@@ -194,7 +194,7 @@ export function Investments() {
         </div>
 
         {positions.length === 0 && loaded && (
-          <div className="mt-5 flex items-start gap-3 rounded-[22px] bg-surface p-4 shadow-card">
+          <div className="card mt-5 flex items-start gap-3">
             <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-forest-800 dark:bg-forest-900 dark:text-forest-200">
               <Sparkles className="h-5 w-5" strokeWidth={2.25} />
             </div>
@@ -242,7 +242,7 @@ export function Investments() {
                     href={n.link}
                     target="_blank"
                     rel="noopener"
-                    className="block rounded-[22px] bg-surface p-4 shadow-card transition active:scale-[0.99]"
+                    className="card block transition active:scale-[0.99]"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0 flex-1">
@@ -343,7 +343,7 @@ function PositionRow({
       <button
         type="button"
         onClick={onClick}
-        className="block w-full rounded-[22px] bg-surface p-4 text-left shadow-card transition active:scale-[0.99]"
+        className="card block w-full text-left transition active:scale-[0.99]"
       >
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">

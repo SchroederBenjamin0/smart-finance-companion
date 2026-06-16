@@ -62,7 +62,7 @@ export function RecommendationCard({
   const sector = instrument?.sector ?? null;
 
   return (
-    <div className="rounded-2xl bg-surface shadow-card">
+    <div className="rounded-control bg-surface shadow-card">
       <button
         type="button"
         className="flex w-full items-start gap-3 px-4 py-3 text-left"
@@ -113,7 +113,7 @@ export function RecommendationCard({
           )}
 
           {data.reason && (
-            <div className="rounded-xl bg-mint-100 px-3 py-2">
+            <div className="rounded-chip bg-mint-100 px-3 py-2">
               <div className="text-caption font-bold uppercase tracking-wider text-forest-800">
                 Warum genau hier
               </div>
@@ -143,7 +143,7 @@ export function RecommendationCard({
                         href={item.link}
                         target="_blank"
                         rel="noopener"
-                        className="block rounded-xl bg-paper px-3 py-2 active:bg-mint-100"
+                        className="block rounded-chip bg-paper px-3 py-2 active:bg-mint-100"
                       >
                         <div className="text-meta font-medium leading-snug text-ink">
                           {item.title}

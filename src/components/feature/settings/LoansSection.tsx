@@ -277,7 +277,7 @@ function LoanFormModal({ loan, open, onClose, onSaved }: LoanFormModalProps) {
             </label>
 
             {/* "Geld zurück" toggle */}
-            <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-forest-950/10 bg-surface px-4 py-3">
+            <label className="flex cursor-pointer items-center gap-3 rounded-chip border border-forest-950/10 bg-surface px-4 py-3">
               <input
                 type="checkbox"
                 className="h-4 w-4 accent-forest-700"
@@ -291,7 +291,7 @@ function LoanFormModal({ loan, open, onClose, onSaved }: LoanFormModalProps) {
 
             {/* Amount + method — revealed when hasAmount */}
             {hasAmount && (
-              <div className="space-y-3 rounded-xl border border-forest-950/10 bg-surface px-4 py-3">
+              <div className="space-y-3 rounded-chip border border-forest-950/10 bg-surface px-4 py-3">
                 <label className="block">
                   <span className="text-label font-medium text-ink">Betrag (€)</span>
                   <input
@@ -605,7 +605,7 @@ export function LoansSection() {
           </button>
         </div>
 
-        <div className="row-divider overflow-hidden rounded-[22px] bg-surface shadow-card">
+        <div className="card row-divider overflow-hidden p-0">
           {loading ? (
             <div className="flex items-center gap-3 px-4 py-3">
               <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-forest-800 dark:bg-forest-900 dark:text-forest-200">

@@ -153,7 +153,7 @@ export function PdfImportSheet({
             ersetzt dein Portfolio komplett mit dem Inhalt des Dokuments.
             Positionen, die nicht im PDF stehen, werden entfernt.
           </p>
-          <label className="flex h-32 w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-forest-950/20 bg-surface text-ink-muted transition active:scale-[0.99]">
+          <label className="flex h-32 w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-control border-2 border-dashed border-forest-950/20 bg-surface text-ink-muted transition active:scale-[0.99]">
             <Upload className="h-6 w-6" strokeWidth={2.25} />
             <span className="text-sm font-medium">PDF auswählen</span>
             <input
@@ -164,7 +164,7 @@ export function PdfImportSheet({
             />
           </label>
           {error && (
-            <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <p className="rounded-chip border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
               {error}
             </p>
           )}

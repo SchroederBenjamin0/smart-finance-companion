@@ -155,7 +155,7 @@ export function AdvisorSheet({
 
       {stage === 'error' && (
         <div className="space-y-3 pt-2">
-          <div className="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <div className="flex items-start gap-3 rounded-control border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             <X className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={2.5} />
             <div>{error}</div>
           </div>
@@ -176,7 +176,7 @@ export function AdvisorSheet({
             />
           )}
 
-          <div className="flex items-start gap-3 rounded-2xl bg-mint-100 px-4 py-3">
+          <div className="flex items-start gap-3 rounded-control bg-mint-100 px-4 py-3">
             <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-forest-950 text-white">
               <Sparkles className="h-4 w-4" strokeWidth={2.25} />
             </div>
@@ -191,7 +191,7 @@ export function AdvisorSheet({
           </div>
 
           {rec.driftWarning && (
-            <div className="rounded-2xl bg-amber-50 px-4 py-3 text-meta text-amber-800">
+            <div className="rounded-control bg-amber-50 px-4 py-3 text-meta text-amber-800">
               {rec.driftWarning}
             </div>
           )}
@@ -211,7 +211,7 @@ export function AdvisorSheet({
             ))}
           </div>
 
-          <div className="flex items-center justify-between rounded-xl bg-paper px-3 py-2 text-meta">
+          <div className="flex items-center justify-between rounded-chip bg-paper px-3 py-2 text-meta">
             <span className="font-medium text-ink-muted">Summe</span>
             <span className="font-mono font-semibold text-ink">
               {formatEur(rec.totalEur)}

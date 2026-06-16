@@ -26,7 +26,7 @@ const SOURCE_LABEL: Record<IncomeSource, string> = {
 export function RecentList({ items, onSelect }: Props) {
   if (items.length === 0) {
     return (
-      <div className="rounded-[22px] bg-surface p-5 text-center shadow-card">
+      <div className="card p-5 text-center">
         <p className="text-sm text-ink-muted">
           Noch keine Einträge. Tippe auf <strong>Add</strong>, um die erste
           Einnahme oder Ausgabe zu erfassen.
@@ -35,7 +35,7 @@ export function RecentList({ items, onSelect }: Props) {
     );
   }
   return (
-    <div className="row-divider rounded-[22px] bg-surface shadow-card">
+    <div className="card row-divider p-0">
       {items.map((it, i) => {
         if (it.kind === 'income') {
           return (

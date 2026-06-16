@@ -9,7 +9,7 @@ interface Props {
 
 export function RuleSuggestionPrompt({ suggestion, onAccept, onDismiss }: Props) {
   return (
-    <div className="rounded-[16px] border border-forest-200 bg-forest-50 p-3 dark:border-forest-700 dark:bg-forest-900/30">
+    <div className="rounded-control border border-forest-200 bg-forest-50 p-3 dark:border-forest-700 dark:bg-forest-900/30">
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1">
           <div className="text-label font-semibold text-forest-900 dark:text-forest-200">

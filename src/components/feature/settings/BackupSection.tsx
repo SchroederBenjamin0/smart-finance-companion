@@ -90,7 +90,7 @@ export function BackupSection() {
         <h2 className="mb-2 ml-1 text-meta font-semibold uppercase tracking-wider text-ink-subtle">
           Backup
         </h2>
-        <div className="row-divider overflow-hidden rounded-[22px] bg-surface shadow-card">
+        <div className="card row-divider overflow-hidden p-0">
           {/* Export row */}
           <button
             type="button"
@@ -132,7 +132,7 @@ export function BackupSection() {
         </div>
 
         {error && (
-          <div className="mt-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-meta text-red-700">
+          <div className="mt-2 rounded-chip border border-red-200 bg-red-50 px-3 py-2 text-meta text-red-700">
             {error}
           </div>
         )}
@@ -157,7 +157,7 @@ export function BackupSection() {
             </p>
 
             {stats && (
-              <ul className="mt-2 space-y-1 rounded-xl border border-forest-950/10 bg-surface px-3 py-2 text-label text-ink-muted">
+              <ul className="mt-2 space-y-1 rounded-chip border border-forest-950/10 bg-surface px-3 py-2 text-label text-ink-muted">
                 <li className="flex items-center justify-between">
                   <span>Transaktionen</span>
                   <span className="tabular-nums">

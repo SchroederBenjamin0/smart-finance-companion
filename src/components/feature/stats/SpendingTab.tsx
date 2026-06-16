@@ -64,11 +64,11 @@ export function SpendingTab() {
 
       {/* Category rows */}
       {rows.length === 0 ? (
-        <div className="rounded-[22px] bg-surface p-6 text-center text-body text-ink-subtle shadow-card">
+        <div className="card p-6 text-center text-body text-ink-subtle">
           Keine Ausgaben im gewählten Zeitraum.
         </div>
       ) : (
-        <ul className="row-divider overflow-hidden rounded-[22px] bg-surface shadow-card">
+        <ul className="card row-divider overflow-hidden p-0">
           {rows.map((row) => (
             <li key={row.category}>
               <button

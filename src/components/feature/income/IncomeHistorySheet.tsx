@@ -48,7 +48,7 @@ export function IncomeHistorySheet({ open, onOpenChange, item }: Props) {
       }
     >
       <div className="space-y-4 pt-2">
-        <div className="rounded-2xl bg-paper p-4">
+        <div className="rounded-control bg-paper p-4">
           <div className="text-meta uppercase tracking-wider text-ink-subtle">
             {SOURCE_LABEL[income.source]} · {formatDateDe(income.date)}
           </div>
@@ -60,7 +60,7 @@ export function IncomeHistorySheet({ open, onOpenChange, item }: Props) {
           )}
         </div>
 
-        <div className="row-divider rounded-[22px] bg-surface shadow-card">
+        <div className="card row-divider p-0">
           <SplitRow
             Icon={ACCOUNT_ICON.fun}
             label="Fun-Geld"
@@ -83,7 +83,7 @@ export function IncomeHistorySheet({ open, onOpenChange, item }: Props) {
         </div>
 
         {recommendation && advisor && (
-          <div className="rounded-[22px] bg-mint-100 px-4 py-3 shadow-card">
+          <div className="rounded-card bg-mint-100 px-4 py-3 shadow-card">
             <button
               type="button"
               className="flex w-full items-center gap-3 text-left"
@@ -141,7 +141,7 @@ export function IncomeHistorySheet({ open, onOpenChange, item }: Props) {
         )}
 
         {!recommendation && (
-          <div className="rounded-2xl bg-paper px-4 py-3 text-meta text-ink-subtle">
+          <div className="rounded-control bg-paper px-4 py-3 text-meta text-ink-subtle">
             Für diese Einnahme wurde kein Sparplan-Vorschlag gespeichert
             (Sheet vor Antwort geschlossen oder Fehler beim LLM-Call).
           </div>

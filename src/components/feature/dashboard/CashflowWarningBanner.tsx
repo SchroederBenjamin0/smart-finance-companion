@@ -56,7 +56,7 @@ export function CashflowWarningBanner({ onClick }: Props) {
     severity === 'red' ? 'Fun-Konto droht negativ zu werden' : 'Cashflow-Hinweis';
 
   return (
-    <div className={`mb-3 rounded-[16px] border p-4 ${bg}`}>
+    <div className={`mb-3 rounded-control border p-4 ${bg}`}>
       <div className="flex items-start justify-between gap-3">
         <button type="button" onClick={onClick} className="flex-1 text-left">
           <div className="inline-flex items-center gap-1.5 text-body font-semibold">

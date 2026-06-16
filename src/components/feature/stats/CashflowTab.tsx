@@ -39,7 +39,7 @@ export function CashflowTab() {
 
   if (forecast.length === 0) {
     return (
-      <div className="rounded-[22px] bg-surface p-6 text-center text-body text-ink-subtle shadow-card">
+      <div className="card p-6 text-center text-body text-ink-subtle">
         Daten werden geladen...
       </div>
     );
@@ -47,7 +47,7 @@ export function CashflowTab() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="rounded-[22px] bg-surface p-4 shadow-card">
+      <div className="card">
         <div className="text-body font-semibold text-ink">Fun-Konto — nächste 90 Tage</div>
         <div className="text-caption text-ink-subtle">
           Basiert auf Median der letzten 3 Monate. Variiert mit deinem Verhalten.
@@ -72,7 +72,7 @@ export function CashflowTab() {
         </div>
       </div>
 
-      <div className="rounded-[22px] bg-surface p-4 shadow-card">
+      <div className="card">
         <div className="mb-2 text-body font-semibold text-ink">Anstehende Subscriptions</div>
         <ul className="text-label text-ink-muted">
           {forecast.flatMap((w) =>

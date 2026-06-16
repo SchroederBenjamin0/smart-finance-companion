@@ -82,7 +82,7 @@ export function SubscriptionsStep({
           Aktiviere die Subscriptions, die du tatsächlich hast. Beträge
           editierbar.
         </p>
-        <div className="mt-3 rounded-xl bg-mint-100 dark:bg-mint-900/40 px-3 py-2 text-sm text-forest-950 dark:text-mint-100">
+        <div className="mt-3 rounded-chip bg-mint-100 dark:bg-mint-900/40 px-3 py-2 text-sm text-forest-950 dark:text-mint-100">
           Gesamt:{' '}
           <span className="font-mono font-semibold">
             {formatEur(totalMonthly)}
@@ -94,7 +94,7 @@ export function SubscriptionsStep({
           {subscriptions.map((s, i) => (
             <li
               key={`${s.name}-${i}`}
-              className="flex items-center gap-3 rounded-xl border border-forest-950/10 px-3 py-2"
+              className="flex items-center gap-3 rounded-chip border border-forest-950/10 px-3 py-2"
             >
               <Switch
                 checked={s.enabled}
@@ -113,7 +113,7 @@ export function SubscriptionsStep({
                 autoComplete="off"
                 aria-label={`${s.name} Betrag`}
                 disabled={!s.enabled}
-                className="h-10 w-24 rounded-lg border border-forest-950/15 bg-surface px-2 text-right text-sm font-mono outline-none focus-visible:ring-2 focus-visible:ring-forest-700 disabled:opacity-50"
+                className="h-10 w-24 rounded-chip border border-forest-950/15 bg-surface px-2 text-right text-sm font-mono outline-none focus-visible:ring-2 focus-visible:ring-forest-700 disabled:opacity-50"
                 value={amountDrafts[i] ?? String(s.amount)}
                 onChange={(e) =>
                   setAmountDrafts((d) => ({ ...d, [i]: e.target.value }))
@@ -125,7 +125,7 @@ export function SubscriptionsStep({
         </ul>
 
         {showCustomForm ? (
-          <div className="mt-3 rounded-xl border border-forest-950/15 p-3">
+          <div className="mt-3 rounded-chip border border-forest-950/15 p-3">
             <input
               type="text"
               placeholder="Name"
@@ -160,7 +160,7 @@ export function SubscriptionsStep({
           </div>
         ) : (
           <button
-            className="mt-3 w-full rounded-xl border border-dashed border-forest-950/15 py-3 text-sm font-medium text-ink-muted"
+            className="mt-3 w-full rounded-chip border border-dashed border-forest-950/15 py-3 text-sm font-medium text-ink-muted"
             onClick={() => setShowCustomForm(true)}
           >
             + Subscription hinzufügen

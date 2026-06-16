@@ -43,7 +43,7 @@ export function AccountCardCarousel({
           return (
             <li
               key={type}
-              className={`relative shrink-0 snap-start ${meta.gradient} flex h-[142px] w-[180px] flex-col justify-between overflow-hidden rounded-[22px] p-[18px] text-white shadow-card`}
+              className={`relative shrink-0 snap-start ${meta.gradient} flex h-[142px] w-[180px] flex-col justify-between overflow-hidden rounded-card p-[18px] text-white shadow-card`}
             >
               <div
                 className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-surface/[0.10]"
@@ -67,7 +67,7 @@ export function AccountCardCarousel({
           );
         })}
 
-        <li className="relative shrink-0 snap-start bg-card-investment flex h-[142px] w-[180px] flex-col justify-between overflow-hidden rounded-[22px] p-[18px] text-white shadow-card">
+        <li className="relative shrink-0 snap-start bg-card-investment flex h-[142px] w-[180px] flex-col justify-between overflow-hidden rounded-card p-[18px] text-white shadow-card">
           <div
             className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-surface/[0.10]"
             aria-hidden="true"

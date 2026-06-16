@@ -9,7 +9,7 @@ interface Props {
 export function AnomalyBanner({ anomalies, onDismiss }: Props) {
   if (anomalies.length === 0) return null;
   return (
-    <div className="mb-4 rounded-[16px] border border-amber-200 bg-amber-50 p-4">
+    <div className="mb-4 rounded-control border border-amber-200 bg-amber-50 p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="inline-flex items-center gap-1.5 text-body font-semibold text-amber-900">

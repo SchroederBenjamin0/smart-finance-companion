@@ -55,7 +55,7 @@ export function PinGate({ expectedHash, onUnlock }: Props) {
           return (
             <div
               key={i}
-              className={`grid h-14 w-14 place-items-center rounded-2xl border-2 text-2xl font-semibold tabular-nums ${
+              className={`grid h-14 w-14 place-items-center rounded-control border-2 text-2xl font-semibold tabular-nums ${
                 filled
                   ? 'border-forest-950 bg-forest-950 text-white'
                   : 'border-forest-950/15 bg-surface text-ink-subtle'

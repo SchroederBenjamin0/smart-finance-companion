@@ -265,7 +265,7 @@ export function CsvImportSheet({
             sie mit deinen manuellen Einträgen ab. Du kannst alles vor dem
             Speichern noch prüfen.
           </p>
-          <label className="flex h-32 w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-forest-950/20 bg-surface text-ink-muted transition active:scale-[0.99]">
+          <label className="flex h-32 w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-control border-2 border-dashed border-forest-950/20 bg-surface text-ink-muted transition active:scale-[0.99]">
             <Upload className="h-6 w-6" strokeWidth={2.25} />
             <span className="text-sm font-medium">CSV auswählen</span>
             <input
@@ -276,7 +276,7 @@ export function CsvImportSheet({
             />
           </label>
           {error && (
-            <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <p className="rounded-chip border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
               {error}
             </p>
           )}
@@ -320,7 +320,7 @@ export function CsvImportSheet({
 
       {stage === 'review' && (
         <div className="space-y-3 pb-2">
-          <div className="flex items-center gap-2 rounded-xl bg-paper px-3 py-2 text-meta text-ink-muted">
+          <div className="flex items-center gap-2 rounded-chip bg-paper px-3 py-2 text-meta text-ink-muted">
             <FileText className="h-4 w-4 shrink-0" strokeWidth={2.25} />
             <div className="min-w-0 flex-1">
               <div className="truncate font-medium text-ink">{fileName}</div>
@@ -367,7 +367,7 @@ function ReviewRow({
   const isTransfer = isInternalTransfer(draft.category);
   return (
     <div
-      className={`rounded-2xl border p-3 ${
+      className={`rounded-control border p-3 ${
         draft.isDuplicate
           ? 'border-amber-200 bg-amber-50/30'
           : 'border-forest-950/10 bg-surface'
@@ -429,7 +429,7 @@ function ReviewRow({
             )}
           </div>
           {draft.warning && (
-            <div className="mt-1.5 rounded-lg bg-amber-50 px-2 py-1 text-caption text-amber-800">
+            <div className="mt-1.5 rounded-chip bg-amber-50 px-2 py-1 text-caption text-amber-800">
               {draft.warning}
             </div>
           )}
@@ -437,7 +437,7 @@ function ReviewRow({
             <select
               value={draft.category}
               onChange={(e) => onChange({ category: e.target.value })}
-              className="h-9 flex-1 rounded-xl border border-forest-950/10 bg-surface px-2 text-label text-ink outline-none focus-visible:ring-2 focus-visible:ring-forest-700"
+              className="h-9 flex-1 rounded-chip border border-forest-950/10 bg-surface px-2 text-label text-ink outline-none focus-visible:ring-2 focus-visible:ring-forest-700"
             >
               {VALID_CATEGORIES.map((c) => (
                 <option key={c} value={c}>

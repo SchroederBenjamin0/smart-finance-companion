@@ -433,7 +433,7 @@ function Section({
       <h2 className="mb-2 ml-1 text-meta font-semibold uppercase tracking-wider text-ink-subtle">
         {title}
       </h2>
-      <div className="row-divider overflow-hidden rounded-[22px] bg-surface shadow-card">
+      <div className="card row-divider overflow-hidden p-0">
         {children}
       </div>
     </div>

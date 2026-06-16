@@ -213,11 +213,11 @@ export function Income() {
           {mode === 'income' ? 'Einnahme erfassen' : 'Ausgabe erfassen'}
         </h1>
 
-        <div className="mt-4 grid h-11 grid-cols-2 rounded-2xl bg-surface/10 p-1">
+        <div className="mt-4 grid h-11 grid-cols-2 rounded-control bg-surface/10 p-1">
           <button
             type="button"
             onClick={() => setMode('income')}
-            className={`flex items-center justify-center rounded-xl text-sm font-semibold transition ${
+            className={`flex items-center justify-center rounded-chip text-sm font-semibold transition ${
               mode === 'income' ? 'bg-white text-forest-950' : 'text-white/85'
             }`}
           >
@@ -226,7 +226,7 @@ export function Income() {
           <button
             type="button"
             onClick={() => setMode('expense')}
-            className={`flex items-center justify-center rounded-xl text-sm font-semibold transition ${
+            className={`flex items-center justify-center rounded-chip text-sm font-semibold transition ${
               mode === 'expense'
                 ? 'bg-white text-forest-950'
                 : 'text-white/85'
@@ -246,7 +246,7 @@ export function Income() {
                   type="button"
                   onClick={() => setSource(s.id)}
                   aria-pressed={active}
-                  className={`flex flex-col items-center gap-1.5 rounded-2xl px-3 py-3 text-meta font-semibold transition ${
+                  className={`flex flex-col items-center gap-1.5 rounded-control px-3 py-3 text-meta font-semibold transition ${
                     active
                       ? 'bg-white text-forest-950'
                       : 'bg-surface/10 text-white/85'
@@ -268,7 +268,7 @@ export function Income() {
                   type="button"
                   onClick={() => setFromAccount(a.id)}
                   aria-pressed={active}
-                  className={`flex flex-col items-center gap-1 rounded-2xl px-3 py-3 text-meta font-semibold transition ${
+                  className={`flex flex-col items-center gap-1 rounded-control px-3 py-3 text-meta font-semibold transition ${
                     active
                       ? 'bg-white text-forest-950'
                       : 'bg-surface/10 text-white/85'
@@ -284,7 +284,7 @@ export function Income() {
       </HeroHeader>
 
       <div className="px-4 pt-5 pb-32 animate-view-enter">
-        <div className="rounded-[22px] bg-surface p-5 shadow-card">
+        <div className="card p-5">
           <p className="text-label font-medium text-ink-subtle">
             {mode === 'income' ? 'Du erhältst' : 'Du gibst aus'}
           </p>
@@ -340,7 +340,7 @@ export function Income() {
             <h2 className="mt-6 text-label font-semibold uppercase tracking-wider text-ink-subtle">
               Auto-Split Vorschau
             </h2>
-            <div className="mt-3 row-divider rounded-[22px] bg-surface shadow-card">
+            <div className="card mt-3 row-divider p-0">
               <PreviewRow
                 Icon={ACCOUNT_ICON.fun}
                 label="Fun-Geld"
@@ -362,7 +362,7 @@ export function Income() {
             </div>
 
             {preview?.capApplied && (
-              <p className="mt-3 rounded-2xl bg-amber-50 px-4 py-3 text-meta text-amber-800">
+              <p className="mt-3 rounded-control bg-amber-50 px-4 py-3 text-meta text-amber-800">
                 Notgroschen-Cap erreicht — Überschuss fließt ins Investment.
               </p>
             )}

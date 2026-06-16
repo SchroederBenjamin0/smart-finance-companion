@@ -31,7 +31,7 @@ export function QuarterlyInsightBanner() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex w-full items-center gap-3 rounded-2xl bg-mint-100 px-4 py-3 text-left shadow-card transition active:scale-[0.99]"
+        className="flex w-full items-center gap-3 rounded-control bg-mint-100 px-4 py-3 text-left shadow-card transition active:scale-[0.99]"
       >
         <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-forest-950 text-white">
           <Sparkles className="h-4 w-4" strokeWidth={2.5} />
