@@ -25,6 +25,12 @@ export async function getNewsForTicker(
     }
 
     const fresh = await fetchNewsForSymbol(ticker);
+    if (fresh === null) {
+      // Hard failure (all proxies down): surface an empty list WITHOUT writing
+      // the cache, so a transient outage doesn't suppress news for the full 6h
+      // TTL after connectivity returns.
+      return [];
+    }
     const items: NewsCacheItem[] = fresh.slice(0, 5).map((n) => ({
       uuid: n.uuid,
       title: n.title,
@@ -33,8 +39,8 @@ export async function getNewsForTicker(
       publishedAt: n.publishedAt,
     }));
 
-    // Even if the fetch returned nothing, write the cache so we don't
-    // re-hit Yahoo for every render of the same panel.
+    // Even if the fetch returned zero headlines (a genuine empty result), write
+    // the cache so we don't re-hit Yahoo for every render of the same panel.
     const persistResult = await newsCacheRepo.upsert({
       ticker,
       items,

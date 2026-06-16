@@ -18,6 +18,7 @@ import { configRepo } from '@/db/repositories/config';
 import { ALL_CONFIG_KEYS } from '@/db/types';
 import { PinGate } from '@/components/feature/lock/PinGate';
 import { UpdateBanner } from '@/components/feature/updates/UpdateBanner';
+import { parseEurInput } from '@/lib/currency';
 
 /**
  * Parse text shared from another iOS app via the Web Share Target API.
@@ -25,9 +26,12 @@ import { UpdateBanner } from '@/components/feature/updates/UpdateBanner';
  * and returns it together with the full original text as a note.
  */
 export function parseSharedText(text: string): { amount: number | null; note: string } {
-  const m = text.match(/(-?\d+(?:[.,]\d{1,2})?)\s*€?/);
+  // Grab the first number-ish token (digits + grouping separators, optional
+  // sign) and parse it with the shared currency parser, so grouped amounts
+  // like "1.234,56 €" round-trip instead of truncating to 1.23.
+  const m = text.match(/-?[\d.,]+/);
   return {
-    amount: m ? Number(m[1]!.replace(',', '.')) : null,
+    amount: m ? parseEurInput(m[0]) : null,
     note: text,
   };
 }

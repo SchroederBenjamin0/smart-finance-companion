@@ -21,6 +21,7 @@ import type {
   InvestmentPosition,
   Transaction,
 } from '@/db/types';
+import { isInternalTransfer } from '@/modules/spending';
 import { formatEur } from '@/lib/currency';
 import { formatMonthYearDe } from '@/lib/date';
 import { useAccountsStore } from '@/stores/accounts';
@@ -34,8 +35,13 @@ export function Dashboard() {
   const rules = useConfigStore((s) => s.rules);
   const setActiveTab = useNavStore((s) => s.setActiveTab);
 
-  const [incomes, setIncomes] = useState<IncomeEntry[]>([]);
-  const [expenses, setExpenses] = useState<Transaction[]>([]);
+  // Recent lists (over-fetched so the date-sorted top-6 is drawn from a large
+  // enough pool; findRecent pre-sorts incomes by createdAt, expenses by date).
+  const [recentIncomes, setRecentIncomes] = useState<IncomeEntry[]>([]);
+  const [recentExpenses, setRecentExpenses] = useState<Transaction[]>([]);
+  // Full current-month rows, used only for the "+X diesen Monat" net change.
+  const [monthIncomes, setMonthIncomes] = useState<IncomeEntry[]>([]);
+  const [monthExpenses, setMonthExpenses] = useState<Transaction[]>([]);
   const [positions, setPositions] = useState<InvestmentPosition[]>([]);
   const [selection, setSelection] = useState<EntrySelection | null>(null);
 
@@ -44,13 +50,21 @@ export function Dashboard() {
   }, [loaded, load]);
 
   const reloadActivity = async () => {
-    const [iR, tR, pR] = await Promise.all([
-      incomeRepo.findRecent(10),
-      transactionsRepo.findRecent(10),
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
+      .toISOString()
+      .slice(0, 10);
+    const [iRecent, tRecent, iMonth, tMonth, pR] = await Promise.all([
+      incomeRepo.findRecent(50),
+      transactionsRepo.findRecent(50),
+      incomeRepo.findSince(monthStart),
+      transactionsRepo.findSince(monthStart),
       positionsRepo.findAll(),
     ]);
-    if (iR.ok) setIncomes(iR.value);
-    if (tR.ok) setExpenses(tR.value);
+    if (iRecent.ok) setRecentIncomes(iRecent.value);
+    if (tRecent.ok) setRecentExpenses(tRecent.value);
+    if (iMonth.ok) setMonthIncomes(iMonth.value);
+    if (tMonth.ok) setMonthExpenses(tMonth.value);
     if (pR.ok) setPositions(pR.value);
   };
 
@@ -61,8 +75,8 @@ export function Dashboard() {
 
   const recent = useMemo<RecentItem[]>(() => {
     const merged: RecentItem[] = [
-      ...incomes.map((entry) => ({ kind: 'income' as const, entry })),
-      ...expenses.map((transaction) => ({
+      ...recentIncomes.map((entry) => ({ kind: 'income' as const, entry })),
+      ...recentExpenses.map((transaction) => ({
         kind: 'expense' as const,
         transaction,
       })),
@@ -73,7 +87,7 @@ export function Dashboard() {
       return db.localeCompare(da);
     });
     return merged.slice(0, 6);
-  }, [incomes, expenses]);
+  }, [recentIncomes, recentExpenses]);
 
   const portfolioValue = positions.reduce(
     (sum, p) => sum + p.currentValue,
@@ -86,18 +100,14 @@ export function Dashboard() {
     .reduce((sum, a) => sum + a.balance, 0);
   const total = accountsTotal + portfolioValue;
   const monthDelta = useMemo(() => {
-    const now = new Date();
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
-      .toISOString()
-      .slice(0, 10);
-    const incomeSum = incomes
-      .filter((r) => r.date >= monthStart)
-      .reduce((sum, r) => sum + r.amount, 0);
-    const expenseSum = expenses
-      .filter((r) => r.date >= monthStart)
+    const incomeSum = monthIncomes.reduce((sum, r) => sum + r.amount, 0);
+    // umbuchung = own-account moves; excluded from the net-change figure,
+    // consistent with the spending stats (aggregateByCategory skips it).
+    const expenseSum = monthExpenses
+      .filter((r) => !isInternalTransfer(r.category))
       .reduce((sum, r) => sum + r.amount, 0);
     return incomeSum + expenseSum;
-  }, [incomes, expenses]);
+  }, [monthIncomes, monthExpenses]);
 
   return (
     <>

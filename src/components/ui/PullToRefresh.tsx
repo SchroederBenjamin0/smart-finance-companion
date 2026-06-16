@@ -26,8 +26,17 @@ export function PullToRefresh({
   const startY = useRef<number | null>(null);
   const [pullY, setPullY] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
+  // Live mirrors of the two states so the touch handlers can read them without
+  // being in the effect's dep array — otherwise pullY changing on every
+  // touchmove would tear down and re-add all three listeners each frame.
+  const pullYRef = useRef(0);
+  const refreshingRef = useRef(false);
 
   useEffect(() => {
+    function setPull(v: number) {
+      pullYRef.current = v;
+      setPullY(v);
+    }
     function onTouchStart(e: TouchEvent) {
       if (window.scrollY > 0) {
         startY.current = null;
@@ -37,36 +46,38 @@ export function PullToRefresh({
       startY.current = t ? t.clientY : null;
     }
     function onTouchMove(e: TouchEvent) {
-      if (refreshing || startY.current === null) return;
+      if (refreshingRef.current || startY.current === null) return;
       const t = e.touches[0];
       if (!t) return;
       if (window.scrollY > 0) {
         startY.current = null;
-        setPullY(0);
+        setPull(0);
         return;
       }
       const dy = t.clientY - startY.current;
       if (dy <= 0) {
-        setPullY(0);
+        setPull(0);
         return;
       }
       // Resistance curve: 1px finger → ~0.6px pull beyond threshold.
       const resisted = dy < threshold ? dy : threshold + (dy - threshold) * 0.5;
-      setPullY(Math.min(resisted, maxPull));
+      setPull(Math.min(resisted, maxPull));
       if (dy > 8) e.preventDefault();
     }
     async function onTouchEnd() {
-      if (refreshing) return;
-      if (pullY >= threshold) {
+      if (refreshingRef.current) return;
+      if (pullYRef.current >= threshold) {
+        refreshingRef.current = true;
         setRefreshing(true);
         try {
           await onRefresh();
         } finally {
+          refreshingRef.current = false;
           setRefreshing(false);
-          setPullY(0);
+          setPull(0);
         }
       } else {
-        setPullY(0);
+        setPull(0);
       }
       startY.current = null;
     }
@@ -79,7 +90,7 @@ export function PullToRefresh({
       window.removeEventListener('touchmove', onTouchMove);
       window.removeEventListener('touchend', onTouchEnd);
     };
-  }, [pullY, refreshing, onRefresh, threshold, maxPull]);
+  }, [onRefresh, threshold, maxPull]);
 
   const visiblePull = refreshing ? threshold : pullY;
   const progress = Math.min(1, pullY / threshold);

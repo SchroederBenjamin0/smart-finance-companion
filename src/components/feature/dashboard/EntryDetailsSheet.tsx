@@ -59,9 +59,16 @@ export function EntryDetailsSheet({
   const reloadAccounts = useAccountsStore((s) => s.load);
   const pushToast = useToastStore((s) => s.push);
 
-  // Reset edit mode when the sheet closes
+  // Reset all transient edit/delete/picker state when the sheet closes, so a
+  // newly opened entry never inherits the previous one's chosen account or a
+  // still-open picker.
   useEffect(() => {
-    if (!open) setEditing(false);
+    if (!open) {
+      setEditing(false);
+      setPicking(false);
+      setAccount('fun');
+      setDeleting(false);
+    }
   }, [open]);
 
   const startEdit = () => {

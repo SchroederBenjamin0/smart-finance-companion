@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { hashPin, isValidPin } from '@/lib/pin';
+import { hashPin } from '@/lib/pin';
 
 interface Props {
   expectedHash: string;
@@ -101,7 +101,6 @@ export function PinGate({ expectedHash, onUnlock }: Props) {
           60% { transform: translateX(-6px); }
           80% { transform: translateX(6px); }
         }
-        ${isValidPin('') ? '' : ''}
       `}</style>
     </div>
   );

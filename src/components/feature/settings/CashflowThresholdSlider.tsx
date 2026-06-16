@@ -16,9 +16,15 @@ export function CashflowThresholdSlider() {
   }, []);
 
   const handleChange = (vals: number[]) => {
-    const v = vals[0] ?? 100;
-    setValue(v);
-    void configRepo.setRaw(ALL_CONFIG_KEYS.cashflowFunWarnThreshold, String(v));
+    setValue(vals[0] ?? 100);
+  };
+
+  // Persist only when the drag/keyboard interaction ends, not on every tick.
+  const handleCommit = (vals: number[]) => {
+    void configRepo.setRaw(
+      ALL_CONFIG_KEYS.cashflowFunWarnThreshold,
+      String(vals[0] ?? 100),
+    );
   };
 
   const snapToPreset = (preset: number) => {
@@ -36,6 +42,7 @@ export function CashflowThresholdSlider() {
         className="relative flex h-5 w-full touch-none select-none items-center"
         value={[value]}
         onValueChange={handleChange}
+        onValueCommit={handleCommit}
         min={50} max={500} step={10}
       >
         <Slider.Track className="relative h-1.5 grow rounded-full bg-divider">

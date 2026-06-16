@@ -37,10 +37,6 @@ export function daysSince(iso: string | null): number {
   return hoursSince(iso) / 24;
 }
 
-export function isFirstOfMonth(d: Date = new Date()): boolean {
-  return d.getDate() === 1;
-}
-
 export function isQuarterStart(d: Date = new Date()): boolean {
   if (d.getDate() !== 1) return false;
   return [0, 3, 6, 9].includes(d.getMonth());

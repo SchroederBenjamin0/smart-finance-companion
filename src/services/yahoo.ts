@@ -47,7 +47,7 @@ async function fetchOneSymbol(symbol: string): Promise<{
   const attempts: string[] = [
     target,
     `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}`,
-    `https://corsproxy.io/?${encodeURIComponent(target)}`,
+    `https://corsproxy.io/?url=${encodeURIComponent(target)}`,
   ];
 
   for (const u of attempts) {
@@ -81,14 +81,18 @@ export async function fetchQuotes(
       const symbol = symbols[i]!;
       const r = results[i];
       if (!r) continue;
-      success += 1;
       const original = r.currency;
       const rawPrice = r.price;
       let price = rawPrice;
       if (original !== 'EUR' && rawPrice > 0) {
         const fx = await getRateToEur(original);
-        if (fx.ok) price = rawPrice * fx.value;
+        // Without a rate we cannot honestly label a foreign price as EUR —
+        // skip the quote rather than reporting a raw foreign value as EUR
+        // (which would inflate the portfolio total). Not counted as success.
+        if (!fx.ok) continue;
+        price = rawPrice * fx.value;
       }
+      success += 1;
       const change =
         r.prevClose > 0 ? ((rawPrice - r.prevClose) / r.prevClose) * 100 : 0;
       quotes.push({
@@ -155,21 +159,30 @@ interface SearchResponse {
   }>;
 }
 
-export async function fetchNewsForSymbol(symbol: string): Promise<YahooNewsItem[]> {
+/**
+ * Returns the headlines for a symbol, or `null` if EVERY attempt failed
+ * (network error / non-ok response). A successfully parsed response with no
+ * `news` array is a genuine "no headlines" and returns `[]` — callers can use
+ * this to avoid caching an empty list produced by a hard failure.
+ */
+export async function fetchNewsForSymbol(
+  symbol: string,
+): Promise<YahooNewsItem[] | null> {
   const target = `${SEARCH_ENDPOINT}?q=${encodeURIComponent(symbol)}&newsCount=10&quotesCount=0`;
   const attempts: string[] = [
     target,
     `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}`,
-    `https://corsproxy.io/?${encodeURIComponent(target)}`,
+    `https://corsproxy.io/?url=${encodeURIComponent(target)}`,
   ];
   for (const u of attempts) {
     try {
       const res = await fetchOnce(u);
       if (!res.ok) continue;
       const data = (await res.json()) as SearchResponse;
-      if (!data.news) continue;
+      // Successful fetch: an absent/empty news array is a real "no headlines",
+      // not a failure — return [] instead of falling through to the next proxy.
       const items: YahooNewsItem[] = [];
-      for (const n of data.news) {
+      for (const n of data.news ?? []) {
         if (!n.uuid || !n.title || !n.link || !n.providerPublishTime) continue;
         items.push({
           uuid: n.uuid,
@@ -185,7 +198,7 @@ export async function fetchNewsForSymbol(symbol: string): Promise<YahooNewsItem[
       // try next attempt
     }
   }
-  return [];
+  return null;
 }
 
 export async function fetchNews(
@@ -199,7 +212,7 @@ export async function fetchNews(
     const seen = new Set<string>();
     const flat: YahooNewsItem[] = [];
     for (const arr of arrays) {
-      for (const n of arr) {
+      for (const n of arr ?? []) {
         if (seen.has(n.uuid)) continue;
         if (new Date(n.publishedAt).getTime() < cutoff) continue;
         seen.add(n.uuid);

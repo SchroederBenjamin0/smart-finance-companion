@@ -20,6 +20,10 @@ export function SubscriptionsStep({
   const [showCustomForm, setShowCustomForm] = useState(false);
   const [customName, setCustomName] = useState('');
   const [customAmount, setCustomAmount] = useState('');
+  // Per-row draft strings so intermediate input like "" or "12," survives
+  // typing; the parsed number is only committed on blur (rows never reorder
+  // here, so indexing by position is safe).
+  const [amountDrafts, setAmountDrafts] = useState<Record<number, string>>({});
 
   const totalMonthly = subscriptions
     .filter((s) => s.enabled)
@@ -33,6 +37,18 @@ export function SubscriptionsStep({
     const copy = [...subscriptions];
     copy[idx] = { ...copy[idx]!, ...patch };
     onChange(copy);
+  };
+
+  const commitAmount = (idx: number) => {
+    const draft = amountDrafts[idx];
+    if (draft === undefined) return;
+    const n = parseEurInput(draft);
+    if (n !== null && n >= 0) updateAt(idx, { amount: n });
+    setAmountDrafts((d) => {
+      const next = { ...d };
+      delete next[idx];
+      return next;
+    });
   };
 
   const addCustom = () => {
@@ -98,12 +114,11 @@ export function SubscriptionsStep({
                 aria-label={`${s.name} Betrag`}
                 disabled={!s.enabled}
                 className="h-10 w-24 rounded-lg border border-forest-950/15 bg-surface px-2 text-right text-sm font-mono outline-none focus-visible:ring-2 focus-visible:ring-forest-700 disabled:opacity-50"
-                value={String(s.amount)}
+                value={amountDrafts[i] ?? String(s.amount)}
                 onChange={(e) =>
-                  updateAt(i, {
-                    amount: parseEurInput(e.target.value) ?? 0,
-                  })
+                  setAmountDrafts((d) => ({ ...d, [i]: e.target.value }))
                 }
+                onBlur={() => commitAmount(i)}
               />
             </li>
           ))}

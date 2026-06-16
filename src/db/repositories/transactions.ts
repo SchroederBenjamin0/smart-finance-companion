@@ -29,6 +29,15 @@ export const transactionsRepo = {
     });
   },
 
+  /** All transactions with date >= iso (inclusive). Used for month-scoped sums. */
+  async findSince(iso: string): Promise<Result<Transaction[]>> {
+    return tryAsync(async () => {
+      const db = await getDB();
+      const all = await db.getAll('transactions');
+      return all.filter((t) => t.date >= iso);
+    });
+  },
+
   async findByHash(hash: string): Promise<Result<Transaction | null>> {
     return tryAsync(async () => {
       const db = await getDB();

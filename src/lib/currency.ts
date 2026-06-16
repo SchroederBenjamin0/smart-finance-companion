@@ -5,15 +5,7 @@ const eurFormatter = new Intl.NumberFormat('de-DE', {
   maximumFractionDigits: 2,
 });
 
-const eurFormatterNoSign = new Intl.NumberFormat('de-DE', {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
-
 export const formatEur = (n: number): string => eurFormatter.format(n);
-
-export const formatEurNoSign = (n: number): string =>
-  eurFormatterNoSign.format(n);
 
 export const round2 = (n: number): number => Math.round(n * 100) / 100;
 

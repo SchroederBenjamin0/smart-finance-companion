@@ -81,7 +81,7 @@ export function CashflowTab() {
               .map((e, i) => (
                 <li key={`${w.weekStartIso}-${i}`} className="flex items-center justify-between border-b border-divider py-1 last:border-b-0">
                   <span>{e.label}</span>
-                  <span className="tabular-nums">{e.amount.toFixed(2)} € · KW {w.weekStartIso.slice(5)}</span>
+                  <span className="tabular-nums">{e.amount.toFixed(2)} € · {w.weekStartIso.slice(8, 10)}.{w.weekStartIso.slice(5, 7)}.</span>
                 </li>
               )),
           )}

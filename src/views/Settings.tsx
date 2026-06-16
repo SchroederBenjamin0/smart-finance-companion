@@ -54,15 +54,21 @@ export function Settings() {
     String(config.emergencyFundTarget),
   );
 
+  // Keep the emergency-fund input in sync with the store value.
   useEffect(() => {
     setEmergencyText(String(config.emergencyFundTarget));
+  }, [config.emergencyFundTarget]);
+
+  // Probe API-key + PIN existence once on mount — independent of emergency-fund
+  // edits, so saving the target doesn't re-hit IndexedDB for unrelated state.
+  useEffect(() => {
     void (async () => {
       const r = await secretsRepo.exists('anthropic_key');
       if (r.ok) setKeyExists(r.value);
       const p = await configRepo.getJson<string>(ALL_CONFIG_KEYS.appPinHash);
       setPinIsSet(p.ok && typeof p.value === 'string' && p.value.length > 0);
     })();
-  }, [config.emergencyFundTarget]);
+  }, []);
 
   const reloadPinState = async () => {
     const p = await configRepo.getJson<string>(ALL_CONFIG_KEYS.appPinHash);

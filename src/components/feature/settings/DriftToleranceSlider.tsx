@@ -14,9 +14,15 @@ export function DriftToleranceSlider() {
   }, []);
 
   const handleChange = (vals: number[]) => {
-    const v = vals[0] ?? 5;
-    setValue(v);
-    void configRepo.setRaw(ALL_CONFIG_KEYS.driftToleranceGlobal, String(v));
+    setValue(vals[0] ?? 5);
+  };
+
+  // Persist only when the drag/keyboard interaction ends, not on every tick.
+  const handleCommit = (vals: number[]) => {
+    void configRepo.setRaw(
+      ALL_CONFIG_KEYS.driftToleranceGlobal,
+      String(vals[0] ?? 5),
+    );
   };
 
   return (
@@ -29,6 +35,7 @@ export function DriftToleranceSlider() {
         className="relative flex h-5 w-full touch-none select-none items-center"
         value={[value]}
         onValueChange={handleChange}
+        onValueCommit={handleCommit}
         min={1} max={10} step={1}
       >
         <Slider.Track className="relative h-1.5 grow rounded-full bg-divider">

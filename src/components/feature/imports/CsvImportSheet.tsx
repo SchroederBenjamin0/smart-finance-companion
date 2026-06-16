@@ -129,8 +129,9 @@ export function CsvImportSheet({
       pushToast(`AI-Categorizer Fehler: ${catR.error.message}`, 'error');
     }
 
+    const catById = new Map(cats.map((c) => [c.localId, c]));
     const newDrafts: DraftRow[] = transactions.map((txn, i) => {
-      const cat = cats.find((c) => c.localId === i);
+      const cat = catById.get(i);
       const dup = findDuplicate(txn, existingTransactions);
       return {
         txn,
@@ -197,10 +198,16 @@ export function CsvImportSheet({
     // balances. The investment account never participates here — the
     // portfolio is the Trade-Republic source of truth and lives elsewhere.
     if (finalBalances.current !== null) {
-      await accountsRepo.setBalance('fun', finalBalances.current);
+      const b1 = await accountsRepo.setBalance('fun', finalBalances.current);
+      if (!b1.ok) {
+        pushToast(`Kontostand (Fun-Geld) nicht aktualisiert: ${b1.error.message}`, 'error');
+      }
     }
     if (finalBalances.savings !== null) {
-      await accountsRepo.setBalance('savings', finalBalances.savings);
+      const b2 = await accountsRepo.setBalance('savings', finalBalances.savings);
+      if (!b2.ok) {
+        pushToast(`Kontostand (Sparkonto) nicht aktualisiert: ${b2.error.message}`, 'error');
+      }
     }
     await reloadAccounts();
 
@@ -225,6 +232,8 @@ export function CsvImportSheet({
         await dbTx.done;
         setAnomalies(detected);
       }
+    } else {
+      pushToast('Anomalie-Prüfung übersprungen (Lesefehler)', 'error');
     }
 
     setStage('done');

@@ -32,9 +32,6 @@ export function AccountCardCarousel({
     fun: funPct,
     savings: savingsPct,
   };
-  // Portfolio-Card immer zeigen, sie ist die dritte Net-Worth-Kategorie.
-  const showPortfolio = true;
-
   return (
     <div className="-mx-4 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       <ul className="flex snap-x snap-mandatory gap-3 pr-4">
@@ -68,30 +65,28 @@ export function AccountCardCarousel({
           );
         })}
 
-        {showPortfolio && (
-          <li className="relative shrink-0 snap-start bg-card-investment flex h-[142px] w-[180px] flex-col justify-between overflow-hidden rounded-[22px] p-[18px] text-white shadow-card">
-            <div
-              className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-surface/[0.10]"
-              aria-hidden="true"
-            />
-            <div className="relative">
-              <div className="text-[22px] leading-none">📈</div>
-              <div className="mt-2 text-[13px] font-medium opacity-90">
-                Portfolio (TR)
-              </div>
+        <li className="relative shrink-0 snap-start bg-card-investment flex h-[142px] w-[180px] flex-col justify-between overflow-hidden rounded-[22px] p-[18px] text-white shadow-card">
+          <div
+            className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-surface/[0.10]"
+            aria-hidden="true"
+          />
+          <div className="relative">
+            <div className="text-[22px] leading-none">📈</div>
+            <div className="mt-2 text-[13px] font-medium opacity-90">
+              Portfolio (TR)
             </div>
-            <div className="relative">
-              <div className="text-2xl font-semibold tabular-nums">
-                {formatEur(portfolioValue)}
-              </div>
-              <div className="mt-1 text-[11px] font-medium opacity-80">
-                {portfolioPositionCount > 0
-                  ? `${portfolioPositionCount} Position${portfolioPositionCount === 1 ? '' : 'en'}`
-                  : 'PDF-Import oder Position hinzufügen'}
-              </div>
+          </div>
+          <div className="relative">
+            <div className="text-2xl font-semibold tabular-nums">
+              {formatEur(portfolioValue)}
             </div>
-          </li>
-        )}
+            <div className="mt-1 text-[11px] font-medium opacity-80">
+              {portfolioPositionCount > 0
+                ? `${portfolioPositionCount} Position${portfolioPositionCount === 1 ? '' : 'en'}`
+                : 'PDF-Import oder Position hinzufügen'}
+            </div>
+          </div>
+        </li>
       </ul>
     </div>
   );

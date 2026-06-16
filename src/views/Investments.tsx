@@ -62,18 +62,25 @@ export function Investments() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loaded]);
 
+  // Stable, order-independent key of the distinct tickers, so the news fetch
+  // only re-runs when the ticker SET changes — not on every price refresh
+  // (reload() replaces `positions` with a fresh array reference each time).
+  const tickerKey = useMemo(
+    () => [...new Set(positions.map((p) => p.ticker).filter(Boolean))].sort().join(','),
+    [positions],
+  );
+
   useEffect(() => {
-    if (positions.length === 0) {
+    const tickers = tickerKey ? tickerKey.split(',') : [];
+    if (tickers.length === 0) {
       setNews([]);
       return;
     }
-    const tickers = [...new Set(positions.map((p) => p.ticker).filter(Boolean))];
-    if (tickers.length === 0) return;
     void (async () => {
       const r = await fetchNews(tickers, 5);
       if (r.ok) setNews(r.value);
     })();
-  }, [positions]);
+  }, [tickerKey]);
 
   async function refreshPrices(silent = false) {
     if (positions.length === 0) return;

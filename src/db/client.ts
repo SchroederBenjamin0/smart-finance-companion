@@ -104,7 +104,6 @@ export function getDB(): Promise<IDBPDatabase<SmartFinanceDB>> {
           if (!db.objectStoreNames.contains('loans')) {
             const loans = db.createObjectStore('loans', { keyPath: 'id' });
             loans.createIndex('by-status', 'status');
-            loans.createIndex('by-lentAt', 'lentAt');
           }
         }
 

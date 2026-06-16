@@ -25,21 +25,6 @@ export interface BacktestResult {
   totalContributed: number;
 }
 
-export function simulateDCA(
-  closes: PriceCachePoint[],
-  monthlyContribution: number,
-): BacktestSeriesPoint[] {
-  let shares = 0;
-  const series: BacktestSeriesPoint[] = [];
-  for (const point of closes) {
-    if (point.close <= 0) continue;
-    const additionalShares = monthlyContribution / point.close;
-    shares += additionalShares;
-    series.push({ date: point.date, value: Math.round(shares * point.close * 100) / 100 });
-  }
-  return series;
-}
-
 export function computeMaxDrawdown(series: BacktestSeriesPoint[]): number {
   let peak = 0;
   let maxDrawdown = 0;
@@ -124,7 +109,7 @@ async function fetchMonthlyCloses(
   const attempts: string[] = [
     target,
     `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}`,
-    `https://corsproxy.io/?${encodeURIComponent(target)}`,
+    `https://corsproxy.io/?url=${encodeURIComponent(target)}`,
   ];
 
   for (const url of attempts) {

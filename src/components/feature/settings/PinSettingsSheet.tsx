@@ -80,7 +80,7 @@ export function PinSettingsSheet({
     setBusy(false);
   }
 
-  async function handlePrimary() {
+  async function handlePrimary(intentArg: 'change' | 'remove' = intent) {
     if (step === 'enterCurrent') {
       if (!isValidPin(currentPin)) {
         setError('PIN muss 4 Ziffern haben.');
@@ -91,7 +91,9 @@ export function PinSettingsSheet({
         setError('Aktueller PIN falsch.');
         return;
       }
-      if (intent === 'remove') await removePin();
+      // Use the explicit arg, not the `intent` state — setIntent('remove') in
+      // the deactivate button's onClick has not flushed yet on the first tap.
+      if (intentArg === 'remove') await removePin();
       else setStep('enterNew');
     } else if (step === 'enterNew') {
       if (!isValidPin(newPin)) {
@@ -147,7 +149,7 @@ export function PinSettingsSheet({
               className="btn-destructive flex-1"
               onClick={() => {
                 setIntent('remove');
-                void handlePrimary();
+                void handlePrimary('remove');
               }}
               disabled={busy}
             >
