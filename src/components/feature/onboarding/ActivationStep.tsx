@@ -1,3 +1,5 @@
+import { CheckCircle2 } from 'lucide-react';
+
 interface Props {
   isInstalled: boolean;
   onFinish: () => void;
@@ -15,8 +17,9 @@ export function ActivationStep({ isInstalled, onFinish, onBack }: Props) {
         </p>
 
         {isInstalled ? (
-          <div className="mt-4 rounded-xl bg-forest-100 px-4 py-3 text-sm text-forest-800">
-            ✓ App läuft im Standalone-Modus. Du bist bereit.
+          <div className="mt-4 inline-flex items-center gap-2 rounded-xl bg-forest-100 px-4 py-3 text-sm text-forest-800">
+            <CheckCircle2 className="h-4 w-4 shrink-0" strokeWidth={2.5} />
+            App läuft im Standalone-Modus. Du bist bereit.
           </div>
         ) : (
           <ol className="mt-4 space-y-3 text-sm">

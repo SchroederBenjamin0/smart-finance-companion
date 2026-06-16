@@ -232,7 +232,7 @@ export function Stats() {
 
             {sortedCategories.length === 0 && (
               <p className="mt-5 text-center text-[12px] text-ink-subtle">
-                Tippe auf 📤 oben rechts, um eine Revolut-CSV zu importieren.
+                Tippe oben rechts auf „Importieren", um eine Revolut-CSV zu importieren.
               </p>
             )}
           </>

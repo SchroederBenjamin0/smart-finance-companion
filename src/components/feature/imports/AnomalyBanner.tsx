@@ -1,3 +1,4 @@
+import { AlertTriangle } from 'lucide-react';
 import type { AnomalyResult } from '@/modules/anomaly';
 
 interface Props {
@@ -11,8 +12,9 @@ export function AnomalyBanner({ anomalies, onDismiss }: Props) {
     <div className="mb-4 rounded-[16px] border border-amber-200 bg-amber-50 p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <div className="text-[14px] font-semibold text-amber-900">
-            ⚠️ {anomalies.length} auffällige {anomalies.length === 1 ? 'Ausgabe' : 'Ausgaben'} erkannt
+          <div className="inline-flex items-center gap-1.5 text-[14px] font-semibold text-amber-900">
+            <AlertTriangle className="h-4 w-4" strokeWidth={2.25} />
+            {anomalies.length} auffällige {anomalies.length === 1 ? 'Ausgabe' : 'Ausgaben'} erkannt
           </div>
           <div className="mt-1 text-[12px] text-amber-800">
             {anomalies.slice(0, 3).map((a) =>

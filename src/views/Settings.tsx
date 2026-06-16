@@ -84,7 +84,7 @@ export function Settings() {
       return;
     }
     await secretsRepo.save('anthropic_key', newKey.trim());
-    pushToast('Anthropic-Key aktualisiert ✓', 'success');
+    pushToast('Anthropic-Key aktualisiert', 'success');
     setEditingKey(false);
     setNewKey('');
     setKeyExists(true);
@@ -98,7 +98,7 @@ export function Settings() {
       return;
     }
     await config.setEmergencyFundTarget(Math.round(n));
-    pushToast('Notgroschen-Ziel aktualisiert ✓', 'success');
+    pushToast('Notgroschen-Ziel aktualisiert', 'success');
   }
 
   async function resetApp() {
@@ -138,7 +138,7 @@ export function Settings() {
       return;
     }
     await reloadAccounts();
-    pushToast('Saldo aktualisiert ✓', 'success');
+    pushToast('Saldo aktualisiert', 'success');
   }
 
   async function handleClearSubscriptions() {
@@ -153,7 +153,7 @@ export function Settings() {
       pushToast(`Fehler: ${r.error.message}`, 'error');
       return;
     }
-    pushToast('Abos gelöscht ✓', 'success');
+    pushToast('Abos gelöscht', 'success');
   }
 
   async function handleClearRevolut() {
@@ -168,7 +168,7 @@ export function Settings() {
       pushToast(`Fehler: ${r.error.message}`, 'error');
       return;
     }
-    pushToast('Revolut-Daten gelöscht ✓', 'success');
+    pushToast('Revolut-Daten gelöscht', 'success');
   }
 
   async function handleClearPositions() {
@@ -183,7 +183,7 @@ export function Settings() {
       pushToast(`Fehler: ${r.error.message}`, 'error');
       return;
     }
-    pushToast('Positionen gelöscht ✓', 'success');
+    pushToast('Positionen gelöscht', 'success');
   }
 
   async function handleClearAll() {
@@ -199,7 +199,7 @@ export function Settings() {
       return;
     }
     await reloadAccounts();
-    pushToast('Alle Finanzdaten gelöscht ✓', 'success');
+    pushToast('Alle Finanzdaten gelöscht', 'success');
   }
 
   return (

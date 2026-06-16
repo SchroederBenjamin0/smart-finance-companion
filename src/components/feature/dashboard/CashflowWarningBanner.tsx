@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { AlertTriangle, OctagonAlert } from 'lucide-react';
 import { forecastCashflow, shouldFireCashflow } from '@/modules/forecast';
 import { accountsRepo } from '@/db/repositories/accounts';
 import { subscriptionsRepo } from '@/db/repositories/subscriptions';
@@ -50,7 +51,7 @@ export function CashflowWarningBanner({ onClick }: Props) {
     severity === 'red'
       ? 'bg-red-50 border-red-200 text-red-900'
       : 'bg-amber-50 border-amber-200 text-amber-900';
-  const icon = severity === 'red' ? '🛑' : '⚠️';
+  const Icon = severity === 'red' ? OctagonAlert : AlertTriangle;
   const title =
     severity === 'red' ? 'Fun-Konto droht negativ zu werden' : 'Cashflow-Hinweis';
 
@@ -58,8 +59,9 @@ export function CashflowWarningBanner({ onClick }: Props) {
     <div className={`mb-3 rounded-[16px] border p-4 ${bg}`}>
       <div className="flex items-start justify-between gap-3">
         <button type="button" onClick={onClick} className="flex-1 text-left">
-          <div className="text-[14px] font-semibold">
-            {icon} {title}
+          <div className="inline-flex items-center gap-1.5 text-[14px] font-semibold">
+            <Icon className="h-4 w-4" strokeWidth={2.25} />
+            {title}
           </div>
           {earliestWeek && (
             <div className="mt-1 text-[12px]">Ab Woche {earliestWeek}</div>

@@ -103,7 +103,7 @@ export function EntryDetailsSheet({
       pushToast(`Fehler: ${r.error.message}`, 'error');
       return;
     }
-    pushToast('Eintrag aktualisiert ✓', 'success');
+    pushToast('Eintrag aktualisiert', 'success');
     setEditing(false);
     onDeleted(); // reuse parent's "reload data" callback
     onOpenChange(false);

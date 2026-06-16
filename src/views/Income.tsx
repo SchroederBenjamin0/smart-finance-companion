@@ -6,6 +6,7 @@ import {
   MoreHorizontal,
   type LucideIcon,
 } from 'lucide-react';
+import { ACCOUNT_ICON } from '@/lib/account-icons';
 import { HeroHeader } from '@/components/layout/HeroHeader';
 import { AdvisorSheet } from '@/components/feature/income/AdvisorSheet';
 import {
@@ -38,9 +39,9 @@ const SOURCES: { id: IncomeSource; label: string; Icon: LucideIcon }[] = [
 // ist kein Konto, aus dem direkt im Alltag bezahlt wird.
 type BankAccountType = Extract<AccountType, 'fun' | 'savings'>;
 
-const ACCOUNTS: { id: BankAccountType; label: string; emoji: string }[] = [
-  { id: 'fun', label: 'Fun-Geld', emoji: '🎉' },
-  { id: 'savings', label: 'Sparkonto', emoji: '🏦' },
+const ACCOUNTS: { id: BankAccountType; label: string; Icon: LucideIcon }[] = [
+  { id: 'fun', label: 'Fun-Geld', Icon: ACCOUNT_ICON.fun },
+  { id: 'savings', label: 'Sparkonto', Icon: ACCOUNT_ICON.savings },
 ];
 
 const QUICK_AMOUNTS = [10, 25, 50, 100];
@@ -273,9 +274,7 @@ export function Income() {
                       : 'bg-surface/10 text-white/85'
                   }`}
                 >
-                  <span className="text-xl leading-none" aria-hidden="true">
-                    {a.emoji}
-                  </span>
+                  <a.Icon className="h-5 w-5" strokeWidth={2.25} />
                   {a.label}
                 </button>
               );
@@ -343,19 +342,19 @@ export function Income() {
             </h2>
             <div className="mt-3 row-divider rounded-[22px] bg-surface shadow-card">
               <PreviewRow
-                emoji="🎉"
+                Icon={ACCOUNT_ICON.fun}
                 label="Fun-Geld"
                 pct={ruleFor(source).funPercentage}
                 amount={preview?.fun ?? 0}
               />
               <PreviewRow
-                emoji="🏦"
+                Icon={ACCOUNT_ICON.savings}
                 label="Sparkonto"
                 pct={ruleFor(source).savingsPercentage}
                 amount={preview?.savings ?? 0}
               />
               <PreviewRow
-                emoji="📈"
+                Icon={ACCOUNT_ICON.investment}
                 label="Investment"
                 pct={ruleFor(source).investmentPercentage}
                 amount={preview?.investment ?? 0}
@@ -497,20 +496,20 @@ function labelFor(t: BankAccountType): string {
 }
 
 function PreviewRow({
-  emoji,
+  Icon,
   label,
   pct,
   amount,
 }: {
-  emoji: string;
+  Icon: LucideIcon;
   label: string;
   pct: number;
   amount: number;
 }) {
   return (
     <div className="flex items-center gap-3 px-4 py-3">
-      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 dark:bg-forest-900 text-xl">
-        <span aria-hidden="true">{emoji}</span>
+      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 dark:bg-forest-900 text-forest-800 dark:text-forest-200">
+        <Icon className="h-5 w-5" strokeWidth={2.25} />
       </div>
       <div className="min-w-0 flex-1">
         <div className="text-[15px] font-semibold text-ink">{label}</div>

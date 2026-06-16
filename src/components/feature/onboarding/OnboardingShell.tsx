@@ -147,7 +147,7 @@ export function OnboardingShell() {
         useConfigStore.getState().load(),
       ]);
 
-      useToastStore.getState().push('Setup abgeschlossen ✓', 'success');
+      useToastStore.getState().push('Setup abgeschlossen', 'success');
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       setErrorMsg(msg);

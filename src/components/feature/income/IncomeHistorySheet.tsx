@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
+import { ChevronDown, ChevronUp, Sparkles, type LucideIcon } from 'lucide-react';
 import { Sheet } from '@/components/ui/Sheet';
 import type { Allocation, IncomeSource } from '@/db/types';
 import { formatEur } from '@/lib/currency';
@@ -7,6 +7,7 @@ import { formatDateDe } from '@/lib/date';
 import { RecommendationCard } from '@/components/feature/advisor/RecommendationCard';
 import type { IncomeHistoryItem } from './IncomeHistoryList';
 import type { AdvisorRecommendation } from '@/services/advisor';
+import { ACCOUNT_ICON } from '@/lib/account-icons';
 
 interface Props {
   open: boolean;
@@ -61,19 +62,19 @@ export function IncomeHistorySheet({ open, onOpenChange, item }: Props) {
 
         <div className="row-divider rounded-[22px] bg-surface shadow-card">
           <SplitRow
-            emoji="🎉"
+            Icon={ACCOUNT_ICON.fun}
             label="Fun-Geld"
             amount={findAlloc('fun')?.amount ?? 0}
             total={total}
           />
           <SplitRow
-            emoji="🏦"
+            Icon={ACCOUNT_ICON.savings}
             label="Sparkonto"
             amount={findAlloc('savings')?.amount ?? 0}
             total={total}
           />
           <SplitRow
-            emoji="📈"
+            Icon={ACCOUNT_ICON.investment}
             label="Investment (Plan)"
             amount={findAlloc('investment')?.amount ?? 0}
             total={total}
@@ -151,13 +152,13 @@ export function IncomeHistorySheet({ open, onOpenChange, item }: Props) {
 }
 
 function SplitRow({
-  emoji,
+  Icon,
   label,
   amount,
   total,
   plan,
 }: {
-  emoji: string;
+  Icon: LucideIcon;
   label: string;
   amount: number;
   total: number;
@@ -166,8 +167,8 @@ function SplitRow({
   const pct = total > 0 ? Math.round((amount / total) * 100) : 0;
   return (
     <div className="flex items-center gap-3 px-4 py-3">
-      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-xl dark:bg-forest-900">
-        <span aria-hidden="true">{emoji}</span>
+      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-forest-800 dark:bg-forest-900 dark:text-forest-200">
+        <Icon className="h-5 w-5" strokeWidth={2.25} />
       </div>
       <div className="min-w-0 flex-1">
         <div className="text-[15px] font-semibold text-ink">{label}</div>

@@ -1,3 +1,4 @@
+import { Sparkles, PiggyBank, TrendingUp } from 'lucide-react';
 import { Slider } from '@/components/ui/Slider';
 import type { AllocationRule } from '@/db/types';
 
@@ -86,7 +87,7 @@ function RuleEditor({ title, rule, onChange }: EditorProps) {
 
       <div className="mt-4">
         <div className="flex items-center justify-between text-sm">
-          <span>📈 Investment</span>
+          <span className="inline-flex items-center gap-1.5"><TrendingUp className="h-4 w-4" /> Investment</span>
           <span className="font-mono">{rule.investmentPercentage} %</span>
         </div>
         <div className="mt-2">
@@ -103,7 +104,7 @@ function RuleEditor({ title, rule, onChange }: EditorProps) {
 
       <div className="mt-4">
         <div className="flex items-center justify-between text-sm">
-          <span>💰 Sparkonto</span>
+          <span className="inline-flex items-center gap-1.5"><PiggyBank className="h-4 w-4" /> Sparkonto</span>
           <span className="font-mono">{rule.savingsPercentage} %</span>
         </div>
         <div className="mt-2">
@@ -119,7 +120,7 @@ function RuleEditor({ title, rule, onChange }: EditorProps) {
       </div>
 
       <div className="mt-4 rounded-lg bg-paper px-3 py-2 text-sm">
-        <span>🎉 Fun-Geld</span>
+        <span className="inline-flex items-center gap-1.5"><Sparkles className="h-4 w-4" /> Fun-Geld</span>
         <span className="ml-2 font-mono font-semibold">
           {rule.funPercentage} %
         </span>

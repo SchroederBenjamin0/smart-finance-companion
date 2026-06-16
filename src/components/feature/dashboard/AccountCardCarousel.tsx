@@ -1,5 +1,7 @@
+import { TrendingUp, type LucideIcon } from 'lucide-react';
 import type { Account, AccountType } from '@/db/types';
 import { formatEur } from '@/lib/currency';
+import { ACCOUNT_ICON } from '@/lib/account-icons';
 
 type BankAccountType = Extract<AccountType, 'fun' | 'savings'>;
 
@@ -13,10 +15,10 @@ interface Props {
 
 const META: Record<
   BankAccountType,
-  { emoji: string; label: string; gradient: string }
+  { Icon: LucideIcon; label: string; gradient: string }
 > = {
-  fun: { emoji: '🎉', label: 'Fun-Geld', gradient: 'bg-card-fun' },
-  savings: { emoji: '🏦', label: 'Sparkonto', gradient: 'bg-card-savings' },
+  fun: { Icon: ACCOUNT_ICON.fun, label: 'Fun-Geld', gradient: 'bg-card-fun' },
+  savings: { Icon: ACCOUNT_ICON.savings, label: 'Sparkonto', gradient: 'bg-card-savings' },
 };
 
 const ORDER: BankAccountType[] = ['fun', 'savings'];
@@ -48,7 +50,7 @@ export function AccountCardCarousel({
                 aria-hidden="true"
               />
               <div className="relative">
-                <div className="text-[22px] leading-none">{meta.emoji}</div>
+                <meta.Icon className="h-6 w-6" strokeWidth={2.25} />
                 <div className="mt-2 text-[13px] font-medium opacity-90">
                   {meta.label}
                 </div>
@@ -71,7 +73,7 @@ export function AccountCardCarousel({
             aria-hidden="true"
           />
           <div className="relative">
-            <div className="text-[22px] leading-none">📈</div>
+            <TrendingUp className="h-6 w-6" strokeWidth={2.25} />
             <div className="mt-2 text-[13px] font-medium opacity-90">
               Portfolio (TR)
             </div>

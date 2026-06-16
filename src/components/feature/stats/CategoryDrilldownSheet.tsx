@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { AlertTriangle } from 'lucide-react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { recategorizeWithLLM } from '@/modules/categorizer';
 import { suggestRuleFromChange, type SuggestedRule } from '@/modules/categorization-memory';
@@ -150,7 +151,9 @@ export function CategoryDrilldownSheet({ category, transactions, onClose, onReca
                   <div className="truncate text-[14px] font-medium text-ink">{t.counterparty}</div>
                   <div className="truncate text-[12px] text-ink-subtle">
                     {t.date}
-                    {t.categoryConfidence < 0.7 && ' · ⚠️ unsicher'}
+                    {t.categoryConfidence < 0.7 && (
+                      <span className="inline-flex items-center gap-1"> · <AlertTriangle className="h-3 w-3" strokeWidth={2.5} /> unsicher</span>
+                    )}
                   </div>
                 </div>
                 <div className="text-[14px] tabular-nums text-ink">

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Lock } from 'lucide-react';
 import { hashPin } from '@/lib/pin';
 
 interface Props {
@@ -38,7 +39,7 @@ export function PinGate({ expectedHash, onUnlock }: Props) {
   return (
     <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-paper px-6">
       <div className="grid h-16 w-16 place-items-center rounded-full bg-forest-950 text-white">
-        🔒
+        <Lock className="h-7 w-7" strokeWidth={2.25} />
       </div>
       <h1 className="mt-4 text-2xl font-semibold text-ink">App entsperren</h1>
       <p className="mt-1 text-sm text-ink-muted">

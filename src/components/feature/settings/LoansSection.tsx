@@ -75,7 +75,7 @@ function TransferReturnConfirm({ loan, onClose, onConfirmed }: TransferReturnCon
     setBusy(true);
     try {
       await handleTransferReturn(loan);
-      pushToast('Rückzahlung verbucht auf Fun-Konto ✓', 'success');
+      pushToast('Rückzahlung verbucht auf Fun-Konto', 'success');
       onConfirmed();
     } catch (e) {
       pushToast(e instanceof Error ? e.message : 'Fehler beim Verbuchen', 'error');
@@ -198,7 +198,7 @@ function LoanFormModal({ loan, open, onClose, onSaved }: LoanFormModalProps) {
     };
     const r = await loansRepo.upsert(next);
     if (r.ok) {
-      pushToast(loan ? 'Verleih aktualisiert ✓' : 'Verleih gespeichert ✓', 'success');
+      pushToast(loan ? 'Verleih aktualisiert' : 'Verleih gespeichert', 'success');
       onSaved();
     } else {
       pushToast('Fehler beim Speichern', 'error');
@@ -560,7 +560,7 @@ export function LoansSection() {
     if (!loan.amount || loan.amount <= 0 || loan.paymentMethod !== 'transfer') {
       void (async () => {
         await handleCashReturn(loan);
-        pushToast('Als zurückgegeben markiert ✓', 'success');
+        pushToast('Als zurückgegeben markiert', 'success');
         await load();
       })();
     } else {
