@@ -186,6 +186,7 @@ als Vorschlag im Onboarding (siehe `specs/sprint-1.md`).
 - Investment-Empfehlungen mit Markt-Timing implementieren
 - Krypto-Empfehlungs-Logik einbauen (außer expliziter User-Anfrage)
 - Auto-Execute-Funktionen für Trades vorschlagen
+- Verkaufs-Empfehlungen aus Meinung/„Stock-Picking" geben — ERLAUBT ist nur deterministisch gekapptes **Trim-to-Target-Rebalancing** (Übergewicht → Ziel), nie Markt-Timing, nie Auto-Execute
 - API-Keys als Konstanten oder Defaults im Code einfügen
 - Code für Multi-User-Setup schreiben (das wäre BaFin-relevant)
 - Background-Tasks oder Cron-Jobs annehmen (PWA-Limitierung!)
