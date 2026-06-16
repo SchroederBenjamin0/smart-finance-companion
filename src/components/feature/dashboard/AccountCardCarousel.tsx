@@ -51,7 +51,7 @@ export function AccountCardCarousel({
               />
               <div className="relative">
                 <meta.Icon className="h-6 w-6" strokeWidth={2.25} />
-                <div className="mt-2 text-label font-medium opacity-90">
+                <div className="mt-2 text-label font-medium">
                   {meta.label}
                 </div>
               </div>
@@ -59,7 +59,7 @@ export function AccountCardCarousel({
                 <div className="text-2xl font-semibold tabular-nums">
                   {formatEur(acc?.balance ?? 0)}
                 </div>
-                <div className="mt-1 text-caption font-medium opacity-80">
+                <div className="mt-1 text-caption font-medium">
                   {pct[type]}% · auto-split
                 </div>
               </div>
@@ -74,7 +74,7 @@ export function AccountCardCarousel({
           />
           <div className="relative">
             <TrendingUp className="h-6 w-6" strokeWidth={2.25} />
-            <div className="mt-2 text-label font-medium opacity-90">
+            <div className="mt-2 text-label font-medium">
               Portfolio (TR)
             </div>
           </div>
@@ -82,7 +82,7 @@ export function AccountCardCarousel({
             <div className="text-2xl font-semibold tabular-nums">
               {formatEur(portfolioValue)}
             </div>
-            <div className="mt-1 text-caption font-medium opacity-80">
+            <div className="mt-1 text-caption font-medium">
               {portfolioPositionCount > 0
                 ? `${portfolioPositionCount} Position${portfolioPositionCount === 1 ? '' : 'en'}`
                 : 'PDF-Import oder Position hinzufügen'}
