@@ -78,7 +78,7 @@ export function Stats() {
       <HeroHeader>
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-[13px] font-medium uppercase tracking-wide text-mint-200">
+            <p className="text-label font-medium uppercase tracking-wide text-mint-200">
               {formatMonthYearDe()}
             </p>
             <h1 className="mt-1 text-2xl font-semibold leading-tight">Stats</h1>
@@ -99,7 +99,7 @@ export function Stats() {
           <button
             type="button"
             onClick={() => setTab('overview')}
-            className={`flex-1 rounded-full px-3 py-1.5 text-[13px] font-medium transition ${
+            className={`flex-1 rounded-full px-3 py-1.5 text-label font-medium transition ${
               tab === 'overview' ? 'bg-surface text-ink shadow-sm' : 'text-ink-muted'
             }`}
           >
@@ -108,7 +108,7 @@ export function Stats() {
           <button
             type="button"
             onClick={() => setTab('spending')}
-            className={`flex-1 rounded-full px-3 py-1.5 text-[13px] font-medium transition ${
+            className={`flex-1 rounded-full px-3 py-1.5 text-label font-medium transition ${
               tab === 'spending' ? 'bg-surface text-ink shadow-sm' : 'text-ink-muted'
             }`}
           >
@@ -117,7 +117,7 @@ export function Stats() {
           <button
             type="button"
             onClick={() => setTab('cashflow')}
-            className={`flex-1 rounded-full px-3 py-1.5 text-[13px] font-medium transition ${
+            className={`flex-1 rounded-full px-3 py-1.5 text-label font-medium transition ${
               tab === 'cashflow' ? 'bg-surface text-ink shadow-sm' : 'text-ink-muted'
             }`}
           >
@@ -130,13 +130,13 @@ export function Stats() {
             <div className="mt-4 rounded-[22px] bg-surface p-5 shadow-card">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-[13px] font-medium text-ink-subtle">
+                  <p className="text-label font-medium text-ink-subtle">
                     Einnahmen
                   </p>
-                  <div className="mt-1 text-[36px] font-semibold leading-none tabular-nums text-ink">
+                  <div className="mt-1 text-display font-semibold leading-none tabular-nums text-ink">
                     {formatEur(monthIncome)}
                   </div>
-                  <p className="mt-2 text-[12px] text-ink-subtle">
+                  <p className="mt-2 text-meta text-ink-subtle">
                     diesen Monat
                   </p>
                 </div>
@@ -162,7 +162,7 @@ export function Stats() {
                       className="flex items-center gap-3 px-4 py-3"
                     >
                       <div className="min-w-0 flex-1">
-                        <div className="text-[15px] font-semibold text-ink">
+                        <div className="text-body font-semibold text-ink">
                           {label}
                         </div>
                         <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-paper">
@@ -173,10 +173,10 @@ export function Stats() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-[15px] font-semibold tabular-nums text-ink">
+                        <div className="text-body font-semibold tabular-nums text-ink">
                           {formatEur(amount)}
                         </div>
-                        <div className="text-[11px] text-ink-subtle">
+                        <div className="text-caption text-ink-subtle">
                           {Math.round(pct)} %
                         </div>
                       </div>
@@ -188,14 +188,14 @@ export function Stats() {
 
             {sortedCategories.length > 0 && (
               <>
-                <h2 className="mt-6 text-[13px] font-semibold uppercase tracking-wider text-ink-subtle">
+                <h2 className="mt-6 text-label font-semibold uppercase tracking-wider text-ink-subtle">
                   Ausgaben nach Kategorie
                 </h2>
                 <div className="mt-3 rounded-[22px] bg-surface p-4 shadow-card">
-                  <div className="text-[13px] font-medium text-ink-subtle">
+                  <div className="text-label font-medium text-ink-subtle">
                     Gesamt diesen Monat
                   </div>
-                  <div className="mt-1 text-[28px] font-semibold leading-none tabular-nums text-ink">
+                  <div className="mt-1 text-display-sm font-semibold leading-none tabular-nums text-ink">
                     −{formatEur(totalExpenses)}
                   </div>
                 </div>
@@ -205,7 +205,7 @@ export function Stats() {
                     return (
                       <div key={cat} className="flex items-center gap-3 px-4 py-3">
                         <div className="min-w-0 flex-1">
-                          <div className="text-[14px] font-semibold text-ink">
+                          <div className="text-body font-semibold text-ink">
                             {cat}
                           </div>
                           <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-paper">
@@ -216,10 +216,10 @@ export function Stats() {
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="text-[14px] font-semibold tabular-nums text-ink">
+                          <div className="text-body font-semibold tabular-nums text-ink">
                             {formatEur(amount)}
                           </div>
-                          <div className="text-[11px] text-ink-subtle">
+                          <div className="text-caption text-ink-subtle">
                             {Math.round(pct)} %
                           </div>
                         </div>
@@ -231,7 +231,7 @@ export function Stats() {
             )}
 
             {sortedCategories.length === 0 && (
-              <p className="mt-5 text-center text-[12px] text-ink-subtle">
+              <p className="mt-5 text-center text-meta text-ink-subtle">
                 Tippe oben rechts auf „Importieren", um eine Revolut-CSV zu importieren.
               </p>
             )}

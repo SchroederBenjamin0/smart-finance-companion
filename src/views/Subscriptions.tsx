@@ -72,7 +72,7 @@ export function Subscriptions() {
   return (
     <>
       <HeroHeader>
-        <p className="text-[13px] font-medium uppercase tracking-wide text-mint-200">
+        <p className="text-label font-medium uppercase tracking-wide text-mint-200">
           {subs.length} aktiv
         </p>
         <h1 className="mt-1 text-2xl font-semibold leading-tight">
@@ -82,13 +82,13 @@ export function Subscriptions() {
 
       <div className="px-4 pt-4 animate-view-enter">
         <div className="rounded-[22px] bg-surface p-5 shadow-card">
-          <p className="text-[13px] font-medium text-ink-subtle">
+          <p className="text-label font-medium text-ink-subtle">
             Monatlicher Abfluss
           </p>
-          <div className="mt-1 text-[36px] font-semibold leading-none tabular-nums text-ink">
+          <div className="mt-1 text-display font-semibold leading-none tabular-nums text-ink">
             {formatEur(totalMonthly)}
           </div>
-          <p className="mt-2 text-[12px] text-ink-subtle">
+          <p className="mt-2 text-meta text-ink-subtle">
             ≈ {formatEur(totalYearly)} / Jahr
           </p>
         </div>
@@ -169,21 +169,21 @@ function SubscriptionRow({
         onClick={onClick}
         className="flex min-w-0 flex-1 items-start gap-3 text-left transition active:bg-paper -mx-4 -my-3 px-4 py-3"
       >
-        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-[15px] font-bold text-forest-800">
+        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-body font-bold text-forest-800">
           {initial}
         </div>
         <div className="min-w-0 flex-1">
-          <div className="truncate text-[15px] font-semibold text-ink">
+          <div className="truncate text-body font-semibold text-ink">
             {sub.name}
           </div>
-          <div className="mt-0.5 text-[12px] text-ink-subtle">{schedule}</div>
+          <div className="mt-0.5 text-meta text-ink-subtle">{schedule}</div>
           {lastBilled && (
-            <div className="text-[11px] text-ink-subtle">
+            <div className="text-caption text-ink-subtle">
               Zuletzt abgebucht: {lastBilled}
             </div>
           )}
           {sub.endDate && (
-            <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-800">
+            <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2 py-0.5 text-caption font-medium text-amber-800">
               <Calendar className="h-3 w-3" strokeWidth={2.5} />
               Endet {formatDateDe(sub.endDate)}
             </div>
@@ -191,7 +191,7 @@ function SubscriptionRow({
         </div>
       </button>
       <div className="flex shrink-0 flex-col items-end gap-1.5">
-        <div className="text-[15px] font-semibold tabular-nums text-ink">
+        <div className="text-body font-semibold tabular-nums text-ink">
           {formatEur(sub.amount)}
         </div>
         {sub.endDate && sub.lastBilledDate && <RemainingHint sub={sub} />}
@@ -199,7 +199,7 @@ function SubscriptionRow({
           type="button"
           onClick={onMarkBilledToday}
           aria-label="Als heute abgebucht markieren"
-          className="inline-flex items-center gap-1 rounded-full bg-forest-100 px-2 py-1 text-[11px] font-semibold text-forest-800 transition active:scale-[0.95]"
+          className="inline-flex items-center gap-1 rounded-full bg-forest-100 px-2 py-1 text-caption font-semibold text-forest-800 transition active:scale-[0.95]"
         >
           <CheckCircle2 className="h-3 w-3" strokeWidth={2.5} />
           Heute
@@ -223,7 +223,7 @@ function RemainingHint({ sub }: { sub: Subscription }) {
   if (remaining === 0) return null;
   const total = remaining * sub.amount;
   return (
-    <div className="mt-0.5 text-[11px] text-amber-800">
+    <div className="mt-0.5 text-caption text-amber-800">
       {remaining}× · {formatEur(total)}
     </div>
   );

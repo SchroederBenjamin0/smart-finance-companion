@@ -49,14 +49,14 @@ export function IncomeHistorySheet({ open, onOpenChange, item }: Props) {
     >
       <div className="space-y-4 pt-2">
         <div className="rounded-2xl bg-paper p-4">
-          <div className="text-[12px] uppercase tracking-wider text-ink-subtle">
+          <div className="text-meta uppercase tracking-wider text-ink-subtle">
             {SOURCE_LABEL[income.source]} · {formatDateDe(income.date)}
           </div>
           <div className="mt-1 text-3xl font-semibold tabular-nums text-emerald-700 dark:text-emerald-400">
             +{formatEur(income.amount)}
           </div>
           {income.note && (
-            <div className="mt-1 text-[13px] text-ink-muted">{income.note}</div>
+            <div className="mt-1 text-label text-ink-muted">{income.note}</div>
           )}
         </div>
 
@@ -94,10 +94,10 @@ export function IncomeHistorySheet({ open, onOpenChange, item }: Props) {
                 <Sparkles className="h-4 w-4" strokeWidth={2.25} />
               </div>
               <div className="min-w-0 flex-1">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-forest-800">
+                <div className="text-caption font-bold uppercase tracking-wider text-forest-800">
                   Claude · Sparplan-Vorschlag
                 </div>
-                <p className="mt-0.5 text-[13px] leading-snug text-ink">
+                <p className="mt-0.5 text-label leading-snug text-ink">
                   {advisor.summary}
                 </p>
               </div>
@@ -124,7 +124,7 @@ export function IncomeHistorySheet({ open, onOpenChange, item }: Props) {
                     }}
                   />
                 ))}
-                <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-[11px] text-ink-subtle">
+                <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-caption text-ink-subtle">
                   <span>
                     Summe {formatEur(advisor.totalEur)}
                   </span>
@@ -141,7 +141,7 @@ export function IncomeHistorySheet({ open, onOpenChange, item }: Props) {
         )}
 
         {!recommendation && (
-          <div className="rounded-2xl bg-paper px-4 py-3 text-[12px] text-ink-subtle">
+          <div className="rounded-2xl bg-paper px-4 py-3 text-meta text-ink-subtle">
             Für diese Einnahme wurde kein Sparplan-Vorschlag gespeichert
             (Sheet vor Antwort geschlossen oder Fehler beim LLM-Call).
           </div>
@@ -171,13 +171,13 @@ function SplitRow({
         <Icon className="h-5 w-5" strokeWidth={2.25} />
       </div>
       <div className="min-w-0 flex-1">
-        <div className="text-[15px] font-semibold text-ink">{label}</div>
-        <div className="text-[11px] text-ink-subtle">
+        <div className="text-body font-semibold text-ink">{label}</div>
+        <div className="text-caption text-ink-subtle">
           {pct}%{plan && ' · nicht auf Konto verbucht'}
         </div>
       </div>
       <div
-        className={`text-[15px] font-semibold tabular-nums ${
+        className={`text-body font-semibold tabular-nums ${
           plan ? 'text-ink' : 'text-emerald-700 dark:text-emerald-400'
         }`}
       >

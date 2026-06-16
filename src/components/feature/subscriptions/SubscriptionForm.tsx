@@ -199,7 +199,7 @@ export function SubscriptionForm({
             onChange={(e) => setLastBilledDate(e.target.value)}
           />
           {nextBillDate && (
-            <p className="mt-1 text-[12px] text-ink-subtle">
+            <p className="mt-1 text-meta text-ink-subtle">
               Nächste Abbuchung: <strong>{formatDateDe(nextBillDate)}</strong>
             </p>
           )}
@@ -207,7 +207,7 @@ export function SubscriptionForm({
 
         <div>
           <div className="flex items-center justify-between">
-            <span className="text-[13px] font-medium text-ink">
+            <span className="text-label font-medium text-ink">
               End-Datum (Rent-to-Own)
             </span>
             <Switch
@@ -225,7 +225,7 @@ export function SubscriptionForm({
                 onChange={(e) => setEndDate(e.target.value)}
               />
               {remainingPayments !== null && amount !== null && (
-                <p className="mt-1 text-[12px] text-ink-subtle">
+                <p className="mt-1 text-meta text-ink-subtle">
                   {remainingPayments} {cycle === 'monthly' ? 'Monate' : 'Jahre'}{' '}
                   übrig · noch{' '}
                   <strong className="tabular-nums">
@@ -260,7 +260,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="text-[13px] font-medium text-ink">{label}</span>
+      <span className="text-label font-medium text-ink">{label}</span>
       <div className="mt-1">{children}</div>
     </label>
   );

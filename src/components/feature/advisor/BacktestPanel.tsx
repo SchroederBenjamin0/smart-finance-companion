@@ -47,7 +47,7 @@ export function BacktestPanel({
 
   if (loading) {
     return (
-      <div className="rounded-[22px] bg-surface p-4 shadow-card text-center text-[14px] text-ink-subtle">
+      <div className="rounded-[22px] bg-surface p-4 shadow-card text-center text-body text-ink-subtle">
         Berechne Backtest...
       </div>
     );
@@ -55,7 +55,7 @@ export function BacktestPanel({
 
   if (error || !result) {
     return (
-      <div className="rounded-[22px] bg-amber-50 p-4 text-[13px] text-amber-900">
+      <div className="rounded-[22px] bg-amber-50 p-4 text-label text-amber-900">
         Backtest nicht möglich: {error ?? 'Keine Daten'}
       </div>
     );
@@ -63,10 +63,10 @@ export function BacktestPanel({
 
   return (
     <div className="rounded-[22px] bg-surface p-4 shadow-card">
-      <div className="text-[14px] font-semibold text-ink">
+      <div className="text-body font-semibold text-ink">
         Hypothetische Entwicklung — letzte {years} Jahre
       </div>
-      <div className="mt-1 text-[11px] text-ink-subtle">
+      <div className="mt-1 text-caption text-ink-subtle">
         Vergangenheitsdaten. Keine Prognose. Märkte können sich anders verhalten.
       </div>
 
@@ -103,20 +103,20 @@ export function BacktestPanel({
 
       <div className="mt-3 grid grid-cols-2 gap-3">
         <div className="rounded-[14px] bg-paper p-3">
-          <div className="text-[11px] text-ink-subtle">Endwert</div>
-          <div className="text-[16px] font-semibold text-ink tabular-nums">
+          <div className="text-caption text-ink-subtle">Endwert</div>
+          <div className="text-heading font-semibold text-ink tabular-nums">
             {result.endValue.toFixed(0)} €
           </div>
-          <div className="text-[10px] text-ink-subtle">
+          <div className="text-caption text-ink-subtle">
             Eingezahlt: {result.totalContributed.toFixed(0)} €
           </div>
         </div>
         <div className="rounded-[14px] bg-paper p-3">
-          <div className="text-[11px] text-ink-subtle">Max Drawdown</div>
-          <div className="text-[16px] font-semibold text-red-700 tabular-nums">
+          <div className="text-caption text-ink-subtle">Max Drawdown</div>
+          <div className="text-heading font-semibold text-red-700 tabular-nums">
             -{(result.maxDrawdown * 100).toFixed(0)} %
           </div>
-          <div className="text-[10px] text-ink-subtle">
+          <div className="text-caption text-ink-subtle">
             Schlimmster Drawdown im Zeitraum
           </div>
         </div>

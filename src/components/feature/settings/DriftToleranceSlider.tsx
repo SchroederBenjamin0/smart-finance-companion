@@ -28,8 +28,8 @@ export function DriftToleranceSlider() {
   return (
     <div className="px-4 py-3">
       <div className="mb-2 flex items-baseline justify-between">
-        <label className="text-[14px] font-medium text-ink">Drift-Toleranz</label>
-        <span className="text-[14px] tabular-nums text-ink-muted">±{value} pp</span>
+        <label className="text-body font-medium text-ink">Drift-Toleranz</label>
+        <span className="text-body tabular-nums text-ink-muted">±{value} pp</span>
       </div>
       <Slider.Root
         className="relative flex h-5 w-full touch-none select-none items-center"

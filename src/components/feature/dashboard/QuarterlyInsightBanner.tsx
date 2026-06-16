@@ -37,10 +37,10 @@ export function QuarterlyInsightBanner() {
           <Sparkles className="h-4 w-4" strokeWidth={2.5} />
         </div>
         <div className="min-w-0 flex-1">
-          <div className="text-[10px] font-bold uppercase tracking-wider text-forest-800">
+          <div className="text-caption font-bold uppercase tracking-wider text-forest-800">
             Quartals-Insight · {formatDateDe(latest.date)}
           </div>
-          <div className="mt-0.5 truncate text-[13px] text-ink">
+          <div className="mt-0.5 truncate text-label text-ink">
             Claude hat einen Brief für dich geschrieben.
           </div>
         </div>
@@ -48,7 +48,7 @@ export function QuarterlyInsightBanner() {
       </button>
 
       <Sheet open={open} onOpenChange={setOpen} title="Quartals-Insight">
-        <article className="prose prose-sm max-w-none whitespace-pre-wrap pb-2 text-[14px] leading-relaxed text-ink">
+        <article className="prose prose-sm max-w-none whitespace-pre-wrap pb-2 text-body leading-relaxed text-ink">
           {markdown}
         </article>
       </Sheet>

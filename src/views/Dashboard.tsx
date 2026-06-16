@@ -114,7 +114,7 @@ export function Dashboard() {
       <HeroHeader>
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-[13px] font-medium uppercase tracking-wide text-mint-200">
+            <p className="text-label font-medium uppercase tracking-wide text-mint-200">
               Willkommen zurück
             </p>
             <h1 className="mt-1 text-2xl font-semibold leading-tight">
@@ -132,13 +132,13 @@ export function Dashboard() {
         </div>
 
         <div className="mt-7">
-          <p className="text-[13px] font-medium text-mint-200">
+          <p className="text-label font-medium text-mint-200">
             Gesamt-Saldo
           </p>
-          <div className="mt-1 text-[40px] font-semibold leading-none tabular-nums">
+          <div className="mt-1 text-display font-semibold leading-none tabular-nums">
             {formatEur(total)}
           </div>
-          <div className="mt-3 flex flex-wrap items-center gap-2 text-[13px]">
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-label">
             {monthDelta > 0 && (
               <>
                 <span className="inline-flex items-center gap-1 rounded-full bg-surface/15 px-2.5 py-1 font-medium">
@@ -149,7 +149,7 @@ export function Dashboard() {
               </>
             )}
             {portfolioValue > 0 && (
-              <span className="rounded-full bg-surface/10 px-2.5 py-1 text-[12px] text-mint-200">
+              <span className="rounded-full bg-surface/10 px-2.5 py-1 text-meta text-mint-200">
                 davon Portfolio {formatEur(portfolioValue)}
               </span>
             )}
@@ -165,11 +165,11 @@ export function Dashboard() {
 
       <section className="mt-5">
         <header className="flex items-center justify-between px-4">
-          <h2 className="text-[15px] font-semibold text-ink">Meine Konten</h2>
+          <h2 className="text-body font-semibold text-ink">Meine Konten</h2>
           <button
             type="button"
             onClick={() => setActiveTab('inv')}
-            className="text-[13px] font-medium text-ink-subtle"
+            className="text-label font-medium text-ink-subtle"
           >
             Alle ansehen
           </button>
@@ -187,10 +187,10 @@ export function Dashboard() {
 
       <section className="mt-6 px-4">
         <header className="flex items-center justify-between">
-          <h2 className="text-[15px] font-semibold text-ink">Letzte Einträge</h2>
+          <h2 className="text-body font-semibold text-ink">Letzte Einträge</h2>
           <button
             type="button"
-            className="text-[13px] font-medium text-ink-subtle"
+            className="text-label font-medium text-ink-subtle"
             onClick={() => setActiveTab('add')}
           >
             Neuer Eintrag

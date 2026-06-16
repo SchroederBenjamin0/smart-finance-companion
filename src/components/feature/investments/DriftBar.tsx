@@ -7,7 +7,7 @@ interface Props {
 export function DriftBar({ currentWeight, targetWeight, tolerancePp }: Props) {
   if (targetWeight <= 0) {
     return (
-      <div className="text-[11px] italic text-ink-subtle">Ziel nicht gesetzt</div>
+      <div className="text-caption italic text-ink-subtle">Ziel nicht gesetzt</div>
     );
   }
 

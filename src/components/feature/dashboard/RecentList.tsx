@@ -132,19 +132,19 @@ function RecentRow({
         <Icon className="h-4 w-4" strokeWidth={2.5} />
       </div>
       <div className="min-w-0 flex-1">
-        <div className="truncate text-[15px] font-semibold text-ink">
+        <div className="truncate text-body font-semibold text-ink">
           {title}
         </div>
-        <div className="truncate text-[12px] text-ink-subtle">{subtitle}</div>
+        <div className="truncate text-meta text-ink-subtle">{subtitle}</div>
       </div>
       <div className="text-right">
         <div
-          className={`text-[15px] font-semibold tabular-nums ${amountClass}`}
+          className={`text-body font-semibold tabular-nums ${amountClass}`}
         >
           {prefix}
           {formatEur(shownAmount)}
         </div>
-        <div className="text-[11px] text-ink-subtle">{when}</div>
+        <div className="text-caption text-ink-subtle">{when}</div>
       </div>
     </Element>
   );

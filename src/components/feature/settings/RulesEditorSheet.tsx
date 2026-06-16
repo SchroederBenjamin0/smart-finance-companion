@@ -58,7 +58,7 @@ export function RulesEditorSheet({ open, onOpenChange }: Props) {
       }
     >
       <div className="space-y-4">
-        <p className="text-[12px] text-ink-subtle">
+        <p className="text-meta text-ink-subtle">
           Pro Einnahme-Quelle: wie viel ins Investment-Konto, ins Sparkonto,
           ins Fun-Geld? Fun-Anteil errechnet sich automatisch.
         </p>
@@ -103,7 +103,7 @@ function RuleEditor({
 
   return (
     <div className="rounded-2xl border border-forest-950/10 bg-surface p-4">
-      <h3 className="text-[14px] font-semibold text-ink">{title}</h3>
+      <h3 className="text-body font-semibold text-ink">{title}</h3>
 
       <div className="mt-3">
         <div className="flex items-center justify-between text-sm">

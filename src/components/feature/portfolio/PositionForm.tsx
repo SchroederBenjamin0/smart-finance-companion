@@ -174,7 +174,7 @@ export function PositionForm({
             />
           </Field>
         </div>
-        <p className="-mt-2 text-[11px] text-ink-subtle">
+        <p className="-mt-2 text-caption text-ink-subtle">
           Bekannte ISINs füllen den Ticker automatisch aus. Sonst auf{' '}
           <em>finance.yahoo.com</em> nachschlagen (z.B. „IWDA.AS").
         </p>
@@ -233,7 +233,7 @@ export function PositionForm({
             value={targetText}
             onChange={(e) => setTargetText(e.target.value)}
           />
-          <p className="mt-1 text-[11px] text-ink-subtle">
+          <p className="mt-1 text-caption text-ink-subtle">
             Wenn gesetzt, zeigt die App Drift gegenüber dem Soll-Anteil.
           </p>
         </Field>
@@ -251,7 +251,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="text-[13px] font-medium text-ink">{label}</span>
+      <span className="text-label font-medium text-ink">{label}</span>
       <div className="mt-1">{children}</div>
     </label>
   );

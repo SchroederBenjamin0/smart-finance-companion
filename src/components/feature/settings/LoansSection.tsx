@@ -89,20 +89,20 @@ function TransferReturnConfirm({ loan, onClose, onConfirmed }: TransferReturnCon
       <div className="w-full max-w-lg rounded-t-[28px] bg-paper px-5 pb-8 pt-5 shadow-nav">
         <div className="mx-auto mb-4 h-1 w-12 rounded-full bg-forest-950/15" />
         <h2 className="mb-2 text-lg font-semibold text-ink">Überweisung bestätigen</h2>
-        <p className="mb-1 text-[14px] text-ink">
+        <p className="mb-1 text-body text-ink">
           Hat <span className="font-semibold">{loan.borrowerName}</span> die{' '}
           {loan.amount !== undefined && (
             <span className="font-semibold">{formatEur(loan.amount)}</span>
           )}{' '}
           überwiesen?
         </p>
-        <p className="mb-5 text-[13px] text-ink-subtle">
+        <p className="mb-5 text-label text-ink-subtle">
           Der Betrag wird auf dein Fun-Konto gebucht.
         </p>
         <div className="flex gap-2">
           <button
             type="button"
-            className="flex-1 rounded-full border border-forest-950/15 bg-surface px-4 py-2 text-[15px] font-medium text-ink"
+            className="flex-1 rounded-full border border-forest-950/15 bg-surface px-4 py-2 text-body font-medium text-ink"
             onClick={onClose}
             disabled={busy}
           >
@@ -110,7 +110,7 @@ function TransferReturnConfirm({ loan, onClose, onConfirmed }: TransferReturnCon
           </button>
           <button
             type="button"
-            className="flex-1 rounded-full bg-forest-700 px-4 py-2 text-[15px] font-semibold text-white"
+            className="flex-1 rounded-full bg-forest-700 px-4 py-2 text-body font-semibold text-white"
             onClick={() => void confirm()}
             disabled={busy}
           >
@@ -230,7 +230,7 @@ function LoanFormModal({ loan, open, onClose, onSaved }: LoanFormModalProps) {
           <div className="space-y-4">
             {/* Borrower name */}
             <label className="block">
-              <span className="text-[13px] font-medium text-ink">
+              <span className="text-label font-medium text-ink">
                 Name <span className="text-red-500">*</span>
               </span>
               <input
@@ -243,13 +243,13 @@ function LoanFormModal({ loan, open, onClose, onSaved }: LoanFormModalProps) {
                 onChange={(e) => setBorrowerName(e.target.value)}
               />
               {errors.borrowerName && (
-                <p className="mt-1 text-[12px] text-red-600">{errors.borrowerName}</p>
+                <p className="mt-1 text-meta text-red-600">{errors.borrowerName}</p>
               )}
             </label>
 
             {/* Item description */}
             <label className="block">
-              <span className="text-[13px] font-medium text-ink">
+              <span className="text-label font-medium text-ink">
                 Was verliehen? <span className="text-red-500">*</span>
               </span>
               <input
@@ -261,13 +261,13 @@ function LoanFormModal({ loan, open, onClose, onSaved }: LoanFormModalProps) {
                 onChange={(e) => setItemDescription(e.target.value)}
               />
               {errors.itemDescription && (
-                <p className="mt-1 text-[12px] text-red-600">{errors.itemDescription}</p>
+                <p className="mt-1 text-meta text-red-600">{errors.itemDescription}</p>
               )}
             </label>
 
             {/* Date */}
             <label className="block">
-              <span className="text-[13px] font-medium text-ink">Datum</span>
+              <span className="text-label font-medium text-ink">Datum</span>
               <input
                 type="date"
                 className="input-field mt-1"
@@ -284,7 +284,7 @@ function LoanFormModal({ loan, open, onClose, onSaved }: LoanFormModalProps) {
                 checked={hasAmount}
                 onChange={(e) => setHasAmount(e.target.checked)}
               />
-              <span className="text-[14px] font-medium text-ink">
+              <span className="text-body font-medium text-ink">
                 Geld erwarte ich zurück
               </span>
             </label>
@@ -293,7 +293,7 @@ function LoanFormModal({ loan, open, onClose, onSaved }: LoanFormModalProps) {
             {hasAmount && (
               <div className="space-y-3 rounded-xl border border-forest-950/10 bg-surface px-4 py-3">
                 <label className="block">
-                  <span className="text-[13px] font-medium text-ink">Betrag (€)</span>
+                  <span className="text-label font-medium text-ink">Betrag (€)</span>
                   <input
                     type="text"
                     inputMode="decimal"
@@ -304,12 +304,12 @@ function LoanFormModal({ loan, open, onClose, onSaved }: LoanFormModalProps) {
                     onChange={(e) => setAmountText(e.target.value)}
                   />
                   {errors.amount && (
-                    <p className="mt-1 text-[12px] text-red-600">{errors.amount}</p>
+                    <p className="mt-1 text-meta text-red-600">{errors.amount}</p>
                   )}
                 </label>
 
                 <fieldset>
-                  <legend className="mb-2 text-[13px] font-medium text-ink">
+                  <legend className="mb-2 text-label font-medium text-ink">
                     Rückzahlungsart
                   </legend>
                   <div className="flex gap-3">
@@ -323,7 +323,7 @@ function LoanFormModal({ loan, open, onClose, onSaved }: LoanFormModalProps) {
                           checked={paymentMethod === m}
                           onChange={() => setPaymentMethod(m)}
                         />
-                        <span className="text-[14px] text-ink">
+                        <span className="text-body text-ink">
                           {m === 'transfer' ? 'Überweisung' : 'Bar'}
                         </span>
                       </label>
@@ -342,7 +342,7 @@ function LoanFormModal({ loan, open, onClose, onSaved }: LoanFormModalProps) {
           <div className="flex gap-2">
             <button
               type="button"
-              className="flex-1 rounded-full border border-forest-950/15 bg-surface px-4 py-2 text-[15px] font-medium text-ink"
+              className="flex-1 rounded-full border border-forest-950/15 bg-surface px-4 py-2 text-body font-medium text-ink"
               onClick={onClose}
               disabled={busy}
             >
@@ -350,7 +350,7 @@ function LoanFormModal({ loan, open, onClose, onSaved }: LoanFormModalProps) {
             </button>
             <button
               type="button"
-              className="flex-1 rounded-full bg-forest-700 px-4 py-2 text-[15px] font-semibold text-white"
+              className="flex-1 rounded-full bg-forest-700 px-4 py-2 text-body font-semibold text-white"
               onClick={() => void save()}
               disabled={busy}
             >
@@ -387,11 +387,11 @@ function LoanRow({ loan, onEdit, onReturn, onDelete }: LoanRowProps) {
       {/* Content */}
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <span className="truncate text-[15px] font-semibold text-ink">
+          <span className="truncate text-body font-semibold text-ink">
             {loan.borrowerName}
           </span>
           <span
-            className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+            className={`shrink-0 rounded-full px-2 py-0.5 text-caption font-semibold ${
               isOpen
                 ? 'bg-forest-100 text-forest-800 dark:bg-forest-900 dark:text-forest-200'
                 : 'bg-paper text-ink-subtle'
@@ -400,10 +400,10 @@ function LoanRow({ loan, onEdit, onReturn, onDelete }: LoanRowProps) {
             {isOpen ? 'verliehen' : 'zurück'}
           </span>
         </div>
-        <div className="mt-0.5 truncate text-[13px] text-ink-muted">
+        <div className="mt-0.5 truncate text-label text-ink-muted">
           {loan.itemDescription}
         </div>
-        <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-[12px] text-ink-subtle">
+        <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-meta text-ink-subtle">
           <span>{loan.lentAt.slice(0, 10).split('-').reverse().join('.')}</span>
           {loan.amount !== undefined && (
             <>
@@ -488,7 +488,7 @@ function ReturnedLoansModal({ loans, onClose, onDelete }: ReturnedLoansModalProp
           style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 16px)' }}
         >
           {loans.length === 0 ? (
-            <p className="px-5 py-8 text-center text-[14px] text-ink-subtle">
+            <p className="px-5 py-8 text-center text-body text-ink-subtle">
               Noch nichts zurückerhalten.
             </p>
           ) : (
@@ -592,12 +592,12 @@ export function LoansSection() {
     <>
       <div className="mt-5">
         <div className="mb-2 ml-1 flex items-center justify-between">
-          <h2 className="text-[12px] font-semibold uppercase tracking-wider text-ink-subtle">
+          <h2 className="text-meta font-semibold uppercase tracking-wider text-ink-subtle">
             Verleih
           </h2>
           <button
             type="button"
-            className="flex items-center gap-1 rounded-full bg-forest-700 px-3 py-1 text-[12px] font-semibold text-white"
+            className="flex items-center gap-1 rounded-full bg-forest-700 px-3 py-1 text-meta font-semibold text-white"
             onClick={openAdd}
           >
             <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
@@ -611,15 +611,15 @@ export function LoansSection() {
               <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-forest-800 dark:bg-forest-900 dark:text-forest-200">
                 <HandCoins className="h-4.5 w-4.5" strokeWidth={2.25} />
               </div>
-              <span className="text-[14px] text-ink-subtle">Lade…</span>
+              <span className="text-body text-ink-subtle">Lade…</span>
             </div>
           ) : loans.length === 0 ? (
             <div className="flex flex-col items-center gap-2 px-4 py-6 text-center">
               <div className="grid h-12 w-12 place-items-center rounded-full bg-forest-100 text-forest-800 dark:bg-forest-900 dark:text-forest-200">
                 <HandCoins className="h-5 w-5" strokeWidth={2.25} />
               </div>
-              <p className="text-[14px] font-medium text-ink">Noch keine Verleihungen</p>
-              <p className="text-[12px] text-ink-subtle">
+              <p className="text-body font-medium text-ink">Noch keine Verleihungen</p>
+              <p className="text-meta text-ink-subtle">
                 Tippe auf „Neu", um eine Verleihung zu erfassen.
               </p>
             </div>
@@ -637,7 +637,7 @@ export function LoansSection() {
                   />
                 ))
               ) : (
-                <div className="px-4 py-5 text-center text-[13px] text-ink-subtle">
+                <div className="px-4 py-5 text-center text-label text-ink-subtle">
                   Keine offenen Verleihungen.
                 </div>
               )}
@@ -652,10 +652,10 @@ export function LoansSection() {
                   <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-paper text-ink-muted">
                     <Archive className="h-4.5 w-4.5" strokeWidth={2.25} />
                   </div>
-                  <span className="flex-1 text-[14px] font-medium text-ink">
+                  <span className="flex-1 text-body font-medium text-ink">
                     Zurückerhalten ansehen
                   </span>
-                  <span className="rounded-full bg-paper px-2 py-0.5 text-[12px] font-semibold tabular-nums text-ink-subtle">
+                  <span className="rounded-full bg-paper px-2 py-0.5 text-meta font-semibold tabular-nums text-ink-subtle">
                     {returned.length}
                   </span>
                 </button>
@@ -670,7 +670,7 @@ export function LoansSection() {
                 <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-forest-800 dark:bg-forest-900 dark:text-forest-200">
                   <User className="h-4.5 w-4.5" strokeWidth={2.25} />
                 </div>
-                <span className="text-[14px] font-medium text-forest-700">
+                <span className="text-body font-medium text-forest-700">
                   + Neue Verleihung
                 </span>
               </button>

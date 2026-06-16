@@ -206,7 +206,7 @@ export function Income() {
   return (
     <>
       <HeroHeader>
-        <p className="text-[13px] font-medium uppercase tracking-wide text-mint-200">
+        <p className="text-label font-medium uppercase tracking-wide text-mint-200">
           Neuer Eintrag
         </p>
         <h1 className="mt-1 text-2xl font-semibold leading-tight">
@@ -246,7 +246,7 @@ export function Income() {
                   type="button"
                   onClick={() => setSource(s.id)}
                   aria-pressed={active}
-                  className={`flex flex-col items-center gap-1.5 rounded-2xl px-3 py-3 text-[12px] font-semibold transition ${
+                  className={`flex flex-col items-center gap-1.5 rounded-2xl px-3 py-3 text-meta font-semibold transition ${
                     active
                       ? 'bg-white text-forest-950'
                       : 'bg-surface/10 text-white/85'
@@ -268,7 +268,7 @@ export function Income() {
                   type="button"
                   onClick={() => setFromAccount(a.id)}
                   aria-pressed={active}
-                  className={`flex flex-col items-center gap-1 rounded-2xl px-3 py-3 text-[12px] font-semibold transition ${
+                  className={`flex flex-col items-center gap-1 rounded-2xl px-3 py-3 text-meta font-semibold transition ${
                     active
                       ? 'bg-white text-forest-950'
                       : 'bg-surface/10 text-white/85'
@@ -285,12 +285,12 @@ export function Income() {
 
       <div className="px-4 pt-5 pb-32 animate-view-enter">
         <div className="rounded-[22px] bg-surface p-5 shadow-card">
-          <p className="text-[13px] font-medium text-ink-subtle">
+          <p className="text-label font-medium text-ink-subtle">
             {mode === 'income' ? 'Du erhältst' : 'Du gibst aus'}
           </p>
           <div className="mt-2 flex items-baseline gap-1">
             <span
-              className={`text-[28px] font-semibold ${
+              className={`text-display-sm font-semibold ${
                 mode === 'expense' ? 'text-red-500' : 'text-ink-subtle'
               }`}
             >
@@ -302,7 +302,7 @@ export function Income() {
               autoComplete="off"
               placeholder="0,00"
               aria-label="Betrag in Euro"
-              className="min-w-0 flex-1 bg-transparent text-[44px] font-semibold tabular-nums text-ink outline-none placeholder:text-ink-subtle/40"
+              className="min-w-0 flex-1 bg-transparent text-display font-semibold tabular-nums text-ink outline-none placeholder:text-ink-subtle/40"
               value={amountText}
               onChange={(e) => setAmountText(e.target.value)}
             />
@@ -322,7 +322,7 @@ export function Income() {
             )}
           </div>
           {mode === 'expense' && (
-            <p className="mt-3 text-[12px] text-ink-subtle">
+            <p className="mt-3 text-meta text-ink-subtle">
               Aktuelles Saldo {labelFor(fromAccount)}:{' '}
               <span
                 className={`font-mono font-semibold ${
@@ -337,7 +337,7 @@ export function Income() {
 
         {mode === 'income' && (
           <>
-            <h2 className="mt-6 text-[13px] font-semibold uppercase tracking-wider text-ink-subtle">
+            <h2 className="mt-6 text-label font-semibold uppercase tracking-wider text-ink-subtle">
               Auto-Split Vorschau
             </h2>
             <div className="mt-3 row-divider rounded-[22px] bg-surface shadow-card">
@@ -362,15 +362,15 @@ export function Income() {
             </div>
 
             {preview?.capApplied && (
-              <p className="mt-3 rounded-2xl bg-amber-50 px-4 py-3 text-[12px] text-amber-800">
+              <p className="mt-3 rounded-2xl bg-amber-50 px-4 py-3 text-meta text-amber-800">
                 Notgroschen-Cap erreicht — Überschuss fließt ins Investment.
               </p>
             )}
 
-            <h2 className="mt-7 text-[13px] font-semibold uppercase tracking-wider text-ink-subtle">
+            <h2 className="mt-7 text-label font-semibold uppercase tracking-wider text-ink-subtle">
               Letzte Einnahmen
             </h2>
-            <p className="mt-1 text-[12px] text-ink-subtle">
+            <p className="mt-1 text-meta text-ink-subtle">
               Tippe für Split-Details und den gespeicherten Sparplan-Vorschlag.
             </p>
             <div className="mt-3">
@@ -385,7 +385,7 @@ export function Income() {
         {mode === 'expense' && (
           <div className="mt-4 grid grid-cols-1 gap-3">
             <label className="block">
-              <span className="text-[12px] font-medium text-ink-subtle">
+              <span className="text-meta font-medium text-ink-subtle">
                 Wo?
               </span>
               <input
@@ -397,7 +397,7 @@ export function Income() {
               />
             </label>
             <div>
-              <span className="text-[12px] font-medium text-ink-subtle">
+              <span className="text-meta font-medium text-ink-subtle">
                 Kategorie
               </span>
               <div className="mt-1 flex flex-wrap gap-2">
@@ -425,7 +425,7 @@ export function Income() {
 
         <div className="mt-6 grid grid-cols-2 gap-3">
           <label className="block">
-            <span className="text-[12px] font-medium text-ink-subtle">
+            <span className="text-meta font-medium text-ink-subtle">
               Datum
             </span>
             <input
@@ -436,7 +436,7 @@ export function Income() {
             />
           </label>
           <label className="block">
-            <span className="text-[12px] font-medium text-ink-subtle">
+            <span className="text-meta font-medium text-ink-subtle">
               Notiz
             </span>
             <input
@@ -512,10 +512,10 @@ function PreviewRow({
         <Icon className="h-5 w-5" strokeWidth={2.25} />
       </div>
       <div className="min-w-0 flex-1">
-        <div className="text-[15px] font-semibold text-ink">{label}</div>
-        <div className="text-[12px] text-ink-subtle">{pct} %</div>
+        <div className="text-body font-semibold text-ink">{label}</div>
+        <div className="text-meta text-ink-subtle">{pct} %</div>
       </div>
-      <div className="text-[15px] font-semibold tabular-nums text-emerald-700 dark:text-emerald-400">
+      <div className="text-body font-semibold tabular-nums text-emerald-700 dark:text-emerald-400">
         +{formatEur(amount)}
       </div>
     </div>

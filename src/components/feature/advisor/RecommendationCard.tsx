@@ -69,20 +69,20 @@ export function RecommendationCard({
         onClick={() => setExpanded((v) => !v)}
         aria-expanded={expanded}
       >
-        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-[12px] font-bold text-forest-800 dark:bg-forest-900 dark:text-forest-200">
+        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-meta font-bold text-forest-800 dark:bg-forest-900 dark:text-forest-200">
           {data.ticker.slice(0, 4) || 'ETF'}
         </div>
         <div className="min-w-0 flex-1">
-          <div className="truncate text-[14px] font-semibold text-ink">
+          <div className="truncate text-body font-semibold text-ink">
             {data.name}
           </div>
-          <div className="mt-0.5 text-[11px] text-ink-subtle">
+          <div className="mt-0.5 text-caption text-ink-subtle">
             {sector ? `${sector} · ` : ''}
             {data.ticker}
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          <div className="text-right text-[14px] font-semibold tabular-nums text-emerald-700 dark:text-emerald-400">
+          <div className="text-right text-body font-semibold tabular-nums text-emerald-700 dark:text-emerald-400">
             {formatEur(data.amountEur)}
           </div>
           <span
@@ -106,7 +106,7 @@ export function RecommendationCard({
                 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-ink-subtle"
                 strokeWidth={2.5}
               />
-              <p className="text-[12px] leading-snug text-ink-muted">
+              <p className="text-meta leading-snug text-ink-muted">
                 {profileText}
               </p>
             </div>
@@ -114,23 +114,23 @@ export function RecommendationCard({
 
           {data.reason && (
             <div className="rounded-xl bg-mint-100 px-3 py-2">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-forest-800">
+              <div className="text-caption font-bold uppercase tracking-wider text-forest-800">
                 Warum genau hier
               </div>
-              <p className="mt-0.5 text-[12px] leading-snug text-ink">
+              <p className="mt-0.5 text-meta leading-snug text-ink">
                 {data.reason}
               </p>
             </div>
           )}
 
           <div>
-            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-ink-subtle">
+            <div className="flex items-center gap-2 text-caption font-semibold uppercase tracking-wider text-ink-subtle">
               <Newspaper className="h-3.5 w-3.5" strokeWidth={2.5} />
               Aktuelle News
             </div>
             <div className="mt-2 space-y-1.5">
               {newsLoading && (
-                <div className="flex items-center gap-2 text-[12px] text-ink-subtle">
+                <div className="flex items-center gap-2 text-meta text-ink-subtle">
                   <Loader2 className="h-3.5 w-3.5 animate-spin" strokeWidth={2.5} />
                   Lade…
                 </div>
@@ -145,10 +145,10 @@ export function RecommendationCard({
                         rel="noopener"
                         className="block rounded-xl bg-paper px-3 py-2 active:bg-mint-100"
                       >
-                        <div className="text-[12px] font-medium leading-snug text-ink">
+                        <div className="text-meta font-medium leading-snug text-ink">
                           {item.title}
                         </div>
-                        <div className="mt-0.5 text-[10px] text-ink-subtle">
+                        <div className="mt-0.5 text-caption text-ink-subtle">
                           {item.publisher || 'Quelle unbekannt'} ·{' '}
                           {formatPublished(item.publishedAt)}
                         </div>
@@ -158,7 +158,7 @@ export function RecommendationCard({
                 </ul>
               )}
               {!newsLoading && news && news.length === 0 && (
-                <p className="text-[12px] text-ink-subtle">
+                <p className="text-meta text-ink-subtle">
                   {newsError
                     ? `Keine News abrufbar (${newsError}).`
                     : 'Aktuell keine Headlines für diesen Wert.'}
@@ -172,7 +172,7 @@ export function RecommendationCard({
               href={trDeepLink(data.isin)}
               target="_blank"
               rel="noopener"
-              className="inline-flex items-center gap-1 rounded-full bg-forest-950 px-3 py-1 text-[11px] font-semibold text-white"
+              className="inline-flex items-center gap-1 rounded-full bg-forest-950 px-3 py-1 text-caption font-semibold text-white"
             >
               In Trade Republic öffnen
               <ExternalLink className="h-3 w-3" strokeWidth={2.5} />

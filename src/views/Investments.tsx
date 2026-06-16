@@ -128,7 +128,7 @@ export function Investments() {
       <HeroHeader>
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-[13px] font-medium uppercase tracking-wide text-mint-200">
+            <p className="text-label font-medium uppercase tracking-wide text-mint-200">
               Trade Republic
             </p>
             <h1 className="mt-1 text-2xl font-semibold leading-tight">
@@ -162,13 +162,13 @@ export function Investments() {
 
       <div className="px-4 pt-4 animate-view-enter">
         <div className="rounded-[22px] bg-surface p-5 shadow-card">
-          <p className="text-[13px] font-medium text-ink-subtle">
+          <p className="text-label font-medium text-ink-subtle">
             Aktuell investiert
           </p>
-          <div className="mt-1 text-[36px] font-semibold leading-none tabular-nums text-ink">
+          <div className="mt-1 text-display font-semibold leading-none tabular-nums text-ink">
             {formatEur(totals.value)}
           </div>
-          <div className="mt-3 flex flex-wrap gap-2 text-[12px]">
+          <div className="mt-3 flex flex-wrap gap-2 text-meta">
             <span className="rounded-full bg-paper px-2.5 py-1 text-ink-subtle">
               Eingezahlt {formatEur(totals.invested)}
             </span>
@@ -199,10 +199,10 @@ export function Investments() {
               <Sparkles className="h-5 w-5" strokeWidth={2.25} />
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-ink-subtle">
+              <div className="text-caption font-bold uppercase tracking-wider text-ink-subtle">
                 Erste Position
               </div>
-              <p className="mt-0.5 text-[13px] leading-snug text-ink">
+              <p className="mt-0.5 text-label leading-snug text-ink">
                 Tippe auf <strong>+</strong>, um deine erste Holding zu
                 erfassen. ISIN auto-vervollständigt bekannte ETFs.
               </p>
@@ -212,7 +212,7 @@ export function Investments() {
 
         {positions.length > 0 && (
           <>
-            <h2 className="mt-6 text-[13px] font-semibold uppercase tracking-wider text-ink-subtle">
+            <h2 className="mt-6 text-label font-semibold uppercase tracking-wider text-ink-subtle">
               Holdings & Drift
             </h2>
             <ul className="mt-3 space-y-2">
@@ -232,7 +232,7 @@ export function Investments() {
 
         {news.length > 0 && (
           <>
-            <h2 className="mt-6 text-[13px] font-semibold uppercase tracking-wider text-ink-subtle">
+            <h2 className="mt-6 text-label font-semibold uppercase tracking-wider text-ink-subtle">
               News (letzte 5 Tage)
             </h2>
             <ul className="mt-3 space-y-2">
@@ -246,10 +246,10 @@ export function Investments() {
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0 flex-1">
-                        <div className="text-[14px] font-semibold leading-snug text-ink">
+                        <div className="text-body font-semibold leading-snug text-ink">
                           {n.title}
                         </div>
-                        <div className="mt-1 text-[11px] text-ink-subtle">
+                        <div className="mt-1 text-caption text-ink-subtle">
                           {n.publisher || 'Yahoo Finance'}
                           {' · '}
                           {formatRelativeDe(n.publishedAt)}
@@ -348,25 +348,25 @@ function PositionRow({
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <div className="grid h-9 w-9 place-items-center rounded-full bg-forest-100 text-[12px] font-bold text-forest-800">
+              <div className="grid h-9 w-9 place-items-center rounded-full bg-forest-100 text-meta font-bold text-forest-800">
                 {position.ticker.slice(0, 4)}
               </div>
               <div className="min-w-0">
-                <div className="truncate text-[15px] font-semibold text-ink">
+                <div className="truncate text-body font-semibold text-ink">
                   {position.name}
                 </div>
-                <div className="text-[11px] text-ink-subtle">
+                <div className="text-caption text-ink-subtle">
                   {position.shares} · {position.ticker}
                 </div>
               </div>
             </div>
           </div>
           <div className="text-right">
-            <div className="text-[15px] font-semibold tabular-nums text-ink">
+            <div className="text-body font-semibold tabular-nums text-ink">
               {formatEur(position.currentValue)}
             </div>
             <div
-              className={`text-[11px] font-medium tabular-nums ${
+              className={`text-caption font-medium tabular-nums ${
                 gainAbs >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-700 dark:text-red-400'
               }`}
             >
@@ -381,7 +381,7 @@ function PositionRow({
             targetWeight={position.targetPercentage}
             tolerancePp={tolerance}
           />
-          <div className="flex items-center justify-between text-[11px]">
+          <div className="flex items-center justify-between text-caption">
             <span className="text-ink-subtle">
               {currentPct.toFixed(1)}%
               {position.targetPercentage > 0 && (
@@ -407,7 +407,7 @@ function PositionRow({
                   target="_blank"
                   rel="noopener"
                   onClick={(e) => e.stopPropagation()}
-                  className="inline-flex items-center gap-1 rounded-full bg-forest-950 px-2.5 py-0.5 text-[11px] font-semibold text-white"
+                  className="inline-flex items-center gap-1 rounded-full bg-forest-950 px-2.5 py-0.5 text-caption font-semibold text-white"
                 >
                   In TR <ExternalLink className="h-3 w-3" strokeWidth={2.5} />
                 </a>

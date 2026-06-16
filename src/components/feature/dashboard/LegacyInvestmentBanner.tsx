@@ -35,7 +35,7 @@ export function LegacyInvestmentBanner() {
       </div>
       <div className="min-w-0 flex-1">
         <div className="font-semibold">Investment-Bucket bereinigt</div>
-        <div className="mt-0.5 text-[12px] leading-snug text-forest-800">
+        <div className="mt-0.5 text-meta leading-snug text-forest-800">
           Vor dem Update lagen {formatEur(amount)} im internen
           Investment-Konto. Net Worth zeigt jetzt nur noch Fun + Sparkonto +
           dein echtes TR-Portfolio. Bitte vergleiche mit deinem Trade-Republic-

@@ -90,7 +90,7 @@ export function PinGate({ expectedHash, onUnlock }: Props) {
         <p className="mt-4 text-sm text-red-700">{error}</p>
       )}
 
-      <p className="mt-6 text-[12px] text-ink-subtle">
+      <p className="mt-6 text-meta text-ink-subtle">
         PIN vergessen? Settings → App zurücksetzen (löscht alle Daten).
       </p>
 

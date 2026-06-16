@@ -287,7 +287,7 @@ export function CsvImportSheet({
         <div className="flex h-56 flex-col items-center justify-center gap-3 text-ink-muted">
           <Loader2 className="h-6 w-6 animate-spin" strokeWidth={2.25} />
           <p className="text-sm">CSV wird geparst und kategorisiert…</p>
-          <p className="text-[12px] text-ink-subtle">
+          <p className="text-meta text-ink-subtle">
             Claude klassifiziert deine Buchungen in Kategorien.
           </p>
         </div>
@@ -307,7 +307,7 @@ export function CsvImportSheet({
             <CheckCircle2 className="h-8 w-8" strokeWidth={2} />
             <p className="text-sm font-medium">Import abgeschlossen</p>
             {importSummary && (
-              <p className="text-[12px] text-ink-muted text-center">
+              <p className="text-meta text-ink-muted text-center">
                 {importSummary.inserted} Transaktion{importSummary.inserted === 1 ? '' : 'en'} importiert
                 {importSummary.skipped > 0 && (
                   <> · {importSummary.skipped} Duplikat{importSummary.skipped === 1 ? '' : 'e'} übersprungen</>
@@ -320,7 +320,7 @@ export function CsvImportSheet({
 
       {stage === 'review' && (
         <div className="space-y-3 pb-2">
-          <div className="flex items-center gap-2 rounded-xl bg-paper px-3 py-2 text-[12px] text-ink-muted">
+          <div className="flex items-center gap-2 rounded-xl bg-paper px-3 py-2 text-meta text-ink-muted">
             <FileText className="h-4 w-4 shrink-0" strokeWidth={2.25} />
             <div className="min-w-0 flex-1">
               <div className="truncate font-medium text-ink">{fileName}</div>
@@ -332,7 +332,7 @@ export function CsvImportSheet({
               </div>
             </div>
           </div>
-          <p className="text-[12px] text-ink-subtle">
+          <p className="text-meta text-ink-subtle">
             Duplikate (in Datum + Betrag deckend mit manuellem Eintrag) sind
             standardmäßig ausgehakt. Kategorien sind editierbar.
           </p>
@@ -383,17 +383,17 @@ function ReviewRow({
         />
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline justify-between gap-3">
-            <div className="truncate text-[14px] font-semibold text-ink">
+            <div className="truncate text-body font-semibold text-ink">
               {draft.txn.description || '(kein Name)'}
             </div>
             {isTransfer ? (
-              <div className="inline-flex shrink-0 items-center gap-1 text-[14px] font-semibold tabular-nums text-ink-muted">
+              <div className="inline-flex shrink-0 items-center gap-1 text-body font-semibold tabular-nums text-ink-muted">
                 <ArrowLeftRight className="h-3.5 w-3.5" strokeWidth={2.5} />
                 {formatEur(Math.abs(draft.txn.amount))}
               </div>
             ) : (
               <div
-                className={`shrink-0 text-[14px] font-semibold tabular-nums ${
+                className={`shrink-0 text-body font-semibold tabular-nums ${
                   isExpense ? 'text-red-700 dark:text-red-400' : 'text-emerald-700 dark:text-emerald-400'
                 }`}
               >
@@ -402,34 +402,34 @@ function ReviewRow({
               </div>
             )}
           </div>
-          <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-ink-subtle">
+          <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-caption text-ink-subtle">
             <span>{formatDateDe(draft.txn.date)}</span>
             <span>·</span>
             <span>{draft.txn.account === 'savings' ? 'Sparkonto' : 'Konto'}</span>
             {draft.source === 'lookup' && (
-              <span className="rounded-full bg-forest-100 text-forest-800 dark:bg-forest-900 dark:text-forest-200 px-1.5 py-0.5 text-[10px] font-bold">
+              <span className="rounded-full bg-forest-100 text-forest-800 dark:bg-forest-900 dark:text-forest-200 px-1.5 py-0.5 text-caption font-bold">
                 Regel
               </span>
             )}
             {draft.source === 'llm' && (
-              <span className="rounded-full bg-mint-200 px-1.5 py-0.5 text-[10px] font-bold text-forest-800">
+              <span className="rounded-full bg-mint-200 px-1.5 py-0.5 text-caption font-bold text-forest-800">
                 AI {Math.round(draft.confidence * 100)}%
               </span>
             )}
             {draft.source === 'fallback' && (
-              <span className="rounded-full bg-paper px-1.5 py-0.5 text-[10px] text-ink-subtle">
+              <span className="rounded-full bg-paper px-1.5 py-0.5 text-caption text-ink-subtle">
                 unsicher
               </span>
             )}
             {draft.isDuplicate && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-800">
+              <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-1.5 py-0.5 text-caption font-bold text-amber-800">
                 <AlertTriangle className="h-3 w-3" strokeWidth={2.5} />
                 Duplikat
               </span>
             )}
           </div>
           {draft.warning && (
-            <div className="mt-1.5 rounded-lg bg-amber-50 px-2 py-1 text-[11px] text-amber-800">
+            <div className="mt-1.5 rounded-lg bg-amber-50 px-2 py-1 text-caption text-amber-800">
               {draft.warning}
             </div>
           )}
@@ -437,7 +437,7 @@ function ReviewRow({
             <select
               value={draft.category}
               onChange={(e) => onChange({ category: e.target.value })}
-              className="h-9 flex-1 rounded-xl border border-forest-950/10 bg-surface px-2 text-[13px] text-ink outline-none focus-visible:ring-2 focus-visible:ring-forest-700"
+              className="h-9 flex-1 rounded-xl border border-forest-950/10 bg-surface px-2 text-label text-ink outline-none focus-visible:ring-2 focus-visible:ring-forest-700"
             >
               {VALID_CATEGORIES.map((c) => (
                 <option key={c} value={c}>

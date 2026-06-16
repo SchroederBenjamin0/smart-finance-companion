@@ -172,14 +172,14 @@ export function PinSettingsSheet({
       }
     >
       <div className="space-y-4 pt-2">
-        <p className="text-[12px] text-ink-subtle">
+        <p className="text-meta text-ink-subtle">
           Der PIN wird als SHA-256-Hash gespeichert (nicht im Klartext). Wenn
           du ihn vergisst, kannst du die App nur via „App zurücksetzen"
           komplett neu aufsetzen.
         </p>
 
         <label className="block">
-          <span className="text-[13px] font-medium text-ink">{inputLabel}</span>
+          <span className="text-label font-medium text-ink">{inputLabel}</span>
           <input
             type="text"
             inputMode="numeric"

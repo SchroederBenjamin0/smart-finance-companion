@@ -120,18 +120,18 @@ function HistoryRow({
     >
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline justify-between gap-3">
-          <div className="truncate text-[15px] font-semibold text-ink">
+          <div className="truncate text-body font-semibold text-ink">
             {SOURCE_LABEL[income.source]}
           </div>
-          <div className="shrink-0 text-[15px] font-semibold tabular-nums text-emerald-700 dark:text-emerald-400">
+          <div className="shrink-0 text-body font-semibold tabular-nums text-emerald-700 dark:text-emerald-400">
             +{formatEur(income.amount)}
           </div>
         </div>
-        <div className="mt-0.5 text-[11px] text-ink-subtle">
+        <div className="mt-0.5 text-caption text-ink-subtle">
           {formatDateDe(income.date)}
           {income.note ? ` · ${income.note}` : ''}
         </div>
-        <div className="mt-1.5 flex flex-wrap gap-1.5 text-[11px]">
+        <div className="mt-1.5 flex flex-wrap gap-1.5 text-caption">
           <Chip Icon={ACCOUNT_ICON.fun} amount={findAlloc('fun')} />
           <Chip Icon={ACCOUNT_ICON.savings} amount={findAlloc('savings')} />
           <Chip Icon={ACCOUNT_ICON.investment} amount={findAlloc('investment')} plan />
@@ -170,7 +170,7 @@ function Chip({
     >
       <Icon className="h-3 w-3" strokeWidth={2.5} />
       {formatEur(amount)}
-      {plan && <span className="ml-0.5 text-[9px] uppercase">Plan</span>}
+      {plan && <span className="ml-0.5 text-caption uppercase">Plan</span>}
     </span>
   );
 }

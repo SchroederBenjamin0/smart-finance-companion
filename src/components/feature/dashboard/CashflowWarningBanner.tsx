@@ -59,18 +59,18 @@ export function CashflowWarningBanner({ onClick }: Props) {
     <div className={`mb-3 rounded-[16px] border p-4 ${bg}`}>
       <div className="flex items-start justify-between gap-3">
         <button type="button" onClick={onClick} className="flex-1 text-left">
-          <div className="inline-flex items-center gap-1.5 text-[14px] font-semibold">
+          <div className="inline-flex items-center gap-1.5 text-body font-semibold">
             <Icon className="h-4 w-4" strokeWidth={2.25} />
             {title}
           </div>
           {earliestWeek && (
-            <div className="mt-1 text-[12px]">Ab Woche {earliestWeek}</div>
+            <div className="mt-1 text-meta">Ab Woche {earliestWeek}</div>
           )}
         </button>
         <button
           type="button"
           onClick={() => setDismissed(true)}
-          className="text-[12px] underline"
+          className="text-meta underline"
         >
           Schließen
         </button>

@@ -187,7 +187,7 @@ export function PdfImportSheet({
           <CheckCircle2 className="h-8 w-8" strokeWidth={2} />
           <p className="text-sm font-medium">Import abgeschlossen</p>
           {summary && (
-            <p className="text-[12px] text-ink-muted">{summary}</p>
+            <p className="text-meta text-ink-muted">{summary}</p>
           )}
         </div>
       )}

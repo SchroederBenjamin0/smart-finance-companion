@@ -141,7 +141,7 @@ export function AdvisorSheet({
         <div className="flex h-48 flex-col items-center justify-center gap-3 text-ink-muted">
           <Loader2 className="h-6 w-6 animate-spin" strokeWidth={2.25} />
           <p className="text-sm">Claude denkt nach…</p>
-          <p className="text-[12px] text-ink-subtle">
+          <p className="text-meta text-ink-subtle">
             Analyse deines Portfolios + Drift gegen Ziel-Allokation
           </p>
         </div>
@@ -159,7 +159,7 @@ export function AdvisorSheet({
             <X className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={2.5} />
             <div>{error}</div>
           </div>
-          <p className="text-[12px] text-ink-subtle">
+          <p className="text-meta text-ink-subtle">
             Häufigste Ursache: Anthropic-Key fehlt oder hat kein Guthaben. In
             den Settings prüfen.
           </p>
@@ -181,17 +181,17 @@ export function AdvisorSheet({
               <Sparkles className="h-4 w-4" strokeWidth={2.25} />
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-forest-800">
+              <div className="text-caption font-bold uppercase tracking-wider text-forest-800">
                 Claude · Vorschlag
               </div>
-              <p className="mt-0.5 text-[13px] leading-snug text-ink">
+              <p className="mt-0.5 text-label leading-snug text-ink">
                 {rec.summary}
               </p>
             </div>
           </div>
 
           {rec.driftWarning && (
-            <div className="rounded-2xl bg-amber-50 px-4 py-3 text-[12px] text-amber-800">
+            <div className="rounded-2xl bg-amber-50 px-4 py-3 text-meta text-amber-800">
               {rec.driftWarning}
             </div>
           )}
@@ -211,7 +211,7 @@ export function AdvisorSheet({
             ))}
           </div>
 
-          <div className="flex items-center justify-between rounded-xl bg-paper px-3 py-2 text-[12px]">
+          <div className="flex items-center justify-between rounded-xl bg-paper px-3 py-2 text-meta">
             <span className="font-medium text-ink-muted">Summe</span>
             <span className="font-mono font-semibold text-ink">
               {formatEur(rec.totalEur)}
