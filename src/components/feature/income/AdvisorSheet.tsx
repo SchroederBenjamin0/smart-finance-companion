@@ -10,7 +10,14 @@ import { nowIso } from '@/lib/date';
 import { generateId } from '@/lib/id';
 import { BacktestPanel } from '@/components/feature/advisor/BacktestPanel';
 import { RecommendationCard } from '@/components/feature/advisor/RecommendationCard';
+import { SectorBreakdownCard } from '@/components/feature/investments/SectorBreakdownCard';
 import type { BacktestAllocation } from '@/modules/backtest';
+import {
+  analyzePortfolio,
+  SECTOR_CAP_PCT,
+  SINGLE_STOCK_CAP_PCT,
+  type PortfolioAnalysis,
+} from '@/modules/portfolio-analysis';
 import {
   recommendAllocation,
   type AdvisorRecommendation,
@@ -40,6 +47,7 @@ export function AdvisorSheet({
   const [error, setError] = useState<string | null>(null);
   const [rec, setRec] = useState<AdvisorRecommendation | null>(null);
   const [positions, setPositions] = useState<InvestmentPosition[]>([]);
+  const [analysis, setAnalysis] = useState<PortfolioAnalysis | null>(null);
 
   // Derive allocation weights from current portfolio for the backtest panel.
   const backtestAllocation = useMemo<BacktestAllocation[]>(() => {
@@ -56,6 +64,7 @@ export function AdvisorSheet({
     setStage('loading');
     setError(null);
     setRec(null);
+    setAnalysis(null);
     void (async () => {
       const positionsR = await positionsRepo.findAll();
       const portfolio = positionsR.ok ? positionsR.value : [];
@@ -66,10 +75,18 @@ export function AdvisorSheet({
         return;
       }
 
+      const portfolioAnalysis = analyzePortfolio(portfolio, {
+        sectorCapPct: SECTOR_CAP_PCT,
+        singleStockCapPct: SINGLE_STOCK_CAP_PCT,
+        driftTolerancePp: 5,
+      });
+      setAnalysis(portfolioAnalysis);
+
       const r = await recommendAllocation({
         availableEur: investmentAmount,
         portfolio,
         target: DEFAULT_ALLOCATION_TARGET,
+        analysis: portfolioAnalysis,
       });
       if (!r.ok) {
         setError(r.error.message);
@@ -196,20 +213,61 @@ export function AdvisorSheet({
             </div>
           )}
 
-          <div className="space-y-2">
-            {rec.allocations.map((a, i) => (
-              <RecommendationCard
-                key={`${a.isin || a.ticker}-${i}`}
-                data={{
-                  isin: resolveIsin(a),
-                  ticker: a.ticker,
-                  name: a.name,
-                  amountEur: a.amountEur,
-                  reason: a.reason,
-                }}
-              />
-            ))}
-          </div>
+          {analysis && analysis.flags.length > 0 && (
+            <SectorBreakdownCard analysis={analysis} compact />
+          )}
+
+          {rec.diversification && (
+            <div className="rounded-control bg-paper px-4 py-3 text-meta text-ink-muted">
+              {rec.diversification}
+            </div>
+          )}
+
+          {rec.allocations.filter((a) => a.action === 'buy').length > 0 && (
+            <div className="space-y-2">
+              <div className="text-caption font-bold uppercase tracking-wider text-ink-subtle">
+                Käufe
+              </div>
+              {rec.allocations
+                .filter((a) => a.action === 'buy')
+                .map((a, i) => (
+                  <RecommendationCard
+                    key={`buy-${a.isin || a.ticker}-${i}`}
+                    data={{
+                      isin: resolveIsin(a),
+                      ticker: a.ticker,
+                      name: a.name,
+                      amountEur: a.amountEur,
+                      reason: a.reason,
+                      action: 'buy',
+                    }}
+                  />
+                ))}
+            </div>
+          )}
+
+          {rec.allocations.filter((a) => a.action === 'trim').length > 0 && (
+            <div className="space-y-2">
+              <div className="text-caption font-bold uppercase tracking-wider text-amber-700">
+                Rebalancing — Reduzieren
+              </div>
+              {rec.allocations
+                .filter((a) => a.action === 'trim')
+                .map((a, i) => (
+                  <RecommendationCard
+                    key={`trim-${a.isin || a.ticker}-${i}`}
+                    data={{
+                      isin: resolveIsin(a),
+                      ticker: a.ticker,
+                      name: a.name,
+                      amountEur: a.amountEur,
+                      reason: a.reason,
+                      action: 'trim',
+                    }}
+                  />
+                ))}
+            </div>
+          )}
 
           <div className="flex items-center justify-between rounded-chip bg-paper px-3 py-2 text-meta">
             <span className="font-medium text-ink-muted">Summe</span>
