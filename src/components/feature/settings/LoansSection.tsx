@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { CheckCircle2, HandCoins, Package, Pencil, Plus, Trash2, User } from 'lucide-react';
+import { Archive, CheckCircle2, HandCoins, Package, Pencil, Plus, Trash2, User } from 'lucide-react';
 import { getDB } from '@/db/client';
 import { accountsRepo } from '@/db/repositories/accounts';
 import { loansRepo } from '@/db/repositories/loans';
@@ -75,7 +75,7 @@ function TransferReturnConfirm({ loan, onClose, onConfirmed }: TransferReturnCon
     setBusy(true);
     try {
       await handleTransferReturn(loan);
-      pushToast('Rückzahlung verbucht auf Fun-Konto ✓', 'success');
+      pushToast('Rückzahlung verbucht auf Fun-Konto', 'success');
       onConfirmed();
     } catch (e) {
       pushToast(e instanceof Error ? e.message : 'Fehler beim Verbuchen', 'error');
@@ -89,20 +89,20 @@ function TransferReturnConfirm({ loan, onClose, onConfirmed }: TransferReturnCon
       <div className="w-full max-w-lg rounded-t-[28px] bg-paper px-5 pb-8 pt-5 shadow-nav">
         <div className="mx-auto mb-4 h-1 w-12 rounded-full bg-forest-950/15" />
         <h2 className="mb-2 text-lg font-semibold text-ink">Überweisung bestätigen</h2>
-        <p className="mb-1 text-[14px] text-ink">
+        <p className="mb-1 text-body text-ink">
           Hat <span className="font-semibold">{loan.borrowerName}</span> die{' '}
           {loan.amount !== undefined && (
             <span className="font-semibold">{formatEur(loan.amount)}</span>
           )}{' '}
           überwiesen?
         </p>
-        <p className="mb-5 text-[13px] text-ink-subtle">
+        <p className="mb-5 text-label text-ink-subtle">
           Der Betrag wird auf dein Fun-Konto gebucht.
         </p>
         <div className="flex gap-2">
           <button
             type="button"
-            className="flex-1 rounded-full border border-forest-950/15 bg-surface px-4 py-2 text-[15px] font-medium text-ink"
+            className="flex-1 rounded-full border border-forest-950/15 bg-surface px-4 py-2 text-body font-medium text-ink"
             onClick={onClose}
             disabled={busy}
           >
@@ -110,7 +110,7 @@ function TransferReturnConfirm({ loan, onClose, onConfirmed }: TransferReturnCon
           </button>
           <button
             type="button"
-            className="flex-1 rounded-full bg-forest-700 px-4 py-2 text-[15px] font-semibold text-white"
+            className="flex-1 rounded-full bg-forest-700 px-4 py-2 text-body font-semibold text-white"
             onClick={() => void confirm()}
             disabled={busy}
           >
@@ -198,7 +198,7 @@ function LoanFormModal({ loan, open, onClose, onSaved }: LoanFormModalProps) {
     };
     const r = await loansRepo.upsert(next);
     if (r.ok) {
-      pushToast(loan ? 'Verleih aktualisiert ✓' : 'Verleih gespeichert ✓', 'success');
+      pushToast(loan ? 'Verleih aktualisiert' : 'Verleih gespeichert', 'success');
       onSaved();
     } else {
       pushToast('Fehler beim Speichern', 'error');
@@ -230,7 +230,7 @@ function LoanFormModal({ loan, open, onClose, onSaved }: LoanFormModalProps) {
           <div className="space-y-4">
             {/* Borrower name */}
             <label className="block">
-              <span className="text-[13px] font-medium text-ink">
+              <span className="text-label font-medium text-ink">
                 Name <span className="text-red-500">*</span>
               </span>
               <input
@@ -243,13 +243,13 @@ function LoanFormModal({ loan, open, onClose, onSaved }: LoanFormModalProps) {
                 onChange={(e) => setBorrowerName(e.target.value)}
               />
               {errors.borrowerName && (
-                <p className="mt-1 text-[12px] text-red-600">{errors.borrowerName}</p>
+                <p className="mt-1 text-meta text-red-600">{errors.borrowerName}</p>
               )}
             </label>
 
             {/* Item description */}
             <label className="block">
-              <span className="text-[13px] font-medium text-ink">
+              <span className="text-label font-medium text-ink">
                 Was verliehen? <span className="text-red-500">*</span>
               </span>
               <input
@@ -261,13 +261,13 @@ function LoanFormModal({ loan, open, onClose, onSaved }: LoanFormModalProps) {
                 onChange={(e) => setItemDescription(e.target.value)}
               />
               {errors.itemDescription && (
-                <p className="mt-1 text-[12px] text-red-600">{errors.itemDescription}</p>
+                <p className="mt-1 text-meta text-red-600">{errors.itemDescription}</p>
               )}
             </label>
 
             {/* Date */}
             <label className="block">
-              <span className="text-[13px] font-medium text-ink">Datum</span>
+              <span className="text-label font-medium text-ink">Datum</span>
               <input
                 type="date"
                 className="input-field mt-1"
@@ -277,23 +277,23 @@ function LoanFormModal({ loan, open, onClose, onSaved }: LoanFormModalProps) {
             </label>
 
             {/* "Geld zurück" toggle */}
-            <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-forest-950/10 bg-surface px-4 py-3">
+            <label className="flex cursor-pointer items-center gap-3 rounded-chip border border-forest-950/10 bg-surface px-4 py-3">
               <input
                 type="checkbox"
                 className="h-4 w-4 accent-forest-700"
                 checked={hasAmount}
                 onChange={(e) => setHasAmount(e.target.checked)}
               />
-              <span className="text-[14px] font-medium text-ink">
+              <span className="text-body font-medium text-ink">
                 Geld erwarte ich zurück
               </span>
             </label>
 
             {/* Amount + method — revealed when hasAmount */}
             {hasAmount && (
-              <div className="space-y-3 rounded-xl border border-forest-950/10 bg-surface px-4 py-3">
+              <div className="space-y-3 rounded-chip border border-forest-950/10 bg-surface px-4 py-3">
                 <label className="block">
-                  <span className="text-[13px] font-medium text-ink">Betrag (€)</span>
+                  <span className="text-label font-medium text-ink">Betrag (€)</span>
                   <input
                     type="text"
                     inputMode="decimal"
@@ -304,12 +304,12 @@ function LoanFormModal({ loan, open, onClose, onSaved }: LoanFormModalProps) {
                     onChange={(e) => setAmountText(e.target.value)}
                   />
                   {errors.amount && (
-                    <p className="mt-1 text-[12px] text-red-600">{errors.amount}</p>
+                    <p className="mt-1 text-meta text-red-600">{errors.amount}</p>
                   )}
                 </label>
 
                 <fieldset>
-                  <legend className="mb-2 text-[13px] font-medium text-ink">
+                  <legend className="mb-2 text-label font-medium text-ink">
                     Rückzahlungsart
                   </legend>
                   <div className="flex gap-3">
@@ -323,7 +323,7 @@ function LoanFormModal({ loan, open, onClose, onSaved }: LoanFormModalProps) {
                           checked={paymentMethod === m}
                           onChange={() => setPaymentMethod(m)}
                         />
-                        <span className="text-[14px] text-ink">
+                        <span className="text-body text-ink">
                           {m === 'transfer' ? 'Überweisung' : 'Bar'}
                         </span>
                       </label>
@@ -342,7 +342,7 @@ function LoanFormModal({ loan, open, onClose, onSaved }: LoanFormModalProps) {
           <div className="flex gap-2">
             <button
               type="button"
-              className="flex-1 rounded-full border border-forest-950/15 bg-surface px-4 py-2 text-[15px] font-medium text-ink"
+              className="flex-1 rounded-full border border-forest-950/15 bg-surface px-4 py-2 text-body font-medium text-ink"
               onClick={onClose}
               disabled={busy}
             >
@@ -350,7 +350,7 @@ function LoanFormModal({ loan, open, onClose, onSaved }: LoanFormModalProps) {
             </button>
             <button
               type="button"
-              className="flex-1 rounded-full bg-forest-700 px-4 py-2 text-[15px] font-semibold text-white"
+              className="flex-1 rounded-full bg-forest-700 px-4 py-2 text-body font-semibold text-white"
               onClick={() => void save()}
               disabled={busy}
             >
@@ -387,11 +387,11 @@ function LoanRow({ loan, onEdit, onReturn, onDelete }: LoanRowProps) {
       {/* Content */}
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <span className="truncate text-[15px] font-semibold text-ink">
+          <span className="truncate text-body font-semibold text-ink">
             {loan.borrowerName}
           </span>
           <span
-            className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+            className={`shrink-0 rounded-full px-2 py-0.5 text-caption font-semibold ${
               isOpen
                 ? 'bg-forest-100 text-forest-800 dark:bg-forest-900 dark:text-forest-200'
                 : 'bg-paper text-ink-subtle'
@@ -400,10 +400,10 @@ function LoanRow({ loan, onEdit, onReturn, onDelete }: LoanRowProps) {
             {isOpen ? 'verliehen' : 'zurück'}
           </span>
         </div>
-        <div className="mt-0.5 truncate text-[13px] text-ink-muted">
+        <div className="mt-0.5 truncate text-label text-ink-muted">
           {loan.itemDescription}
         </div>
-        <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-[12px] text-ink-subtle">
+        <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-meta text-ink-subtle">
           <span>{loan.lentAt.slice(0, 10).split('-').reverse().join('.')}</span>
           {loan.amount !== undefined && (
             <>
@@ -456,6 +456,59 @@ function LoanRow({ loan, onEdit, onReturn, onDelete }: LoanRowProps) {
 }
 
 // ---------------------------------------------------------------------------
+// ReturnedLoansModal — pop-up listing the already-returned items
+// ---------------------------------------------------------------------------
+
+interface ReturnedLoansModalProps {
+  loans: Loan[];
+  onClose: () => void;
+  onDelete: (loan: Loan) => void;
+}
+
+function ReturnedLoansModal({ loans, onClose, onDelete }: ReturnedLoansModalProps) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-forest-950/40 backdrop-blur-[2px]">
+      <div className="flex max-h-[80vh] w-full max-w-lg flex-col rounded-t-[28px] bg-paper shadow-nav">
+        <div className="mx-auto mt-3 h-1 w-12 rounded-full bg-forest-950/15" />
+        <header className="flex items-center justify-between px-5 pb-2 pt-3">
+          <h2 className="text-lg font-semibold text-ink">
+            Zurückerhalten ({loans.length})
+          </h2>
+          <button
+            type="button"
+            className="grid h-9 w-9 place-items-center rounded-full bg-surface text-ink shadow-card"
+            onClick={onClose}
+            aria-label="Schließen"
+          >
+            <span className="text-lg leading-none">×</span>
+          </button>
+        </header>
+        <div
+          className="row-divider flex-1 overflow-y-auto"
+          style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 16px)' }}
+        >
+          {loans.length === 0 ? (
+            <p className="px-5 py-8 text-center text-body text-ink-subtle">
+              Noch nichts zurückerhalten.
+            </p>
+          ) : (
+            loans.map((loan) => (
+              <LoanRow
+                key={loan.id}
+                loan={loan}
+                onEdit={() => {}}
+                onReturn={() => {}}
+                onDelete={() => onDelete(loan)}
+              />
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // LoansSection (main export)
 // ---------------------------------------------------------------------------
 
@@ -466,6 +519,7 @@ export function LoansSection() {
   const [formOpen, setFormOpen] = useState(false);
   const [editingLoan, setEditingLoan] = useState<Loan | undefined>(undefined);
   const [returnLoan, setReturnLoan] = useState<Loan | undefined>(undefined);
+  const [showReturned, setShowReturned] = useState(false);
 
   const open = loans.filter((l) => l.status === 'lent');
   const returned = loans.filter((l) => l.status === 'returned');
@@ -506,7 +560,7 @@ export function LoansSection() {
     if (!loan.amount || loan.amount <= 0 || loan.paymentMethod !== 'transfer') {
       void (async () => {
         await handleCashReturn(loan);
-        pushToast('Als zurückgegeben markiert ✓', 'success');
+        pushToast('Als zurückgegeben markiert', 'success');
         await load();
       })();
     } else {
@@ -538,12 +592,12 @@ export function LoansSection() {
     <>
       <div className="mt-5">
         <div className="mb-2 ml-1 flex items-center justify-between">
-          <h2 className="text-[12px] font-semibold uppercase tracking-wider text-ink-subtle">
+          <h2 className="text-meta font-semibold uppercase tracking-wider text-ink-subtle">
             Verleih
           </h2>
           <button
             type="button"
-            className="flex items-center gap-1 rounded-full bg-forest-700 px-3 py-1 text-[12px] font-semibold text-white"
+            className="flex items-center gap-1 rounded-full bg-forest-700 px-3 py-1 text-meta font-semibold text-white"
             onClick={openAdd}
           >
             <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
@@ -551,84 +605,76 @@ export function LoansSection() {
           </button>
         </div>
 
-        <div className="row-divider overflow-hidden rounded-[22px] bg-surface shadow-card">
+        <div className="card row-divider overflow-hidden p-0">
           {loading ? (
             <div className="flex items-center gap-3 px-4 py-3">
               <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-forest-800 dark:bg-forest-900 dark:text-forest-200">
                 <HandCoins className="h-4.5 w-4.5" strokeWidth={2.25} />
               </div>
-              <span className="text-[14px] text-ink-subtle">Lade…</span>
+              <span className="text-body text-ink-subtle">Lade…</span>
             </div>
           ) : loans.length === 0 ? (
             <div className="flex flex-col items-center gap-2 px-4 py-6 text-center">
               <div className="grid h-12 w-12 place-items-center rounded-full bg-forest-100 text-forest-800 dark:bg-forest-900 dark:text-forest-200">
                 <HandCoins className="h-5 w-5" strokeWidth={2.25} />
               </div>
-              <p className="text-[14px] font-medium text-ink">Noch keine Verleihungen</p>
-              <p className="text-[12px] text-ink-subtle">
+              <p className="text-body font-medium text-ink">Noch keine Verleihungen</p>
+              <p className="text-meta text-ink-subtle">
                 Tippe auf „Neu", um eine Verleihung zu erfassen.
               </p>
             </div>
           ) : (
             <>
-              {/* Open loans */}
-              {open.length > 0 && (
-                <>
-                  {open.length > 0 && returned.length > 0 && (
-                    <div className="px-4 pb-1 pt-3">
-                      <span className="text-[11px] font-semibold uppercase tracking-wider text-ink-subtle">
-                        Offen ({open.length})
-                      </span>
-                    </div>
-                  )}
-                  {open.map((loan) => (
-                    <LoanRow
-                      key={loan.id}
-                      loan={loan}
-                      onEdit={() => openEdit(loan)}
-                      onReturn={() => handleReturnClick(loan)}
-                      onDelete={() => void deleteLoan(loan)}
-                    />
-                  ))}
-                </>
+              {/* Open loans only — returned ones live behind the button below */}
+              {open.length > 0 ? (
+                open.map((loan) => (
+                  <LoanRow
+                    key={loan.id}
+                    loan={loan}
+                    onEdit={() => openEdit(loan)}
+                    onReturn={() => handleReturnClick(loan)}
+                    onDelete={() => void deleteLoan(loan)}
+                  />
+                ))
+              ) : (
+                <div className="px-4 py-5 text-center text-label text-ink-subtle">
+                  Keine offenen Verleihungen.
+                </div>
               )}
 
-              {/* Returned loans */}
+              {/* Returned-items viewer — opens a pop-up */}
               {returned.length > 0 && (
-                <>
-                  <div className="px-4 pb-1 pt-3">
-                    <span className="text-[11px] font-semibold uppercase tracking-wider text-ink-subtle">
-                      Zurückerhalten ({returned.length})
-                    </span>
+                <button
+                  type="button"
+                  className="flex w-full items-center gap-3 px-4 py-3 text-left transition active:bg-paper"
+                  onClick={() => setShowReturned(true)}
+                >
+                  <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-paper text-ink-muted">
+                    <Archive className="h-4.5 w-4.5" strokeWidth={2.25} />
                   </div>
-                  {returned.map((loan) => (
-                    <LoanRow
-                      key={loan.id}
-                      loan={loan}
-                      onEdit={() => openEdit(loan)}
-                      onReturn={() => handleReturnClick(loan)}
-                      onDelete={() => void deleteLoan(loan)}
-                    />
-                  ))}
-                </>
+                  <span className="flex-1 text-body font-medium text-ink">
+                    Zurückerhalten ansehen
+                  </span>
+                  <span className="rounded-full bg-paper px-2 py-0.5 text-meta font-semibold tabular-nums text-ink-subtle">
+                    {returned.length}
+                  </span>
+                </button>
               )}
-            </>
-          )}
 
-          {/* "Add" row when there are already loans */}
-          {loans.length > 0 && (
-            <button
-              type="button"
-              className="flex w-full items-center gap-3 px-4 py-3 text-left transition active:bg-paper"
-              onClick={openAdd}
-            >
-              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-forest-800 dark:bg-forest-900 dark:text-forest-200">
-                <User className="h-4.5 w-4.5" strokeWidth={2.25} />
-              </div>
-              <span className="text-[14px] font-medium text-forest-700">
-                + Neue Verleihung
-              </span>
-            </button>
+              {/* "Add" row */}
+              <button
+                type="button"
+                className="flex w-full items-center gap-3 px-4 py-3 text-left transition active:bg-paper"
+                onClick={openAdd}
+              >
+                <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-forest-800 dark:bg-forest-900 dark:text-forest-200">
+                  <User className="h-4.5 w-4.5" strokeWidth={2.25} />
+                </div>
+                <span className="text-body font-medium text-forest-700">
+                  + Neue Verleihung
+                </span>
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -647,6 +693,15 @@ export function LoansSection() {
           loan={returnLoan}
           onClose={() => setReturnLoan(undefined)}
           onConfirmed={() => void onTransferConfirmed()}
+        />
+      )}
+
+      {/* Returned-loans pop-up */}
+      {showReturned && (
+        <ReturnedLoansModal
+          loans={returned}
+          onClose={() => setShowReturned(false)}
+          onDelete={(loan) => void deleteLoan(loan)}
         />
       )}
     </>

@@ -80,7 +80,7 @@ export function PinSettingsSheet({
     setBusy(false);
   }
 
-  async function handlePrimary() {
+  async function handlePrimary(intentArg: 'change' | 'remove' = intent) {
     if (step === 'enterCurrent') {
       if (!isValidPin(currentPin)) {
         setError('PIN muss 4 Ziffern haben.');
@@ -91,7 +91,9 @@ export function PinSettingsSheet({
         setError('Aktueller PIN falsch.');
         return;
       }
-      if (intent === 'remove') await removePin();
+      // Use the explicit arg, not the `intent` state — setIntent('remove') in
+      // the deactivate button's onClick has not flushed yet on the first tap.
+      if (intentArg === 'remove') await removePin();
       else setStep('enterNew');
     } else if (step === 'enterNew') {
       if (!isValidPin(newPin)) {
@@ -147,7 +149,7 @@ export function PinSettingsSheet({
               className="btn-destructive flex-1"
               onClick={() => {
                 setIntent('remove');
-                void handlePrimary();
+                void handlePrimary('remove');
               }}
               disabled={busy}
             >
@@ -170,14 +172,14 @@ export function PinSettingsSheet({
       }
     >
       <div className="space-y-4 pt-2">
-        <p className="text-[12px] text-ink-subtle">
+        <p className="text-meta text-ink-subtle">
           Der PIN wird als SHA-256-Hash gespeichert (nicht im Klartext). Wenn
           du ihn vergisst, kannst du die App nur via „App zurücksetzen"
           komplett neu aufsetzen.
         </p>
 
         <label className="block">
-          <span className="text-[13px] font-medium text-ink">{inputLabel}</span>
+          <span className="text-label font-medium text-ink">{inputLabel}</span>
           <input
             type="text"
             inputMode="numeric"
@@ -191,7 +193,7 @@ export function PinSettingsSheet({
         </label>
 
         {error && (
-          <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <p className="rounded-chip border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
             {error}
           </p>
         )}

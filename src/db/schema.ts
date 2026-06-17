@@ -76,7 +76,7 @@ export interface SmartFinanceDB extends DBSchema {
   loans: {
     key: string;
     value: Loan;
-    indexes: { 'by-status': LoanStatus; 'by-lentAt': string };
+    indexes: { 'by-status': LoanStatus };
   };
   recommendations: {
     key: string;

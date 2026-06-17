@@ -25,16 +25,16 @@ export function NewsBanner() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex w-full items-center gap-3 rounded-2xl bg-surface px-4 py-3 text-left shadow-card transition active:scale-[0.99]"
+        className="flex w-full items-center gap-3 rounded-control bg-surface px-4 py-3 text-left shadow-card transition active:scale-[0.99]"
       >
         <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-forest-100 text-forest-800 dark:bg-forest-900 dark:text-forest-200">
           <Newspaper className="h-4 w-4" strokeWidth={2.5} />
         </div>
         <div className="min-w-0 flex-1">
-          <div className="text-[10px] font-bold uppercase tracking-wider text-ink-subtle">
+          <div className="text-caption font-bold uppercase tracking-wider text-ink-subtle">
             News · {items.length} relevant
           </div>
-          <div className="mt-0.5 truncate text-[13px] text-ink">
+          <div className="mt-0.5 truncate text-label text-ink">
             {items[0]!.ticker}: {items[0]!.summary}
           </div>
         </div>
@@ -46,11 +46,11 @@ export function NewsBanner() {
           {items.map((n) => (
             <div
               key={n.id}
-              className="rounded-2xl border border-forest-950/10 bg-surface p-3"
+              className="rounded-control border border-forest-950/10 bg-surface p-3"
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-medium text-ink-subtle">
+                  <div className="flex flex-wrap items-center gap-1.5 text-caption font-medium text-ink-subtle">
                     <span className="rounded-full bg-forest-100 px-2 py-0.5 font-bold text-forest-800">
                       {n.ticker}
                     </span>
@@ -58,10 +58,10 @@ export function NewsBanner() {
                     <span>·</span>
                     <span>{formatDateDe(n.publishedAt)}</span>
                   </div>
-                  <div className="mt-1 text-[14px] font-semibold leading-snug text-ink">
+                  <div className="mt-1 text-body font-semibold leading-snug text-ink">
                     {n.headline}
                   </div>
-                  <p className="mt-1 text-[12px] text-ink-muted">{n.summary}</p>
+                  <p className="mt-1 text-meta text-ink-muted">{n.summary}</p>
                 </div>
                 <button
                   type="button"
@@ -79,7 +79,7 @@ export function NewsBanner() {
                   href={n.url}
                   target="_blank"
                   rel="noopener"
-                  className="mt-2 inline-flex items-center gap-1 text-[12px] font-semibold text-forest-700"
+                  className="mt-2 inline-flex items-center gap-1 text-meta font-semibold text-forest-700"
                 >
                   Quelle öffnen{' '}
                   <ExternalLink className="h-3 w-3" strokeWidth={2.5} />

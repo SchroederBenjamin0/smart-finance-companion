@@ -129,7 +129,7 @@ export function SubscriptionForm({
           {initial && (
             <button
               type="button"
-              className="grid h-12 w-12 place-items-center rounded-2xl bg-red-50 text-red-600 transition active:scale-[0.96]"
+              className="grid h-12 w-12 place-items-center rounded-control bg-red-50 text-red-600 transition active:scale-[0.96]"
               onClick={() => void remove()}
               aria-label="Löschen"
             >
@@ -172,13 +172,13 @@ export function SubscriptionForm({
             />
           </Field>
           <Field label="Zyklus">
-            <div className="grid h-12 grid-cols-2 rounded-2xl border border-forest-950/10 bg-surface p-1">
+            <div className="grid h-12 grid-cols-2 rounded-control border border-forest-950/10 bg-surface p-1">
               {(['monthly', 'yearly'] as BillingCycle[]).map((c) => (
                 <button
                   key={c}
                   type="button"
                   onClick={() => setCycle(c)}
-                  className={`flex items-center justify-center rounded-xl text-sm font-semibold transition ${
+                  className={`flex items-center justify-center rounded-chip text-sm font-semibold transition ${
                     cycle === c
                       ? 'bg-forest-950 text-white'
                       : 'text-ink-muted'
@@ -199,7 +199,7 @@ export function SubscriptionForm({
             onChange={(e) => setLastBilledDate(e.target.value)}
           />
           {nextBillDate && (
-            <p className="mt-1 text-[12px] text-ink-subtle">
+            <p className="mt-1 text-meta text-ink-subtle">
               Nächste Abbuchung: <strong>{formatDateDe(nextBillDate)}</strong>
             </p>
           )}
@@ -207,7 +207,7 @@ export function SubscriptionForm({
 
         <div>
           <div className="flex items-center justify-between">
-            <span className="text-[13px] font-medium text-ink">
+            <span className="text-label font-medium text-ink">
               End-Datum (Rent-to-Own)
             </span>
             <Switch
@@ -225,7 +225,7 @@ export function SubscriptionForm({
                 onChange={(e) => setEndDate(e.target.value)}
               />
               {remainingPayments !== null && amount !== null && (
-                <p className="mt-1 text-[12px] text-ink-subtle">
+                <p className="mt-1 text-meta text-ink-subtle">
                   {remainingPayments} {cycle === 'monthly' ? 'Monate' : 'Jahre'}{' '}
                   übrig · noch{' '}
                   <strong className="tabular-nums">
@@ -260,7 +260,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="text-[13px] font-medium text-ink">{label}</span>
+      <span className="text-label font-medium text-ink">{label}</span>
       <div className="mt-1">{children}</div>
     </label>
   );

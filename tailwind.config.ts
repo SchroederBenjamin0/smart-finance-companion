@@ -47,7 +47,20 @@ export default {
           'sans-serif',
         ],
       },
+      fontSize: {
+        caption: ['11px', { lineHeight: '1.3' }],
+        meta: ['12px', { lineHeight: '1.35' }],
+        label: ['13px', { lineHeight: '1.4' }],
+        body: ['15px', { lineHeight: '1.45' }],
+        heading: ['17px', { lineHeight: '1.3' }],
+        title: ['22px', { lineHeight: '1.2' }],
+        'display-sm': ['28px', { lineHeight: '1.1' }],
+        display: ['40px', { lineHeight: '1.0' }],
+      },
       borderRadius: {
+        card: '22px',
+        control: '16px',
+        chip: '12px',
         '4xl': '32px',
         '5xl': '40px',
       },
@@ -56,14 +69,10 @@ export default {
         nav: '0 8px 24px rgba(10, 46, 31, 0.18)',
       },
       backgroundImage: {
-        'hero-forest':
-          'linear-gradient(160deg, #0a4d2e 0%, #22c55e 100%)',
-        'card-fun':
-          'linear-gradient(150deg, #10b981, #22c55e)',
-        'card-savings':
-          'linear-gradient(150deg, #0a4d2e, #16a34a)',
-        'card-investment':
-          'linear-gradient(150deg, #065f46, #10b981)',
+        'hero-forest': 'linear-gradient(160deg, #0a4d2e 0%, #22c55e 100%)',
+        'card-fun': 'linear-gradient(150deg, #0a7d50, #13a35a)',
+        'card-savings': 'linear-gradient(150deg, #0a4d2e, #138a40)',
+        'card-investment': 'linear-gradient(150deg, #065f46, #0c8a5a)',
       },
       keyframes: {
         'fade-in': {

@@ -7,53 +7,120 @@ import {
   INTERNAL_TRANSFER_PATTERNS,
   matchesInternalTransfer,
 } from '@/modules/categorizer/seedRules';
+import { isHeatsAmount } from '@/modules/categorizer/heatsDetector';
 import type { SmartFinanceDB } from './schema';
 
 export async function runPostUpgradeBackfill(db: IDBPDatabase<SmartFinanceDB>): Promise<void> {
   const flag = await db.get('appConfig', ALL_CONFIG_KEYS.hashBackfillComplete);
-  if (flag?.value === 'true') return;
 
-  // All hash computations resolve via Promise.all BEFORE the rw transaction
-  // is opened, so the puts run synchronously within a single live transaction.
-  const txAll = await db.getAll('transactions');
-  const toBackfill = txAll.filter((t) => !t.transactionHash);
-  if (toBackfill.length > 0) {
-    const hashed = await Promise.all(
-      toBackfill.map(async (t) => ({
-        ...t,
-        transactionHash: await computeTransactionHash({
-          date: t.date,
-          amount: t.amount,
-          counterparty: t.counterparty,
-        }),
-        isAnomaly: t.isAnomaly ?? 0,
-      })),
-    );
-    const wTx = db.transaction('transactions', 'readwrite');
-    await Promise.all(hashed.map((t) => wTx.objectStore('transactions').put(t)));
-    await wTx.done;
+  // The hash/CSV backfill only needs to run once (gated by hashBackfillComplete).
+  // The three migrations below were added later and each guard themselves with
+  // their own config flag, so they MUST run on every open and decide for
+  // themselves — they cannot sit behind hashBackfillComplete, or an existing
+  // user (who already has that flag set) would never receive them.
+  if (flag?.value !== 'true') {
+    // All hash computations resolve via Promise.all BEFORE the rw transaction
+    // is opened, so the puts run synchronously within a single live transaction.
+    const txAll = await db.getAll('transactions');
+    const toBackfill = txAll.filter((t) => !t.transactionHash);
+    if (toBackfill.length > 0) {
+      const hashed = await Promise.all(
+        toBackfill.map(async (t) => ({
+          ...t,
+          transactionHash: await computeTransactionHash({
+            date: t.date,
+            amount: t.amount,
+            counterparty: t.counterparty,
+          }),
+          isAnomaly: t.isAnomaly ?? 0,
+        })),
+      );
+      const wTx = db.transaction('transactions', 'readwrite');
+      await Promise.all(hashed.map((t) => wTx.objectStore('transactions').put(t)));
+      await wTx.done;
+    }
+
+    const csvAll = await db.getAll('csvImports');
+    const csvToBackfill = csvAll.filter((c) => !c.expiresAt);
+    if (csvToBackfill.length > 0) {
+      const updated = csvToBackfill.map((c) => ({
+        ...c,
+        expiresAt: addDays(c.importedAt, 30),
+      }));
+      const wTx = db.transaction('csvImports', 'readwrite');
+      await Promise.all(updated.map((c) => wTx.objectStore('csvImports').put(c)));
+      await wTx.done;
+    }
+
+    await db.put('appConfig', {
+      key: ALL_CONFIG_KEYS.hashBackfillComplete,
+      value: 'true',
+      updatedAt: new Date().toISOString(),
+    });
   }
-
-  const csvAll = await db.getAll('csvImports');
-  const csvToBackfill = csvAll.filter((c) => !c.expiresAt);
-  if (csvToBackfill.length > 0) {
-    const updated = csvToBackfill.map((c) => ({
-      ...c,
-      expiresAt: addDays(c.importedAt, 30),
-    }));
-    const wTx = db.transaction('csvImports', 'readwrite');
-    await Promise.all(updated.map((c) => wTx.objectStore('csvImports').put(c)));
-    await wTx.done;
-  }
-
-  await db.put('appConfig', {
-    key: ALL_CONFIG_KEYS.hashBackfillComplete,
-    value: 'true',
-    updatedAt: new Date().toISOString(),
-  });
 
   await migrateInvestmentAccountAway(db);
   await reclassifyInternalTransfers(db);
+  await reclassifyHeatsAndInstantSavings(db);
+}
+
+/**
+ * Retroactively flips two types of misclassified transactions:
+ *   1. Expense rows with amount = 7,80 € or 15,60 € → `tabak`.
+ *   2. ANY row (regardless of current category, sign of amount) whose
+ *      counterparty matches one of the internal-transfer patterns now
+ *      that the list has been broadened to include `To/From Instant
+ *      Savings`. The patterns are anchored regex (`^…$`) and specific
+ *      enough that hitting them is a definitive signal — a real expense
+ *      will never have a counterparty literally named "To Personal
+ *      Account" or "From Instant Savings".
+ *
+ * Idempotent via its own config flag, separate from the v1 internal-
+ * transfer migration which is also marked done by now.
+ */
+async function reclassifyHeatsAndInstantSavings(
+  db: IDBPDatabase<SmartFinanceDB>,
+): Promise<void> {
+  const flag = await db.get(
+    'appConfig',
+    ALL_CONFIG_KEYS.heatsAndInstantSavingsReclassifyV1,
+  );
+  if (flag?.value === 'true') return;
+
+  const txAll = await db.getAll('transactions');
+  const updates = new Map<string, (typeof txAll)[number]>();
+  for (const t of txAll) {
+    if (
+      t.amount < 0 &&
+      t.category !== 'tabak' &&
+      isHeatsAmount(t.amount)
+    ) {
+      updates.set(t.id, { ...t, category: 'tabak' });
+      continue;
+    }
+    if (
+      t.category !== 'umbuchung' &&
+      matchesInternalTransfer(t.counterparty)
+    ) {
+      updates.set(t.id, { ...t, category: 'umbuchung' });
+    }
+  }
+
+  if (updates.size > 0) {
+    const tx = db.transaction('transactions', 'readwrite');
+    await Promise.all([
+      ...Array.from(updates.values()).map((t) =>
+        tx.objectStore('transactions').put(t),
+      ),
+      tx.done,
+    ]);
+  }
+
+  await db.put('appConfig', {
+    key: ALL_CONFIG_KEYS.heatsAndInstantSavingsReclassifyV1,
+    value: 'true',
+    updatedAt: new Date().toISOString(),
+  });
 }
 
 /**

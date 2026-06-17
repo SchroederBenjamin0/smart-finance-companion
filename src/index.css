@@ -18,7 +18,7 @@
   --color-divider:    #e4e4e7; /* zinc-200 equivalent */
   --color-ink:        #0a2e1f;
   --color-ink-muted:  #3d5a4d;
-  --color-ink-subtle: #7a8c84;
+  --color-ink-subtle: #5f7168;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -28,7 +28,7 @@
     --color-divider:    #374151; /* gray-700 */
     --color-ink:        #e5e7eb; /* gray-200 */
     --color-ink-muted:  #9ca3af; /* gray-400 */
-    --color-ink-subtle: #6b7280; /* gray-500 */
+    --color-ink-subtle: #9aa6af;
   }
 }
 
@@ -70,38 +70,38 @@
 
 @layer components {
   .card {
-    @apply rounded-[22px] bg-surface p-4 shadow-card;
+    @apply rounded-card bg-surface p-4 shadow-card;
   }
 
   .card-tight {
-    @apply rounded-2xl bg-surface p-3 shadow-card;
+    @apply rounded-control bg-surface p-3 shadow-card;
   }
 
   .btn-primary {
-    @apply inline-flex h-12 items-center justify-center rounded-2xl bg-forest-950
+    @apply inline-flex h-12 items-center justify-center rounded-control bg-forest-950
            px-5 text-base font-semibold text-white transition active:scale-[0.98]
            disabled:cursor-not-allowed disabled:opacity-50;
   }
 
   .btn-secondary {
-    @apply inline-flex h-12 items-center justify-center rounded-2xl border
+    @apply inline-flex h-12 items-center justify-center rounded-control border
            border-divider bg-surface px-5 text-base font-semibold
            text-ink transition active:scale-[0.98];
   }
 
   .btn-destructive {
-    @apply inline-flex h-12 items-center justify-center rounded-2xl bg-red-600
+    @apply inline-flex h-12 items-center justify-center rounded-control bg-red-600
            px-5 text-base font-semibold text-white transition active:scale-[0.98];
   }
 
   .btn-ghost {
-    @apply inline-flex h-12 items-center justify-center rounded-2xl
+    @apply inline-flex h-12 items-center justify-center rounded-control
            bg-transparent px-4 text-base font-semibold text-ink transition
            active:scale-[0.98];
   }
 
   .input-field {
-    @apply h-12 w-full rounded-2xl border border-divider bg-surface px-4
+    @apply h-12 w-full rounded-control border border-divider bg-surface px-4
            text-base text-ink placeholder-ink-subtle outline-none
            focus-visible:border-forest-700 focus-visible:ring-2
            focus-visible:ring-forest-700/20;

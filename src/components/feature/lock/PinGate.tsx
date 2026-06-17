@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { hashPin, isValidPin } from '@/lib/pin';
+import { Lock } from 'lucide-react';
+import { hashPin } from '@/lib/pin';
 
 interface Props {
   expectedHash: string;
@@ -38,7 +39,7 @@ export function PinGate({ expectedHash, onUnlock }: Props) {
   return (
     <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-paper px-6">
       <div className="grid h-16 w-16 place-items-center rounded-full bg-forest-950 text-white">
-        🔒
+        <Lock className="h-7 w-7" strokeWidth={2.25} />
       </div>
       <h1 className="mt-4 text-2xl font-semibold text-ink">App entsperren</h1>
       <p className="mt-1 text-sm text-ink-muted">
@@ -54,7 +55,7 @@ export function PinGate({ expectedHash, onUnlock }: Props) {
           return (
             <div
               key={i}
-              className={`grid h-14 w-14 place-items-center rounded-2xl border-2 text-2xl font-semibold tabular-nums ${
+              className={`grid h-14 w-14 place-items-center rounded-control border-2 text-2xl font-semibold tabular-nums ${
                 filled
                   ? 'border-forest-950 bg-forest-950 text-white'
                   : 'border-forest-950/15 bg-surface text-ink-subtle'
@@ -89,7 +90,7 @@ export function PinGate({ expectedHash, onUnlock }: Props) {
         <p className="mt-4 text-sm text-red-700">{error}</p>
       )}
 
-      <p className="mt-6 text-[12px] text-ink-subtle">
+      <p className="mt-6 text-meta text-ink-subtle">
         PIN vergessen? Settings → App zurücksetzen (löscht alle Daten).
       </p>
 
@@ -101,7 +102,6 @@ export function PinGate({ expectedHash, onUnlock }: Props) {
           60% { transform: translateX(-6px); }
           80% { transform: translateX(6px); }
         }
-        ${isValidPin('') ? '' : ''}
       `}</style>
     </div>
   );

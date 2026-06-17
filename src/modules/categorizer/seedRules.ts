@@ -13,7 +13,7 @@ export interface SeedRule {
  * re-classifies historical `transfer`-rows to `umbuchung`.
  */
 export const INTERNAL_TRANSFER_PATTERNS: string[] = [
-  '^(To|From) Instant Access Savings$',
+  '^(To|From) Instant( Access)? Savings$',
   '^(To|From) Personal Account$',
   '^(To|From) Savings( Vault| Account)?$',
   '^(To|From) (Vault|Pocket|Money Pot|Group Account)\\b',

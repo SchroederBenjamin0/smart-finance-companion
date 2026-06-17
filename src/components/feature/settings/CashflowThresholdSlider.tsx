@@ -16,9 +16,15 @@ export function CashflowThresholdSlider() {
   }, []);
 
   const handleChange = (vals: number[]) => {
-    const v = vals[0] ?? 100;
-    setValue(v);
-    void configRepo.setRaw(ALL_CONFIG_KEYS.cashflowFunWarnThreshold, String(v));
+    setValue(vals[0] ?? 100);
+  };
+
+  // Persist only when the drag/keyboard interaction ends, not on every tick.
+  const handleCommit = (vals: number[]) => {
+    void configRepo.setRaw(
+      ALL_CONFIG_KEYS.cashflowFunWarnThreshold,
+      String(vals[0] ?? 100),
+    );
   };
 
   const snapToPreset = (preset: number) => {
@@ -29,13 +35,14 @@ export function CashflowThresholdSlider() {
   return (
     <div className="px-4 py-3">
       <div className="mb-2 flex items-baseline justify-between">
-        <label className="text-[14px] font-medium text-ink">Cashflow-Warnschwelle</label>
-        <span className="text-[14px] tabular-nums text-ink-muted">{value} €</span>
+        <label className="text-body font-medium text-ink">Cashflow-Warnschwelle</label>
+        <span className="text-body tabular-nums text-ink-muted">{value} €</span>
       </div>
       <Slider.Root
         className="relative flex h-5 w-full touch-none select-none items-center"
         value={[value]}
         onValueChange={handleChange}
+        onValueCommit={handleCommit}
         min={50} max={500} step={10}
       >
         <Slider.Track className="relative h-1.5 grow rounded-full bg-divider">
@@ -49,7 +56,7 @@ export function CashflowThresholdSlider() {
             key={p}
             type="button"
             onClick={() => snapToPreset(p)}
-            className={`flex-1 rounded-full px-2 py-1 text-[11px] transition ${
+            className={`flex-1 rounded-full px-2 py-1 text-caption transition ${
               value === p ? 'bg-forest-700 text-white' : 'bg-paper text-ink-muted'
             }`}
           >
@@ -57,7 +64,7 @@ export function CashflowThresholdSlider() {
           </button>
         ))}
       </div>
-      <p className="mt-2 text-[11px] text-ink-subtle">
+      <p className="mt-2 text-caption text-ink-subtle">
         Gelbe Warnung erscheint, wenn das Fun-Konto in den nächsten 30 Tagen unter diesen Wert fällt.
       </p>
     </div>

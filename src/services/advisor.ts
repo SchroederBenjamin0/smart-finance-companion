@@ -5,8 +5,19 @@ import type {
   InvestmentPosition,
 } from '@/db/types';
 import { TR_UNIVERSE, findByIsin } from '@/data/tr-universe';
+import {
+  analyzePortfolio,
+  SECTOR_CAP_PCT,
+  SINGLE_STOCK_CAP_PCT,
+  sectorOf,
+  type PortfolioAnalysis,
+  type ConcentrationFlag,
+} from '@/modules/portfolio-analysis';
+
+export type AdvisorAction = 'buy' | 'trim';
 
 export interface AdvisorAllocation {
+  action: AdvisorAction;
   isin: string;
   ticker: string;
   name: string;
@@ -17,6 +28,7 @@ export interface AdvisorAllocation {
 export interface AdvisorRecommendation {
   allocations: AdvisorAllocation[];
   totalEur: number;
+  diversification: string | null;
   driftWarning: string | null;
   summary: string;
 }
@@ -28,11 +40,11 @@ Deine Regeln (NIEMALS brechen):
 1. Niemals Markt-Timing oder kurzfristige Trades empfehlen
 2. Niemals Krypto vorschlagen
 3. Einzelaktien nur sparsam, max 30% der Empfehlungs-Summe, Bevorzugung von ETFs
-4. Empfehlungen IMMER als Sparplan-Anpassungen (Käufe, keine Verkäufe)
-5. Begründungen kurz halten (max 2 Sätze pro Position)
-6. Auf Deutsch antworten
-7. Niemals Garantien aussprechen ("dieser ETF wird steigen")
-8. Niemals Verkaufs-Empfehlungen geben
+4. Verkaufs-Vorschläge ("trim") NUR für Positionen/Sektoren, die in der gelieferten Analyse als Übergewicht markiert sind, und ausschließlich Richtung Ziel-Allokation. Der Trim-Betrag darf den gelieferten Spielraum NICHT überschreiten. Niemals etwas verkaufen, weil ein Wert "schlecht" oder ein anderer "besser" erscheint.
+5. Neue Käufe bevorzugt in unter dem Ziel liegende Bausteine lenken (Diversifikation)
+6. Begründungen kurz halten (max 2 Sätze pro Position)
+7. Auf Deutsch antworten
+8. Niemals Garantien aussprechen ("dieser ETF wird steigen")
 
 WICHTIG — Werteuniversum:
 Du darfst AUSSCHLIESSLICH Werte aus der unten gelieferten Liste (TR-Universum)
@@ -43,14 +55,11 @@ und erkläre warum in summary.
 Antwort-Format (strikt JSON, kein Markdown-Code-Block):
 {
   "allocations": [
-    {
-      "isin": "IE00B4L5Y983",
-      "ticker": "IWDA.AS",
-      "amount_eur": 230,
-      "reason": "Hauptbaustein bleibt das MSCI World."
-    }
+    { "action": "buy",  "isin": "IE00B4L5Y983", "amount_eur": 230, "reason": "..." },
+    { "action": "trim", "isin": "<gehaltene ISIN>", "amount_eur": 120, "reason": "..." }
   ],
   "total_eur": 470,
+  "diversification": "1-2 Sätze zur Sektor-/Konzentrations-Lage",
   "drift_warning": null,
   "summary": "Kurze Hauptaussage (1-2 Sätze)"
 }
@@ -68,21 +77,31 @@ export async function recommendAllocation(input: {
   availableEur: number;
   portfolio: InvestmentPosition[];
   target: AllocationTarget;
+  analysis?: PortfolioAnalysis;
 }): Promise<Result<AdvisorRecommendation>> {
   const { availableEur, portfolio, target } = input;
   if (availableEur <= 0) {
     return ok({
       allocations: [],
       totalEur: 0,
+      diversification: null,
       driftWarning: null,
       summary: 'Diesen Monat keine zusätzliche Einzahlung im Investment-Konto.',
     });
   }
 
-  const userMessage = buildUserMessage({ availableEur, portfolio, target });
+  const analysis =
+    input.analysis ??
+    analyzePortfolio(portfolio, {
+      sectorCapPct: SECTOR_CAP_PCT,
+      singleStockCapPct: SINGLE_STOCK_CAP_PCT,
+      driftTolerancePp: 5,
+    });
+
+  const userMessage = buildUserMessage({ availableEur, portfolio, target, analysis });
 
   // First attempt — strict prompt, may still drift into off-list ISINs.
-  const first = await runAdvisor(userMessage, false);
+  const first = await runAdvisor(userMessage, false, portfolio, analysis);
   if (!first.ok) return first;
 
   if (first.value.allocations.length > 0) {
@@ -90,7 +109,7 @@ export async function recommendAllocation(input: {
   }
 
   // The post-filter dropped everything → retry once with an explicit hint.
-  const retried = await runAdvisor(userMessage, true);
+  const retried = await runAdvisor(userMessage, true, portfolio, analysis);
   if (!retried.ok) return retried;
   return ok(retried.value);
 }
@@ -98,6 +117,8 @@ export async function recommendAllocation(input: {
 async function runAdvisor(
   userMessage: string,
   isRetry: boolean,
+  portfolio: InvestmentPosition[],
+  analysis: PortfolioAnalysis,
 ): Promise<Result<AdvisorRecommendation>> {
   const system = isRetry
     ? `${BASE_SYSTEM_PROMPT}\n\nHINWEIS: Beim ersten Versuch wurden Werte ausserhalb der Liste vorgeschlagen — bitte AUSSCHLIESSLICH die gelieferten ISINs benutzen.`
@@ -129,15 +150,16 @@ async function runAdvisor(
     );
   }
 
-  return ok(normalizeAndFilter(parsed));
+  return ok(normalizeAndFilter(parsed, { portfolio, analysis }));
 }
 
 function buildUserMessage(input: {
   availableEur: number;
   portfolio: InvestmentPosition[];
   target: AllocationTarget;
+  analysis: PortfolioAnalysis;
 }): string {
-  const { availableEur, portfolio, target } = input;
+  const { availableEur, portfolio, target, analysis } = input;
   const totalValue = portfolio.reduce((sum, p) => sum + p.currentValue, 0);
   const portfolioLines = portfolio
     .map(
@@ -147,6 +169,18 @@ function buildUserMessage(input: {
         }%)${p.targetPercentage > 0 ? ` · Ziel ${p.targetPercentage}%` : ''}`,
     )
     .join('\n');
+
+  const sectorLines = analysis.sectors
+    .map((s) => `- ${s.sector}: ${s.pct.toFixed(0)}% (${s.valueEur.toFixed(0)} EUR)`)
+    .join('\n');
+  const flagLines = analysis.flags.length
+    ? analysis.flags
+        .map(
+          (f) =>
+            `- Übergewicht ${f.label}: ${f.pct.toFixed(0)}% (Ziel/Cap ${f.capPct}%, Trim-Spielraum bis ${f.overByEur.toFixed(0)} EUR)`,
+        )
+        .join('\n')
+    : '(keine Übergewichte)';
 
   return `
 Verfügbar diesen Monat: ${availableEur.toFixed(2)} EUR.
@@ -160,60 +194,97 @@ Ziel-Allokation:
 Aktuelles Portfolio (Marktwerte in EUR):
 ${portfolio.length === 0 ? '(noch leer — schlage geeignete Welt+EM-Bausteine aus dem TR-Universum vor)' : portfolioLines}
 
+Sektor-Verteilung:
+${analysis.sectors.length ? sectorLines : '(leer)'}
+Einzelaktien-Anteil: ${analysis.singleStockPct.toFixed(0)}%
+
+Übergewichte (nur diese dürfen getrimmt werden):
+${flagLines}
+
 Schlage Sparplan-Aufteilung vor — ausschließlich Werte aus dem TR-Universum.
 `.trim();
 }
 
 /**
- * Normalize the LLM response and drop any allocation that isn't in
- * TR_UNIVERSE. Display name + ticker are overwritten from the whitelist
- * so the UI always shows the exact Trade-Republic-Name the user sees.
+ * Normalize the LLM response and drop any allocation that isn't valid.
+ * For buys: ISIN must be in TR_UNIVERSE.
+ * For trims: position must be held and have an overweight flag with positive headroom.
+ * Trim amounts are hard-clamped to the flagged overByEur headroom.
  *
  * Exported for tests.
  */
 export function normalizeAndFilter(
   parsed: Record<string, unknown>,
+  ctx?: { portfolio?: InvestmentPosition[]; analysis?: PortfolioAnalysis },
 ): AdvisorRecommendation {
+  const portfolio = ctx?.portfolio ?? [];
+  const flags = ctx?.analysis?.flags ?? [];
+
   const rawAllocations = Array.isArray(parsed['allocations'])
     ? (parsed['allocations'] as Array<Record<string, unknown>>)
     : [];
 
-  const allocations: AdvisorAllocation[] = rawAllocations
-    .map((a) => ({
-      isin: typeof a['isin'] === 'string' ? a['isin'] : '',
-      ticker: typeof a['ticker'] === 'string' ? a['ticker'] : '',
-      name: typeof a['name'] === 'string' ? a['name'] : '',
-      amountEur: Number(a['amount_eur'] ?? 0),
-      reason: typeof a['reason'] === 'string' ? a['reason'] : '',
-    }))
-    .map((a) => {
-      const match = findByIsin(a.isin);
-      if (!match) return null;
-      return {
-        ...a,
+  const allocations: AdvisorAllocation[] = [];
+  for (const a of rawAllocations) {
+    const action: AdvisorAction = a['action'] === 'trim' ? 'trim' : 'buy';
+    const isin = typeof a['isin'] === 'string' ? a['isin'] : '';
+    const amount = Number(a['amount_eur'] ?? 0);
+    const reason = typeof a['reason'] === 'string' ? a['reason'] : '';
+    if (!Number.isFinite(amount) || amount <= 0) continue;
+
+    if (action === 'buy') {
+      const match = findByIsin(isin);
+      if (!match) continue;
+      allocations.push({
+        action: 'buy',
+        isin,
         ticker: match.tickerYahoo,
         name: match.displayName,
-      };
-    })
-    .filter(
-      (a): a is AdvisorAllocation =>
-        a !== null && Number.isFinite(a.amountEur) && a.amountEur > 0,
-    );
+        amountEur: amount,
+        reason,
+      });
+    } else {
+      const held = portfolio.find((p) => p.isin.toUpperCase() === isin.toUpperCase());
+      if (!held) continue;
+      const headroom = trimHeadroom(held, flags);
+      if (headroom <= 0) continue;
+      allocations.push({
+        action: 'trim',
+        isin: held.isin,
+        ticker: held.ticker,
+        name: held.name,
+        amountEur: Math.min(amount, headroom),
+        reason,
+      });
+    }
+  }
 
-  const reportedTotal = Number(parsed['total_eur'] ?? 0);
-  const totalEur =
-    Number.isFinite(reportedTotal) && reportedTotal > 0
-      ? reportedTotal
-      : allocations.reduce((s, a) => s + a.amountEur, 0);
-
+  const totalEur = allocations
+    .filter((a) => a.action === 'buy')
+    .reduce((s, a) => s + a.amountEur, 0);
+  const diversification =
+    typeof parsed['diversification'] === 'string' ? parsed['diversification'] : null;
   const driftWarning =
-    typeof parsed['drift_warning'] === 'string'
-      ? parsed['drift_warning']
-      : null;
+    typeof parsed['drift_warning'] === 'string' ? parsed['drift_warning'] : null;
   const summary =
-    typeof parsed['summary'] === 'string'
-      ? parsed['summary']
-      : 'Empfehlung erstellt.';
+    typeof parsed['summary'] === 'string' ? parsed['summary'] : 'Empfehlung erstellt.';
+  return { allocations, totalEur, diversification, driftWarning, summary };
+}
 
-  return { allocations, totalEur, driftWarning, summary };
+function trimHeadroom(position: InvestmentPosition, flags: ConcentrationFlag[]): number {
+  const sector = sectorOf(position);
+  let headroom = 0;
+  for (const f of flags) {
+    const justifies =
+      (f.kind === 'position' && f.ref.toUpperCase() === position.isin.toUpperCase()) ||
+      (f.kind === 'sector' && f.ref === sector) ||
+      (f.kind === 'single-stock' && isTrimmableStock(position));
+    if (justifies) headroom = Math.max(headroom, f.overByEur);
+  }
+  return headroom;
+}
+
+function isTrimmableStock(position: InvestmentPosition): boolean {
+  const u = findByIsin(position.isin);
+  return u ? u.type === 'stock' : position.assetType === 'stock';
 }

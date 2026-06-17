@@ -51,6 +51,35 @@ describe('forecastCashflow', () => {
     });
     expect(r.some((w) => w.events.some((e) => e.type === 'subscription'))).toBe(true);
   });
+
+  it('recurs a monthly subscription every cycle across the 13-week window', () => {
+    const sub: Subscription = {
+      id: 's1', name: 'Test', amount: 100, currency: 'EUR',
+      billingCycle: 'monthly', nextBillDate: '2026-05-25',
+      endDate: null, category: 'gebühren', isActive: 1,
+    };
+    const r = forecastCashflow({
+      accounts: [funAccount], subscriptions: [sub], transactions: [], incomeEntries: [],
+      weeks: 13, now: new Date('2026-05-11'),
+    });
+    // 2026-05-25, 06-25, 07-25 all fall inside the ~91-day window → 3 bills.
+    const subEvents = r.flatMap((w) => w.events).filter((e) => e.type === 'subscription');
+    expect(subEvents.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it('does not bill a subscription past its endDate', () => {
+    const sub: Subscription = {
+      id: 's1', name: 'Test', amount: 100, currency: 'EUR',
+      billingCycle: 'monthly', nextBillDate: '2026-05-25',
+      endDate: '2026-06-01', category: 'gebühren', isActive: 1,
+    };
+    const r = forecastCashflow({
+      accounts: [funAccount], subscriptions: [sub], transactions: [], incomeEntries: [],
+      weeks: 13, now: new Date('2026-05-11'),
+    });
+    const subEvents = r.flatMap((w) => w.events).filter((e) => e.type === 'subscription');
+    expect(subEvents.length).toBe(1);
+  });
 });
 
 describe('shouldFireCashflow', () => {

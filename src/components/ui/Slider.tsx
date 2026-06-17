@@ -6,7 +6,6 @@ interface SliderProps {
   min?: number;
   max?: number;
   step?: number;
-  label?: string;
   ariaLabel?: string;
 }
 

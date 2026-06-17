@@ -10,6 +10,9 @@ describe('INTERNAL_TRANSFER_PATTERNS', () => {
     expect(matchesInternalTransfer('From Personal Account')).toBe(true);
     expect(matchesInternalTransfer('To Instant Access Savings')).toBe(true);
     expect(matchesInternalTransfer('From Instant Access Savings')).toBe(true);
+    expect(matchesInternalTransfer('To Instant Savings')).toBe(true);
+    expect(matchesInternalTransfer('From Instant Savings')).toBe(true);
+    expect(matchesInternalTransfer('to instant savings')).toBe(true);
     expect(matchesInternalTransfer('To Savings Vault')).toBe(true);
     expect(matchesInternalTransfer('From Savings')).toBe(true);
     expect(matchesInternalTransfer('To Vault Holiday Fund')).toBe(true);

@@ -1,3 +1,5 @@
+import { Wallet } from 'lucide-react';
+
 interface Props {
   onNext: () => void;
 }
@@ -6,8 +8,8 @@ export function WelcomeStep({ onNext }: Props) {
   return (
     <div className="flex h-full flex-col">
       <div className="flex flex-1 flex-col items-center justify-center text-center">
-        <div className="mb-6 text-6xl" aria-hidden="true">
-          💰
+        <div className="mb-6" aria-hidden="true">
+          <Wallet className="h-12 w-12" strokeWidth={2} />
         </div>
         <h1 className="text-3xl font-bold text-ink">
           Smart Finance Companion

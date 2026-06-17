@@ -11,8 +11,10 @@ import {
   PieChart,
   PiggyBank,
   RefreshCw,
+  Repeat,
   Shield,
   Tag,
+  Trash2,
   Wallet,
   type LucideIcon,
 } from 'lucide-react';
@@ -25,6 +27,7 @@ import { RulesEditorSheet } from '@/components/feature/settings/RulesEditorSheet
 import { accountsRepo } from '@/db/repositories/accounts';
 import { configRepo } from '@/db/repositories/config';
 import { resetDB } from '@/db/client';
+import { dataMaintenanceRepo } from '@/db/repositories/dataMaintenance';
 import { secretsRepo } from '@/db/repositories/secrets';
 import { ALL_CONFIG_KEYS } from '@/db/types';
 import { formatEur, parseEurInput } from '@/lib/currency';
@@ -51,15 +54,21 @@ export function Settings() {
     String(config.emergencyFundTarget),
   );
 
+  // Keep the emergency-fund input in sync with the store value.
   useEffect(() => {
     setEmergencyText(String(config.emergencyFundTarget));
+  }, [config.emergencyFundTarget]);
+
+  // Probe API-key + PIN existence once on mount — independent of emergency-fund
+  // edits, so saving the target doesn't re-hit IndexedDB for unrelated state.
+  useEffect(() => {
     void (async () => {
       const r = await secretsRepo.exists('anthropic_key');
       if (r.ok) setKeyExists(r.value);
       const p = await configRepo.getJson<string>(ALL_CONFIG_KEYS.appPinHash);
       setPinIsSet(p.ok && typeof p.value === 'string' && p.value.length > 0);
     })();
-  }, [config.emergencyFundTarget]);
+  }, []);
 
   const reloadPinState = async () => {
     const p = await configRepo.getJson<string>(ALL_CONFIG_KEYS.appPinHash);
@@ -75,7 +84,7 @@ export function Settings() {
       return;
     }
     await secretsRepo.save('anthropic_key', newKey.trim());
-    pushToast('Anthropic-Key aktualisiert ✓', 'success');
+    pushToast('Anthropic-Key aktualisiert', 'success');
     setEditingKey(false);
     setNewKey('');
     setKeyExists(true);
@@ -89,7 +98,7 @@ export function Settings() {
       return;
     }
     await config.setEmergencyFundTarget(Math.round(n));
-    pushToast('Notgroschen-Ziel aktualisiert ✓', 'success');
+    pushToast('Notgroschen-Ziel aktualisiert', 'success');
   }
 
   async function resetApp() {
@@ -129,7 +138,68 @@ export function Settings() {
       return;
     }
     await reloadAccounts();
-    pushToast('Saldo aktualisiert ✓', 'success');
+    pushToast('Saldo aktualisiert', 'success');
+  }
+
+  async function handleClearSubscriptions() {
+    if (
+      !window.confirm(
+        'Alle Abos löschen? Deine Subscription-Liste wird entfernt. Andere Daten bleiben erhalten.',
+      )
+    )
+      return;
+    const r = await dataMaintenanceRepo.clearSubscriptions();
+    if (!r.ok) {
+      pushToast(`Fehler: ${r.error.message}`, 'error');
+      return;
+    }
+    pushToast('Abos gelöscht', 'success');
+  }
+
+  async function handleClearRevolut() {
+    if (
+      !window.confirm(
+        'Alle Transaktionen und CSV-Importe löschen? Die Konten-Salden bleiben unverändert (anpassbar oben unter „Konten-Salden").',
+      )
+    )
+      return;
+    const r = await dataMaintenanceRepo.clearRevolutData();
+    if (!r.ok) {
+      pushToast(`Fehler: ${r.error.message}`, 'error');
+      return;
+    }
+    pushToast('Revolut-Daten gelöscht', 'success');
+  }
+
+  async function handleClearPositions() {
+    if (
+      !window.confirm(
+        'Alle Trade-Republic-Positionen löschen? Kurs- und News-Cache werden ebenfalls geleert.',
+      )
+    )
+      return;
+    const r = await dataMaintenanceRepo.clearInvestmentPositions();
+    if (!r.ok) {
+      pushToast(`Fehler: ${r.error.message}`, 'error');
+      return;
+    }
+    pushToast('Positionen gelöscht', 'success');
+  }
+
+  async function handleClearAll() {
+    if (
+      !window.confirm(
+        'ALLE Finanzdaten löschen? Transaktionen, Abos, Positionen, Einnahmen und Salden werden entfernt. API-Key, PIN und Einstellungen bleiben erhalten.',
+      )
+    )
+      return;
+    const r = await dataMaintenanceRepo.clearAllFinancialData();
+    if (!r.ok) {
+      pushToast(`Fehler: ${r.error.message}`, 'error');
+      return;
+    }
+    await reloadAccounts();
+    pushToast('Alle Finanzdaten gelöscht', 'success');
   }
 
   return (
@@ -151,7 +221,7 @@ export function Settings() {
 
       <div className="px-4 pt-2">
         <Section title="Konten-Salden">
-          <p className="px-4 pt-3 text-[12px] leading-snug text-ink-subtle">
+          <p className="px-4 pt-3 text-meta leading-snug text-ink-subtle">
             Die Salden werden beim Revolut-CSV-Import automatisch auf den
             jüngsten Wert aus der Datei gesetzt. Hier kannst du sie zwischen
             den Imports manuell anpassen, wenn der angezeigte Wert von der
@@ -279,6 +349,37 @@ export function Settings() {
           />
         </Section>
 
+        <Section title="Daten löschen">
+          <Row
+            Icon={Repeat}
+            label="Nur Abos löschen"
+            value=""
+            destructive
+            onClick={() => void handleClearSubscriptions()}
+          />
+          <Row
+            Icon={FileJson}
+            label="Nur Revolut-CSV löschen"
+            value=""
+            destructive
+            onClick={() => void handleClearRevolut()}
+          />
+          <Row
+            Icon={Database}
+            label="Nur Trade-Republic-Positionen löschen"
+            value=""
+            destructive
+            onClick={() => void handleClearPositions()}
+          />
+          <Row
+            Icon={Trash2}
+            label="Alle Finanzdaten löschen"
+            value=""
+            destructive
+            onClick={() => void handleClearAll()}
+          />
+        </Section>
+
         <Section title="Daten">
           <Row
             Icon={FileJson}
@@ -301,7 +402,7 @@ export function Settings() {
           />
         </Section>
 
-        <p className="mt-6 pb-2 text-center text-[12px] text-ink-subtle">
+        <p className="mt-6 pb-2 text-center text-meta text-ink-subtle">
           v0.1.0 · Local-only · Keine Telemetrie
         </p>
       </div>
@@ -329,10 +430,10 @@ function Section({
 }) {
   return (
     <div className="mt-5">
-      <h2 className="mb-2 ml-1 text-[12px] font-semibold uppercase tracking-wider text-ink-subtle">
+      <h2 className="mb-2 ml-1 text-meta font-semibold uppercase tracking-wider text-ink-subtle">
         {title}
       </h2>
-      <div className="row-divider overflow-hidden rounded-[22px] bg-surface shadow-card">
+      <div className="card row-divider overflow-hidden p-0">
         {children}
       </div>
     </div>
@@ -385,16 +486,16 @@ function Row({
       </div>
       <div className="min-w-0 flex-1">
         <div
-          className={`truncate text-[15px] font-semibold ${
+          className={`truncate text-body font-semibold ${
             destructive ? 'text-red-600' : 'text-ink'
           }`}
         >
           {label}
         </div>
-        {hint && <div className="text-[12px] text-ink-subtle">{hint}</div>}
+        {hint && <div className="text-meta text-ink-subtle">{hint}</div>}
       </div>
       {value && (
-        <div className={`text-[13px] font-medium tabular-nums ${valueClasses}`}>
+        <div className={`text-label font-medium tabular-nums ${valueClasses}`}>
           {value}
         </div>
       )}
@@ -423,7 +524,7 @@ function RowEditable({
         <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-forest-800 dark:bg-forest-900 dark:text-forest-200">
           <Icon className="h-4.5 w-4.5" strokeWidth={2.25} />
         </div>
-        <div className="text-[15px] font-semibold text-ink">{label}</div>
+        <div className="text-body font-semibold text-ink">{label}</div>
       </div>
       {children}
     </div>
@@ -451,10 +552,10 @@ function BalanceRow({
         <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-forest-800 dark:bg-forest-900 dark:text-forest-200">
           <Icon className="h-4.5 w-4.5" strokeWidth={2.25} />
         </div>
-        <div className="min-w-0 flex-1 text-[15px] font-semibold text-ink">
+        <div className="min-w-0 flex-1 text-body font-semibold text-ink">
           {label}
         </div>
-        <div className="text-[13px] font-medium tabular-nums text-ink-subtle">
+        <div className="text-label font-medium tabular-nums text-ink-subtle">
           aktuell {formatEur(currentBalance)}
         </div>
       </div>

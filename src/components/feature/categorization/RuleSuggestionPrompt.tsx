@@ -9,13 +9,13 @@ interface Props {
 
 export function RuleSuggestionPrompt({ suggestion, onAccept, onDismiss }: Props) {
   return (
-    <div className="rounded-[16px] border border-forest-200 bg-forest-50 p-3 dark:border-forest-700 dark:bg-forest-900/30">
+    <div className="rounded-control border border-forest-200 bg-forest-50 p-3 dark:border-forest-700 dark:bg-forest-900/30">
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1">
-          <div className="text-[13px] font-semibold text-forest-900 dark:text-forest-200">
+          <div className="text-label font-semibold text-forest-900 dark:text-forest-200">
             Künftige <span className="italic">„{suggestion.counterpartyPattern}"</span> auch als <span className="font-bold">{suggestion.category}</span> einordnen?
           </div>
-          <div className="mt-1 text-[11px] text-forest-800/80 dark:text-forest-300/80">
+          <div className="mt-1 text-caption text-forest-800/80 dark:text-forest-300/80">
             Erspart dir die manuelle Re-Kategorisierung beim nächsten Mal.
           </div>
         </div>
@@ -32,7 +32,7 @@ export function RuleSuggestionPrompt({ suggestion, onAccept, onDismiss }: Props)
         <button
           type="button"
           onClick={onAccept}
-          className="flex items-center gap-1 rounded-full bg-forest-700 px-3 py-1 text-[12px] font-semibold text-white"
+          className="flex items-center gap-1 rounded-full bg-forest-700 px-3 py-1 text-meta font-semibold text-white"
         >
           <Plus className="h-3 w-3" strokeWidth={2.5} />
           Regel speichern
@@ -40,7 +40,7 @@ export function RuleSuggestionPrompt({ suggestion, onAccept, onDismiss }: Props)
         <button
           type="button"
           onClick={onDismiss}
-          className="rounded-full bg-surface px-3 py-1 text-[12px] font-medium text-ink-muted"
+          className="rounded-full bg-surface px-3 py-1 text-meta font-medium text-ink-muted"
         >
           Nicht jetzt
         </button>

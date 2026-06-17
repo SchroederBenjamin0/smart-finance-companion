@@ -59,9 +59,16 @@ export function EntryDetailsSheet({
   const reloadAccounts = useAccountsStore((s) => s.load);
   const pushToast = useToastStore((s) => s.push);
 
-  // Reset edit mode when the sheet closes
+  // Reset all transient edit/delete/picker state when the sheet closes, so a
+  // newly opened entry never inherits the previous one's chosen account or a
+  // still-open picker.
   useEffect(() => {
-    if (!open) setEditing(false);
+    if (!open) {
+      setEditing(false);
+      setPicking(false);
+      setAccount('fun');
+      setDeleting(false);
+    }
   }, [open]);
 
   const startEdit = () => {
@@ -96,7 +103,7 @@ export function EntryDetailsSheet({
       pushToast(`Fehler: ${r.error.message}`, 'error');
       return;
     }
-    pushToast('Eintrag aktualisiert ✓', 'success');
+    pushToast('Eintrag aktualisiert', 'success');
     setEditing(false);
     onDeleted(); // reuse parent's "reload data" callback
     onOpenChange(false);
@@ -158,7 +165,7 @@ export function EntryDetailsSheet({
           <div className="flex w-full gap-2">
             <button
               type="button"
-              className="flex-1 rounded-full bg-paper px-4 py-2 text-[15px] font-medium text-ink"
+              className="flex-1 rounded-full bg-paper px-4 py-2 text-body font-medium text-ink"
               onClick={cancelEdit}
               disabled={saving}
             >
@@ -166,7 +173,7 @@ export function EntryDetailsSheet({
             </button>
             <button
               type="button"
-              className="flex-1 rounded-full bg-forest-700 px-4 py-2 text-[15px] font-semibold text-white"
+              className="flex-1 rounded-full bg-forest-700 px-4 py-2 text-body font-semibold text-white"
               onClick={() => void saveEdit()}
               disabled={saving}
             >
@@ -187,7 +194,7 @@ export function EntryDetailsSheet({
           <div className="flex w-full gap-2">
             <button
               type="button"
-              className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-paper px-4 py-2 text-[15px] font-medium text-ink"
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-paper px-4 py-2 text-body font-medium text-ink"
               onClick={startEdit}
             >
               <Pencil className="h-4 w-4" strokeWidth={2} />
@@ -236,8 +243,8 @@ export function EntryDetailsSheet({
         )}
 
         {picking && selection.kind === 'expense' && !editing && (
-          <div className="rounded-2xl border border-amber-200 bg-amber-50 p-3">
-            <p className="text-[12px] font-medium text-amber-800">
+          <div className="rounded-control border border-amber-200 bg-amber-50 p-3">
+            <p className="text-meta font-medium text-amber-800">
               Aus welchem Konto kam die Ausgabe? Der Betrag wird dort wieder
               gutgeschrieben.
             </p>
@@ -247,7 +254,7 @@ export function EntryDetailsSheet({
                   key={a}
                   type="button"
                   onClick={() => setAccount(a)}
-                  className={`rounded-xl border px-3 py-2 text-[12px] font-semibold transition active:scale-[0.97] ${
+                  className={`rounded-chip border px-3 py-2 text-meta font-semibold transition active:scale-[0.97] ${
                     account === a
                       ? 'border-forest-950 bg-forest-950 text-white'
                       : 'border-forest-950/15 bg-surface text-ink'
@@ -278,7 +285,7 @@ function IncomeDetails({ entry }: { entry: IncomeEntry }) {
       <Field label="Datum">{formatDateDe(entry.date)}</Field>
       {entry.note && <Field label="Notiz">{entry.note}</Field>}
       <Field label="Klassifikation">
-        <span className="rounded-full bg-paper px-2.5 py-0.5 text-[11px] font-medium text-ink-muted">
+        <span className="rounded-full bg-paper px-2.5 py-0.5 text-caption font-medium text-ink-muted">
           {entry.classification}
         </span>
       </Field>
@@ -333,7 +340,7 @@ function ExpenseEditForm({
         </span>
       </Field>
       <label className="block">
-        <span className="text-[12px] font-medium text-ink-subtle">Empfänger</span>
+        <span className="text-meta font-medium text-ink-subtle">Empfänger</span>
         <input
           type="text"
           className="input-field mt-1"
@@ -342,7 +349,7 @@ function ExpenseEditForm({
         />
       </label>
       <label className="block">
-        <span className="text-[12px] font-medium text-ink-subtle">Kategorie</span>
+        <span className="text-meta font-medium text-ink-subtle">Kategorie</span>
         <select
           className="input-field mt-1"
           value={category}
@@ -354,7 +361,7 @@ function ExpenseEditForm({
         </select>
       </label>
       <label className="block">
-        <span className="text-[12px] font-medium text-ink-subtle">Datum</span>
+        <span className="text-meta font-medium text-ink-subtle">Datum</span>
         <input
           type="date"
           className="input-field mt-1"
@@ -363,7 +370,7 @@ function ExpenseEditForm({
         />
       </label>
       <label className="block">
-        <span className="text-[12px] font-medium text-ink-subtle">Notiz</span>
+        <span className="text-meta font-medium text-ink-subtle">Notiz</span>
         <input
           type="text"
           className="input-field mt-1"
@@ -385,8 +392,8 @@ function Field({
 }) {
   return (
     <div className="flex items-center justify-between gap-3">
-      <span className="text-[13px] font-medium text-ink-subtle">{label}</span>
-      <span className="text-[14px] font-medium text-ink">{children}</span>
+      <span className="text-label font-medium text-ink-subtle">{label}</span>
+      <span className="text-body font-medium text-ink">{children}</span>
     </div>
   );
 }

@@ -11,14 +11,6 @@ export const accountsRepo = {
     });
   },
 
-  async findByType(type: AccountType): Promise<Result<Account | null>> {
-    return tryAsync(async () => {
-      const db = await getDB();
-      const matches = await db.getAllFromIndex('accounts', 'by-type', type);
-      return matches[0] ?? null;
-    });
-  },
-
   async upsert(account: Account): Promise<Result<void>> {
     return tryAsync(async () => {
       const db = await getDB();

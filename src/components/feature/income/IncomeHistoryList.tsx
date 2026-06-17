@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ChevronRight, Sparkles } from 'lucide-react';
+import { ChevronRight, Sparkles, type LucideIcon } from 'lucide-react';
 import { incomeRepo } from '@/db/repositories/income';
 import { allocationsRepo } from '@/db/repositories/allocations';
 import { recommendationsRepo } from '@/db/repositories/recommendations';
@@ -11,6 +11,7 @@ import type {
 } from '@/db/types';
 import { formatEur } from '@/lib/currency';
 import { formatDateDe } from '@/lib/date';
+import { ACCOUNT_ICON } from '@/lib/account-icons';
 
 export interface IncomeHistoryItem {
   income: IncomeEntry;
@@ -70,14 +71,14 @@ export function IncomeHistoryList({ refreshKey, onSelect }: Props) {
 
   if (loading) {
     return (
-      <div className="rounded-[22px] bg-surface p-5 text-center shadow-card">
+      <div className="card p-5 text-center">
         <p className="text-sm text-ink-muted">Lade Historie…</p>
       </div>
     );
   }
   if (items.length === 0) {
     return (
-      <div className="rounded-[22px] bg-surface p-5 text-center shadow-card">
+      <div className="card p-5 text-center">
         <p className="text-sm text-ink-muted">
           Noch keine Einnahmen erfasst.
         </p>
@@ -85,7 +86,7 @@ export function IncomeHistoryList({ refreshKey, onSelect }: Props) {
     );
   }
   return (
-    <div className="row-divider rounded-[22px] bg-surface shadow-card">
+    <div className="card row-divider p-0">
       {items.map((it, i) => (
         <HistoryRow
           key={it.income.id}
@@ -119,21 +120,21 @@ function HistoryRow({
     >
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline justify-between gap-3">
-          <div className="truncate text-[15px] font-semibold text-ink">
+          <div className="truncate text-body font-semibold text-ink">
             {SOURCE_LABEL[income.source]}
           </div>
-          <div className="shrink-0 text-[15px] font-semibold tabular-nums text-emerald-700 dark:text-emerald-400">
+          <div className="shrink-0 text-body font-semibold tabular-nums text-emerald-700 dark:text-emerald-400">
             +{formatEur(income.amount)}
           </div>
         </div>
-        <div className="mt-0.5 text-[11px] text-ink-subtle">
+        <div className="mt-0.5 text-caption text-ink-subtle">
           {formatDateDe(income.date)}
           {income.note ? ` · ${income.note}` : ''}
         </div>
-        <div className="mt-1.5 flex flex-wrap gap-1.5 text-[11px]">
-          <Chip emoji="🎉" amount={findAlloc('fun')} />
-          <Chip emoji="🏦" amount={findAlloc('savings')} />
-          <Chip emoji="📈" amount={findAlloc('investment')} plan />
+        <div className="mt-1.5 flex flex-wrap gap-1.5 text-caption">
+          <Chip Icon={ACCOUNT_ICON.fun} amount={findAlloc('fun')} />
+          <Chip Icon={ACCOUNT_ICON.savings} amount={findAlloc('savings')} />
+          <Chip Icon={ACCOUNT_ICON.investment} amount={findAlloc('investment')} plan />
           {recommendation && (
             <span className="inline-flex items-center gap-1 rounded-full bg-mint-100 px-2 py-0.5 font-medium text-forest-800">
               <Sparkles className="h-3 w-3" strokeWidth={2.5} />
@@ -151,11 +152,11 @@ function HistoryRow({
 }
 
 function Chip({
-  emoji,
+  Icon,
   amount,
   plan,
 }: {
-  emoji: string;
+  Icon: LucideIcon;
   amount: number;
   plan?: boolean;
 }) {
@@ -167,9 +168,9 @@ function Chip({
           : 'bg-forest-100 text-forest-800 dark:bg-forest-900 dark:text-forest-200'
       }`}
     >
-      <span aria-hidden="true">{emoji}</span>
+      <Icon className="h-3 w-3" strokeWidth={2.5} />
       {formatEur(amount)}
-      {plan && <span className="ml-0.5 text-[9px] uppercase">Plan</span>}
+      {plan && <span className="ml-0.5 text-caption uppercase">Plan</span>}
     </span>
   );
 }

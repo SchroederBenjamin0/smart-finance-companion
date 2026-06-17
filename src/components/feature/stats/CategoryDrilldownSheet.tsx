@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { AlertTriangle } from 'lucide-react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { recategorizeWithLLM } from '@/modules/categorizer';
 import { suggestRuleFromChange, type SuggestedRule } from '@/modules/categorization-memory';
@@ -107,13 +108,13 @@ export function CategoryDrilldownSheet({ category, transactions, onClose, onReca
           aria-describedby={undefined}
         >
           <div className="flex items-center justify-between gap-3">
-            <Dialog.Title className="text-[18px] font-semibold capitalize text-ink">
+            <Dialog.Title className="text-heading font-semibold capitalize text-ink">
               {category}
             </Dialog.Title>
             <button
               type="button"
               onClick={onClose}
-              className="rounded-full bg-paper px-3 py-1 text-[13px] text-ink-muted"
+              className="rounded-full bg-paper px-3 py-1 text-label text-ink-muted"
             >
               Schließen
             </button>
@@ -137,23 +138,25 @@ export function CategoryDrilldownSheet({ category, transactions, onClose, onReca
               type="button"
               onClick={() => void handleRecheck()}
               disabled={running}
-              className="mt-3 rounded-full bg-forest-700 px-4 py-2 text-[13px] font-medium text-white disabled:opacity-50"
+              className="mt-3 rounded-full bg-forest-700 px-4 py-2 text-label font-medium text-white disabled:opacity-50"
             >
               {running ? 'Prüfe...' : `Mit LLM neu prüfen (${lowConfidence.length} unsicher)`}
             </button>
           )}
 
-          <ul className="mt-4 row-divider overflow-hidden rounded-[16px] bg-paper">
+          <ul className="mt-4 row-divider overflow-hidden rounded-control bg-paper">
             {sorted.map((t) => (
               <li key={t.id} className="flex items-center justify-between gap-3 px-3 py-2">
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-[14px] font-medium text-ink">{t.counterparty}</div>
-                  <div className="truncate text-[12px] text-ink-subtle">
+                  <div className="truncate text-body font-medium text-ink">{t.counterparty}</div>
+                  <div className="truncate text-meta text-ink-subtle">
                     {t.date}
-                    {t.categoryConfidence < 0.7 && ' · ⚠️ unsicher'}
+                    {t.categoryConfidence < 0.7 && (
+                      <span className="inline-flex items-center gap-1"> · <AlertTriangle className="h-3 w-3" strokeWidth={2.5} /> unsicher</span>
+                    )}
                   </div>
                 </div>
-                <div className="text-[14px] tabular-nums text-ink">
+                <div className="text-body tabular-nums text-ink">
                   {Math.abs(t.amount).toFixed(2)} €
                 </div>
               </li>

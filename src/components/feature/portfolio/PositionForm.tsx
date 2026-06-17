@@ -123,7 +123,7 @@ export function PositionForm({
           {initial && (
             <button
               type="button"
-              className="grid h-12 w-12 place-items-center rounded-2xl bg-red-50 text-red-600 transition active:scale-[0.96]"
+              className="grid h-12 w-12 place-items-center rounded-control bg-red-50 text-red-600 transition active:scale-[0.96]"
               onClick={() => void remove()}
               aria-label="Löschen"
             >
@@ -174,19 +174,19 @@ export function PositionForm({
             />
           </Field>
         </div>
-        <p className="-mt-2 text-[11px] text-ink-subtle">
+        <p className="-mt-2 text-caption text-ink-subtle">
           Bekannte ISINs füllen den Ticker automatisch aus. Sonst auf{' '}
           <em>finance.yahoo.com</em> nachschlagen (z.B. „IWDA.AS").
         </p>
 
         <Field label="Typ">
-          <div className="grid h-12 grid-cols-2 rounded-2xl border border-forest-950/10 bg-surface p-1">
+          <div className="grid h-12 grid-cols-2 rounded-control border border-forest-950/10 bg-surface p-1">
             {(['etf', 'stock'] as AssetType[]).map((t) => (
               <button
                 key={t}
                 type="button"
                 onClick={() => setAssetType(t)}
-                className={`flex items-center justify-center rounded-xl text-sm font-semibold transition ${
+                className={`flex items-center justify-center rounded-chip text-sm font-semibold transition ${
                   assetType === t
                     ? 'bg-forest-950 text-white'
                     : 'text-ink-muted'
@@ -233,7 +233,7 @@ export function PositionForm({
             value={targetText}
             onChange={(e) => setTargetText(e.target.value)}
           />
-          <p className="mt-1 text-[11px] text-ink-subtle">
+          <p className="mt-1 text-caption text-ink-subtle">
             Wenn gesetzt, zeigt die App Drift gegenüber dem Soll-Anteil.
           </p>
         </Field>
@@ -251,7 +251,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="text-[13px] font-medium text-ink">{label}</span>
+      <span className="text-label font-medium text-ink">{label}</span>
       <div className="mt-1">{children}</div>
     </label>
   );

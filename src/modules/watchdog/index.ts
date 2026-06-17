@@ -7,7 +7,7 @@ import { transactionsRepo } from '@/db/repositories/transactions';
 import { ALL_CONFIG_KEYS } from '@/db/types';
 import type { NewsEvent, Recommendation } from '@/db/types';
 import { generateId } from '@/lib/id';
-import { hoursSince, nowIso } from '@/lib/date';
+import { hoursSince, nowIso, isQuarterStart } from '@/lib/date';
 import { debug, debugWarn } from '@/lib/debug';
 import { fetchNewsForSymbols } from '@/services/marketaux';
 import { filterNews } from '@/services/news-filter';
@@ -140,10 +140,6 @@ export async function runStartupTasks(): Promise<WatchdogReport> {
 
   await configRepo.setRaw(DAILY_KEY, nowIso());
   return report;
-}
-
-function isQuarterStart(d: Date): boolean {
-  return d.getDate() === 1 && [0, 3, 6, 9].includes(d.getMonth());
 }
 
 function quarterIdOf(d: Date): string {

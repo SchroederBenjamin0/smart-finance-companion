@@ -39,7 +39,7 @@ export function CashflowTab() {
 
   if (forecast.length === 0) {
     return (
-      <div className="rounded-[22px] bg-surface p-6 text-center text-[14px] text-ink-subtle shadow-card">
+      <div className="card p-6 text-center text-body text-ink-subtle">
         Daten werden geladen...
       </div>
     );
@@ -47,9 +47,9 @@ export function CashflowTab() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="rounded-[22px] bg-surface p-4 shadow-card">
-        <div className="text-[14px] font-semibold text-ink">Fun-Konto — nächste 90 Tage</div>
-        <div className="text-[11px] text-ink-subtle">
+      <div className="card">
+        <div className="text-body font-semibold text-ink">Fun-Konto — nächste 90 Tage</div>
+        <div className="text-caption text-ink-subtle">
           Basiert auf Median der letzten 3 Monate. Variiert mit deinem Verhalten.
         </div>
         <div className="mt-3 h-48 w-full">
@@ -72,16 +72,16 @@ export function CashflowTab() {
         </div>
       </div>
 
-      <div className="rounded-[22px] bg-surface p-4 shadow-card">
-        <div className="mb-2 text-[14px] font-semibold text-ink">Anstehende Subscriptions</div>
-        <ul className="text-[13px] text-ink-muted">
+      <div className="card">
+        <div className="mb-2 text-body font-semibold text-ink">Anstehende Subscriptions</div>
+        <ul className="text-label text-ink-muted">
           {forecast.flatMap((w) =>
             w.events
               .filter((e) => e.type === 'subscription')
               .map((e, i) => (
                 <li key={`${w.weekStartIso}-${i}`} className="flex items-center justify-between border-b border-divider py-1 last:border-b-0">
                   <span>{e.label}</span>
-                  <span className="tabular-nums">{e.amount.toFixed(2)} € · KW {w.weekStartIso.slice(5)}</span>
+                  <span className="tabular-nums">{e.amount.toFixed(2)} € · {w.weekStartIso.slice(8, 10)}.{w.weekStartIso.slice(5, 7)}.</span>
                 </li>
               )),
           )}

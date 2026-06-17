@@ -6,6 +6,7 @@ import {
   MoreHorizontal,
   type LucideIcon,
 } from 'lucide-react';
+import { ACCOUNT_ICON } from '@/lib/account-icons';
 import { HeroHeader } from '@/components/layout/HeroHeader';
 import { AdvisorSheet } from '@/components/feature/income/AdvisorSheet';
 import {
@@ -38,9 +39,9 @@ const SOURCES: { id: IncomeSource; label: string; Icon: LucideIcon }[] = [
 // ist kein Konto, aus dem direkt im Alltag bezahlt wird.
 type BankAccountType = Extract<AccountType, 'fun' | 'savings'>;
 
-const ACCOUNTS: { id: BankAccountType; label: string; emoji: string }[] = [
-  { id: 'fun', label: 'Fun-Geld', emoji: '🎉' },
-  { id: 'savings', label: 'Sparkonto', emoji: '🏦' },
+const ACCOUNTS: { id: BankAccountType; label: string; Icon: LucideIcon }[] = [
+  { id: 'fun', label: 'Fun-Geld', Icon: ACCOUNT_ICON.fun },
+  { id: 'savings', label: 'Sparkonto', Icon: ACCOUNT_ICON.savings },
 ];
 
 const QUICK_AMOUNTS = [10, 25, 50, 100];
@@ -205,18 +206,18 @@ export function Income() {
   return (
     <>
       <HeroHeader>
-        <p className="text-[13px] font-medium uppercase tracking-wide text-mint-200">
+        <p className="text-label font-medium uppercase tracking-wide text-mint-200">
           Neuer Eintrag
         </p>
         <h1 className="mt-1 text-2xl font-semibold leading-tight">
           {mode === 'income' ? 'Einnahme erfassen' : 'Ausgabe erfassen'}
         </h1>
 
-        <div className="mt-4 grid h-11 grid-cols-2 rounded-2xl bg-surface/10 p-1">
+        <div className="mt-4 grid h-11 grid-cols-2 rounded-control bg-surface/10 p-1">
           <button
             type="button"
             onClick={() => setMode('income')}
-            className={`flex items-center justify-center rounded-xl text-sm font-semibold transition ${
+            className={`flex items-center justify-center rounded-chip text-sm font-semibold transition ${
               mode === 'income' ? 'bg-white text-forest-950' : 'text-white/85'
             }`}
           >
@@ -225,7 +226,7 @@ export function Income() {
           <button
             type="button"
             onClick={() => setMode('expense')}
-            className={`flex items-center justify-center rounded-xl text-sm font-semibold transition ${
+            className={`flex items-center justify-center rounded-chip text-sm font-semibold transition ${
               mode === 'expense'
                 ? 'bg-white text-forest-950'
                 : 'text-white/85'
@@ -245,7 +246,7 @@ export function Income() {
                   type="button"
                   onClick={() => setSource(s.id)}
                   aria-pressed={active}
-                  className={`flex flex-col items-center gap-1.5 rounded-2xl px-3 py-3 text-[12px] font-semibold transition ${
+                  className={`flex flex-col items-center gap-1.5 rounded-control px-3 py-3 text-meta font-semibold transition ${
                     active
                       ? 'bg-white text-forest-950'
                       : 'bg-surface/10 text-white/85'
@@ -267,15 +268,13 @@ export function Income() {
                   type="button"
                   onClick={() => setFromAccount(a.id)}
                   aria-pressed={active}
-                  className={`flex flex-col items-center gap-1 rounded-2xl px-3 py-3 text-[12px] font-semibold transition ${
+                  className={`flex flex-col items-center gap-1 rounded-control px-3 py-3 text-meta font-semibold transition ${
                     active
                       ? 'bg-white text-forest-950'
                       : 'bg-surface/10 text-white/85'
                   }`}
                 >
-                  <span className="text-xl leading-none" aria-hidden="true">
-                    {a.emoji}
-                  </span>
+                  <a.Icon className="h-5 w-5" strokeWidth={2.25} />
                   {a.label}
                 </button>
               );
@@ -285,13 +284,13 @@ export function Income() {
       </HeroHeader>
 
       <div className="px-4 pt-5 pb-32 animate-view-enter">
-        <div className="rounded-[22px] bg-surface p-5 shadow-card">
-          <p className="text-[13px] font-medium text-ink-subtle">
+        <div className="card p-5">
+          <p className="text-label font-medium text-ink-subtle">
             {mode === 'income' ? 'Du erhältst' : 'Du gibst aus'}
           </p>
           <div className="mt-2 flex items-baseline gap-1">
             <span
-              className={`text-[28px] font-semibold ${
+              className={`text-display-sm font-semibold ${
                 mode === 'expense' ? 'text-red-500' : 'text-ink-subtle'
               }`}
             >
@@ -303,7 +302,7 @@ export function Income() {
               autoComplete="off"
               placeholder="0,00"
               aria-label="Betrag in Euro"
-              className="min-w-0 flex-1 bg-transparent text-[44px] font-semibold tabular-nums text-ink outline-none placeholder:text-ink-subtle/40"
+              className="min-w-0 flex-1 bg-transparent text-display font-semibold tabular-nums text-ink outline-none placeholder:text-ink-subtle/40"
               value={amountText}
               onChange={(e) => setAmountText(e.target.value)}
             />
@@ -323,7 +322,7 @@ export function Income() {
             )}
           </div>
           {mode === 'expense' && (
-            <p className="mt-3 text-[12px] text-ink-subtle">
+            <p className="mt-3 text-meta text-ink-subtle">
               Aktuelles Saldo {labelFor(fromAccount)}:{' '}
               <span
                 className={`font-mono font-semibold ${
@@ -338,24 +337,24 @@ export function Income() {
 
         {mode === 'income' && (
           <>
-            <h2 className="mt-6 text-[13px] font-semibold uppercase tracking-wider text-ink-subtle">
+            <h2 className="mt-6 text-label font-semibold uppercase tracking-wider text-ink-subtle">
               Auto-Split Vorschau
             </h2>
-            <div className="mt-3 row-divider rounded-[22px] bg-surface shadow-card">
+            <div className="card mt-3 row-divider p-0">
               <PreviewRow
-                emoji="🎉"
+                Icon={ACCOUNT_ICON.fun}
                 label="Fun-Geld"
                 pct={ruleFor(source).funPercentage}
                 amount={preview?.fun ?? 0}
               />
               <PreviewRow
-                emoji="🏦"
+                Icon={ACCOUNT_ICON.savings}
                 label="Sparkonto"
                 pct={ruleFor(source).savingsPercentage}
                 amount={preview?.savings ?? 0}
               />
               <PreviewRow
-                emoji="📈"
+                Icon={ACCOUNT_ICON.investment}
                 label="Investment"
                 pct={ruleFor(source).investmentPercentage}
                 amount={preview?.investment ?? 0}
@@ -363,15 +362,15 @@ export function Income() {
             </div>
 
             {preview?.capApplied && (
-              <p className="mt-3 rounded-2xl bg-amber-50 px-4 py-3 text-[12px] text-amber-800">
+              <p className="mt-3 rounded-control bg-amber-50 px-4 py-3 text-meta text-amber-800">
                 Notgroschen-Cap erreicht — Überschuss fließt ins Investment.
               </p>
             )}
 
-            <h2 className="mt-7 text-[13px] font-semibold uppercase tracking-wider text-ink-subtle">
+            <h2 className="mt-7 text-label font-semibold uppercase tracking-wider text-ink-subtle">
               Letzte Einnahmen
             </h2>
-            <p className="mt-1 text-[12px] text-ink-subtle">
+            <p className="mt-1 text-meta text-ink-subtle">
               Tippe für Split-Details und den gespeicherten Sparplan-Vorschlag.
             </p>
             <div className="mt-3">
@@ -386,7 +385,7 @@ export function Income() {
         {mode === 'expense' && (
           <div className="mt-4 grid grid-cols-1 gap-3">
             <label className="block">
-              <span className="text-[12px] font-medium text-ink-subtle">
+              <span className="text-meta font-medium text-ink-subtle">
                 Wo?
               </span>
               <input
@@ -398,7 +397,7 @@ export function Income() {
               />
             </label>
             <div>
-              <span className="text-[12px] font-medium text-ink-subtle">
+              <span className="text-meta font-medium text-ink-subtle">
                 Kategorie
               </span>
               <div className="mt-1 flex flex-wrap gap-2">
@@ -426,7 +425,7 @@ export function Income() {
 
         <div className="mt-6 grid grid-cols-2 gap-3">
           <label className="block">
-            <span className="text-[12px] font-medium text-ink-subtle">
+            <span className="text-meta font-medium text-ink-subtle">
               Datum
             </span>
             <input
@@ -437,7 +436,7 @@ export function Income() {
             />
           </label>
           <label className="block">
-            <span className="text-[12px] font-medium text-ink-subtle">
+            <span className="text-meta font-medium text-ink-subtle">
               Notiz
             </span>
             <input
@@ -497,26 +496,26 @@ function labelFor(t: BankAccountType): string {
 }
 
 function PreviewRow({
-  emoji,
+  Icon,
   label,
   pct,
   amount,
 }: {
-  emoji: string;
+  Icon: LucideIcon;
   label: string;
   pct: number;
   amount: number;
 }) {
   return (
     <div className="flex items-center gap-3 px-4 py-3">
-      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 dark:bg-forest-900 text-xl">
-        <span aria-hidden="true">{emoji}</span>
+      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 dark:bg-forest-900 text-forest-800 dark:text-forest-200">
+        <Icon className="h-5 w-5" strokeWidth={2.25} />
       </div>
       <div className="min-w-0 flex-1">
-        <div className="text-[15px] font-semibold text-ink">{label}</div>
-        <div className="text-[12px] text-ink-subtle">{pct} %</div>
+        <div className="text-body font-semibold text-ink">{label}</div>
+        <div className="text-meta text-ink-subtle">{pct} %</div>
       </div>
-      <div className="text-[15px] font-semibold tabular-nums text-emerald-700 dark:text-emerald-400">
+      <div className="text-body font-semibold tabular-nums text-emerald-700 dark:text-emerald-400">
         +{formatEur(amount)}
       </div>
     </div>

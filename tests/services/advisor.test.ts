@@ -1,6 +1,17 @@
 import { describe, it, expect } from 'vitest';
 import { normalizeAndFilter } from '@/services/advisor';
 import { findByIsin, isAllowedIsin } from '@/data/tr-universe';
+import { analyzePortfolio, SECTOR_CAP_PCT, SINGLE_STOCK_CAP_PCT } from '@/modules/portfolio-analysis';
+import type { InvestmentPosition } from '@/db/types';
+
+function position(p: Partial<InvestmentPosition>): InvestmentPosition {
+  return {
+    id: p.id ?? 'p', ticker: p.ticker ?? '', isin: p.isin ?? '', name: p.name ?? 'X',
+    assetType: p.assetType ?? 'stock', totalInvested: 0, shares: 1,
+    currentValue: p.currentValue ?? 0, lastSyncedPrice: '2026-06-01',
+    targetPercentage: p.targetPercentage ?? 0,
+  };
+}
 
 describe('TR_UNIVERSE lookups', () => {
   it('findByIsin returns the matching instrument for a known ISIN', () => {
@@ -97,5 +108,45 @@ describe('advisor normalizeAndFilter', () => {
     const out = normalizeAndFilter({});
     expect(out.allocations).toHaveLength(0);
     expect(out.summary).toBeTruthy();
+  });
+});
+
+describe('advisor trim handling', () => {
+  const portfolio = [
+    position({ isin: 'US67066G1040', name: 'NVIDIA', assetType: 'stock', currentValue: 500 }),
+    position({ isin: 'IE00B4L5Y983', name: 'World', assetType: 'etf', currentValue: 500 }),
+  ];
+  const analysis = analyzePortfolio(portfolio, {
+    sectorCapPct: SECTOR_CAP_PCT, singleStockCapPct: SINGLE_STOCK_CAP_PCT, driftTolerancePp: 5,
+  });
+
+  it('clamps a trim to the flagged overweight headroom and keeps it on a held position', () => {
+    const raw = { allocations: [{ action: 'trim', isin: 'US67066G1040', amount_eur: 9999, reason: 'Tech über Cap' }], summary: 's' };
+    const r = normalizeAndFilter(raw, { portfolio, analysis });
+    expect(r.allocations).toHaveLength(1);
+    expect(r.allocations[0]!.action).toBe('trim');
+    expect(r.allocations[0]!.amountEur).toBeCloseTo(200, 5);
+  });
+
+  it('drops a trim for a position that is not held', () => {
+    const raw = { allocations: [{ action: 'trim', isin: 'IE00BK5BQT80', amount_eur: 50, reason: 'x' }], summary: 's' };
+    expect(normalizeAndFilter(raw, { portfolio, analysis }).allocations).toHaveLength(0);
+  });
+
+  it('drops a trim for a held position with no overweight flag', () => {
+    const raw = { allocations: [{ action: 'trim', isin: 'IE00B4L5Y983', amount_eur: 50, reason: 'x' }], summary: 's' };
+    expect(normalizeAndFilter(raw, { portfolio, analysis }).allocations).toHaveLength(0);
+  });
+
+  it('treats a missing action as a buy and still enforces the TR universe', () => {
+    const raw = { allocations: [{ isin: 'IE00B4L5Y983', amount_eur: 100, reason: 'buy' }], summary: 's' };
+    const r = normalizeAndFilter(raw, { portfolio, analysis });
+    expect(r.allocations).toHaveLength(1);
+    expect(r.allocations[0]!.action).toBe('buy');
+  });
+
+  it('parses the diversification note', () => {
+    const raw = { allocations: [], diversification: 'Tech überdurchschnittlich.', summary: 's' };
+    expect(normalizeAndFilter(raw, { portfolio, analysis }).diversification).toBe('Tech überdurchschnittlich.');
   });
 });

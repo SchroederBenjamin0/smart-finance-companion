@@ -86,6 +86,16 @@ export async function parseRevolutCsv(
       savings: null,
     };
 
+    // Authoritative bank-reported closing balance per account, read from the
+    // summary section header (e.g. `,,"Closing balance",€375.33,,,,`). Takes
+    // precedence over the last-booking heuristic below — critical for the
+    // savings account, whose transaction section contains only interest rows
+    // that never parse.
+    const summaryClosing: Record<'current' | 'savings', number | null> = {
+      current: null,
+      savings: null,
+    };
+
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i] ?? [];
       const first = (row[0] ?? '').trim();
@@ -93,6 +103,12 @@ export async function parseRevolutCsv(
 
       if (first === 'Personal Account (EUR)') currentAccount = 'current';
       else if (/^Savings/i.test(first)) currentAccount = 'savings';
+
+      if ((row[2] ?? '').trim() === 'Closing balance') {
+        const cb = parseMoney(row[3] ?? '');
+        if (cb !== null) summaryClosing[currentAccount] = cb;
+        continue;
+      }
 
       if (first === 'Date' && (row[1] ?? '').trim() === 'Description') continue;
 
@@ -134,8 +150,12 @@ export async function parseRevolutCsv(
       periodEnd,
       transactions,
       finalBalances: {
-        current: latest.current ? latest.current.balance : null,
-        savings: latest.savings ? latest.savings.balance : null,
+        current:
+          summaryClosing.current ??
+          (latest.current ? latest.current.balance : null),
+        savings:
+          summaryClosing.savings ??
+          (latest.savings ? latest.savings.balance : null),
       },
     };
   });

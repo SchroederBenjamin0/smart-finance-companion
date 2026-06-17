@@ -51,7 +51,7 @@ export function SpendingTab() {
             key={String(r.value)}
             type="button"
             onClick={() => setRange(r.value)}
-            className={`rounded-full px-3 py-1 text-[13px] font-medium transition ${
+            className={`rounded-full px-3 py-1 text-label font-medium transition ${
               range === r.value
                 ? 'bg-forest-700 text-white'
                 : 'bg-paper text-ink-muted'
@@ -64,11 +64,11 @@ export function SpendingTab() {
 
       {/* Category rows */}
       {rows.length === 0 ? (
-        <div className="rounded-[22px] bg-surface p-6 text-center text-[14px] text-ink-subtle shadow-card">
+        <div className="card p-6 text-center text-body text-ink-subtle">
           Keine Ausgaben im gewählten Zeitraum.
         </div>
       ) : (
-        <ul className="row-divider overflow-hidden rounded-[22px] bg-surface shadow-card">
+        <ul className="card row-divider overflow-hidden p-0">
           {rows.map((row) => (
             <li key={row.category}>
               <button
@@ -77,16 +77,16 @@ export function SpendingTab() {
                 className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition active:bg-paper"
               >
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-[15px] font-semibold capitalize text-ink">
+                  <div className="truncate text-body font-semibold capitalize text-ink">
                     {row.category}
                   </div>
-                  <div className="truncate text-[12px] text-ink-subtle">
+                  <div className="truncate text-meta text-ink-subtle">
                     {row.count} {row.count === 1 ? 'Transaktion' : 'Transaktionen'}
                     {row.topCounterparty &&
                       ` · ${row.topCounterparty} (${row.topCounterpartyCount}×)`}
                   </div>
                 </div>
-                <div className="text-[15px] font-semibold tabular-nums text-ink">
+                <div className="text-body font-semibold tabular-nums text-ink">
                   {row.total.toFixed(2)} €
                 </div>
               </button>

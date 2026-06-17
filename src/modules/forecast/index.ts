@@ -1,5 +1,6 @@
 import type { Account, IncomeEntry, Subscription, Transaction } from '@/db/types';
 import { isNonSpending } from '@/modules/spending';
+import { addMonths } from '@/lib/date';
 
 // ---------- shouldFireCashflow (moved from notifications/triggers) ----------
 
@@ -76,11 +77,20 @@ export function forecastCashflow(input: ForecastInput): WeeklyForecast[] {
   );
   const weeklyVariableSpend = computeWeeklyMedianSpend(recentExpenses);
 
-  // Expected weekly income (median per-week over last 90d income entries)
+  // Expected weekly income (mean: total 90d income spread across 13 weeks)
   const cutoffIncome = isoDateDaysAgo(input.now, 90);
   const recentIncome = input.incomeEntries.filter((e) => e.date >= cutoffIncome);
   // distribute 90d income across 13 weeks (approx)
   const weeklyExpectedIncome = recentIncome.reduce((s, e) => s + e.amount, 0) / 13;
+
+  // Project each active subscription's bill dates across the whole forecast
+  // window so a recurring charge is counted EVERY cycle, not just the single
+  // week that happens to contain its static nextBillDate.
+  const forecastEndIso = addDays(input.now, input.weeks * 7).toISOString().slice(0, 10);
+  const projectedBills = projectSubscriptionBills(
+    input.subscriptions,
+    forecastEndIso,
+  );
 
   const results: WeeklyForecast[] = [];
   for (let w = 0; w < input.weeks; w++) {
@@ -93,16 +103,16 @@ export function forecastCashflow(input: ForecastInput): WeeklyForecast[] {
 
     // Subscriptions due in this week (debited from fun for simplicity — actual app
     // logic may route to different accounts, but Fun is the cashflow-sensitive one)
-    const subsThisWeek = input.subscriptions.filter(
-      (s) => s.isActive === 1 && s.nextBillDate >= weekStartIso && s.nextBillDate < weekEndIso,
+    const billsThisWeek = projectedBills.filter(
+      (b) => b.dateIso >= weekStartIso && b.dateIso < weekEndIso,
     );
-    for (const s of subsThisWeek) {
-      events.push({ type: 'subscription', amount: -s.amount, label: s.name });
-      funBalance -= s.amount;
+    for (const b of billsThisWeek) {
+      events.push({ type: 'subscription', amount: -b.amount, label: b.name });
+      funBalance -= b.amount;
     }
 
     if (weeklyExpectedIncome > 0) {
-      events.push({ type: 'expected_income', amount: weeklyExpectedIncome, label: 'Erwartet (Median)' });
+      events.push({ type: 'expected_income', amount: weeklyExpectedIncome, label: 'Erwartet (Durchschnitt)' });
       // Apply default 30/30/40 allocation split to expected income
       funBalance += weeklyExpectedIncome * 0.3;
       savingsBalance += weeklyExpectedIncome * 0.3;
@@ -129,6 +139,39 @@ function isoDateDaysAgo(now: Date, days: number): string {
   const d = new Date(now);
   d.setDate(d.getDate() - days);
   return d.toISOString().slice(0, 10);
+}
+
+interface ProjectedBill {
+  dateIso: string;
+  amount: number;
+  name: string;
+}
+
+/**
+ * Expands each active subscription into one ProjectedBill per billing cycle
+ * that falls before `forecastEndIso`, starting at nextBillDate and advancing
+ * by 1 month (monthly) or 12 months (yearly). Respects endDate. The guard is
+ * a backstop only — addMonths always advances, so the loop self-terminates.
+ */
+function projectSubscriptionBills(
+  subscriptions: Subscription[],
+  forecastEndIso: string,
+): ProjectedBill[] {
+  const bills: ProjectedBill[] = [];
+  for (const s of subscriptions) {
+    if (s.isActive !== 1) continue;
+    const cycleMonths = s.billingCycle === 'monthly' ? 1 : 12;
+    const endIso = s.endDate ? s.endDate.slice(0, 10) : null;
+    let billIso = s.nextBillDate.slice(0, 10);
+    let guard = 0;
+    while (billIso < forecastEndIso && guard < 600) {
+      guard += 1;
+      if (endIso && billIso > endIso) break;
+      bills.push({ dateIso: billIso, amount: s.amount, name: s.name });
+      billIso = addMonths(billIso, cycleMonths).slice(0, 10);
+    }
+  }
+  return bills;
 }
 
 function addDays(d: Date, days: number): Date {

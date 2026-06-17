@@ -4,13 +4,21 @@ import { Sheet } from '@/components/ui/Sheet';
 import { positionsRepo } from '@/db/repositories/positions';
 import { recommendationsRepo } from '@/db/repositories/recommendations';
 import type { InvestmentPosition, Recommendation } from '@/db/types';
-import { DEFAULT_ALLOCATION_TARGET } from '@/db/types';
+import { ALL_CONFIG_KEYS, DEFAULT_ALLOCATION_TARGET } from '@/db/types';
+import { configRepo } from '@/db/repositories/config';
 import { formatEur } from '@/lib/currency';
 import { nowIso } from '@/lib/date';
 import { generateId } from '@/lib/id';
 import { BacktestPanel } from '@/components/feature/advisor/BacktestPanel';
 import { RecommendationCard } from '@/components/feature/advisor/RecommendationCard';
+import { SectorBreakdownCard } from '@/components/feature/investments/SectorBreakdownCard';
 import type { BacktestAllocation } from '@/modules/backtest';
+import {
+  analyzePortfolio,
+  SECTOR_CAP_PCT,
+  SINGLE_STOCK_CAP_PCT,
+  type PortfolioAnalysis,
+} from '@/modules/portfolio-analysis';
 import {
   recommendAllocation,
   type AdvisorRecommendation,
@@ -40,6 +48,7 @@ export function AdvisorSheet({
   const [error, setError] = useState<string | null>(null);
   const [rec, setRec] = useState<AdvisorRecommendation | null>(null);
   const [positions, setPositions] = useState<InvestmentPosition[]>([]);
+  const [analysis, setAnalysis] = useState<PortfolioAnalysis | null>(null);
 
   // Derive allocation weights from current portfolio for the backtest panel.
   const backtestAllocation = useMemo<BacktestAllocation[]>(() => {
@@ -56,6 +65,7 @@ export function AdvisorSheet({
     setStage('loading');
     setError(null);
     setRec(null);
+    setAnalysis(null);
     void (async () => {
       const positionsR = await positionsRepo.findAll();
       const portfolio = positionsR.ok ? positionsR.value : [];
@@ -66,10 +76,21 @@ export function AdvisorSheet({
         return;
       }
 
+      const tolR = await configRepo.getJson<number>(ALL_CONFIG_KEYS.driftToleranceGlobal);
+      const driftTolerancePp = tolR.ok && typeof tolR.value === 'number' ? tolR.value : 5;
+
+      const portfolioAnalysis = analyzePortfolio(portfolio, {
+        sectorCapPct: SECTOR_CAP_PCT,
+        singleStockCapPct: SINGLE_STOCK_CAP_PCT,
+        driftTolerancePp,
+      });
+      setAnalysis(portfolioAnalysis);
+
       const r = await recommendAllocation({
         availableEur: investmentAmount,
         portfolio,
         target: DEFAULT_ALLOCATION_TARGET,
+        analysis: portfolioAnalysis,
       });
       if (!r.ok) {
         setError(r.error.message);
@@ -141,7 +162,7 @@ export function AdvisorSheet({
         <div className="flex h-48 flex-col items-center justify-center gap-3 text-ink-muted">
           <Loader2 className="h-6 w-6 animate-spin" strokeWidth={2.25} />
           <p className="text-sm">Claude denkt nach…</p>
-          <p className="text-[12px] text-ink-subtle">
+          <p className="text-meta text-ink-subtle">
             Analyse deines Portfolios + Drift gegen Ziel-Allokation
           </p>
         </div>
@@ -155,11 +176,11 @@ export function AdvisorSheet({
 
       {stage === 'error' && (
         <div className="space-y-3 pt-2">
-          <div className="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <div className="flex items-start gap-3 rounded-control border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             <X className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={2.5} />
             <div>{error}</div>
           </div>
-          <p className="text-[12px] text-ink-subtle">
+          <p className="text-meta text-ink-subtle">
             Häufigste Ursache: Anthropic-Key fehlt oder hat kein Guthaben. In
             den Settings prüfen.
           </p>
@@ -176,42 +197,83 @@ export function AdvisorSheet({
             />
           )}
 
-          <div className="flex items-start gap-3 rounded-2xl bg-mint-100 px-4 py-3">
+          <div className="flex items-start gap-3 rounded-control bg-mint-100 px-4 py-3">
             <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-forest-950 text-white">
               <Sparkles className="h-4 w-4" strokeWidth={2.25} />
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-forest-800">
+              <div className="text-caption font-bold uppercase tracking-wider text-forest-800">
                 Claude · Vorschlag
               </div>
-              <p className="mt-0.5 text-[13px] leading-snug text-ink">
+              <p className="mt-0.5 text-label leading-snug text-ink">
                 {rec.summary}
               </p>
             </div>
           </div>
 
           {rec.driftWarning && (
-            <div className="rounded-2xl bg-amber-50 px-4 py-3 text-[12px] text-amber-800">
+            <div className="rounded-control bg-amber-50 px-4 py-3 text-meta text-amber-800">
               {rec.driftWarning}
             </div>
           )}
 
-          <div className="space-y-2">
-            {rec.allocations.map((a, i) => (
-              <RecommendationCard
-                key={`${a.isin || a.ticker}-${i}`}
-                data={{
-                  isin: resolveIsin(a),
-                  ticker: a.ticker,
-                  name: a.name,
-                  amountEur: a.amountEur,
-                  reason: a.reason,
-                }}
-              />
-            ))}
-          </div>
+          {analysis && analysis.flags.length > 0 && (
+            <SectorBreakdownCard analysis={analysis} compact />
+          )}
 
-          <div className="flex items-center justify-between rounded-xl bg-paper px-3 py-2 text-[12px]">
+          {rec.diversification && (
+            <div className="rounded-control bg-paper px-4 py-3 text-meta text-ink-muted">
+              {rec.diversification}
+            </div>
+          )}
+
+          {rec.allocations.filter((a) => a.action === 'buy').length > 0 && (
+            <div className="space-y-2">
+              <div className="text-caption font-bold uppercase tracking-wider text-ink-subtle">
+                Käufe
+              </div>
+              {rec.allocations
+                .filter((a) => a.action === 'buy')
+                .map((a, i) => (
+                  <RecommendationCard
+                    key={`buy-${a.isin || a.ticker}-${i}`}
+                    data={{
+                      isin: resolveIsin(a),
+                      ticker: a.ticker,
+                      name: a.name,
+                      amountEur: a.amountEur,
+                      reason: a.reason,
+                      action: 'buy',
+                    }}
+                  />
+                ))}
+            </div>
+          )}
+
+          {rec.allocations.filter((a) => a.action === 'trim').length > 0 && (
+            <div className="space-y-2">
+              <div className="text-caption font-bold uppercase tracking-wider text-amber-700">
+                Rebalancing — Reduzieren
+              </div>
+              {rec.allocations
+                .filter((a) => a.action === 'trim')
+                .map((a, i) => (
+                  <RecommendationCard
+                    key={`trim-${a.isin || a.ticker}-${i}`}
+                    data={{
+                      isin: resolveIsin(a),
+                      ticker: a.ticker,
+                      name: a.name,
+                      amountEur: a.amountEur,
+                      reason: a.reason,
+                      action: 'trim',
+                    }}
+                  />
+                ))}
+            </div>
+          )}
+
+          <div className="flex items-center justify-between rounded-chip bg-paper px-3 py-2 text-meta">
             <span className="font-medium text-ink-muted">Summe</span>
             <span className="font-mono font-semibold text-ink">
               {formatEur(rec.totalEur)}

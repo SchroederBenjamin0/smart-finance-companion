@@ -36,3 +36,6 @@ dev-dist
 # Local-only design references and dev artifacts
 ignore (my files for this app)/
 .playwright-mcp/
+
+# Visual-companion brainstorm artifacts
+.superpowers/

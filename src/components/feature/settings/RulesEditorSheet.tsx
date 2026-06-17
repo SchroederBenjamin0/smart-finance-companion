@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Sparkles, PiggyBank, TrendingUp } from 'lucide-react';
 import { Sheet } from '@/components/ui/Sheet';
 import { Slider } from '@/components/ui/Slider';
 import type { AllocationRule, IncomeSource } from '@/db/types';
@@ -57,7 +58,7 @@ export function RulesEditorSheet({ open, onOpenChange }: Props) {
       }
     >
       <div className="space-y-4">
-        <p className="text-[12px] text-ink-subtle">
+        <p className="text-meta text-ink-subtle">
           Pro Einnahme-Quelle: wie viel ins Investment-Konto, ins Sparkonto,
           ins Fun-Geld? Fun-Anteil errechnet sich automatisch.
         </p>
@@ -101,12 +102,12 @@ function RuleEditor({
   };
 
   return (
-    <div className="rounded-2xl border border-forest-950/10 bg-surface p-4">
-      <h3 className="text-[14px] font-semibold text-ink">{title}</h3>
+    <div className="rounded-control border border-forest-950/10 bg-surface p-4">
+      <h3 className="text-body font-semibold text-ink">{title}</h3>
 
       <div className="mt-3">
         <div className="flex items-center justify-between text-sm">
-          <span>📈 Investment</span>
+          <span className="inline-flex items-center gap-1.5"><TrendingUp className="h-4 w-4" strokeWidth={2.25} /> Investment</span>
           <span className="font-mono">{rule.investmentPercentage} %</span>
         </div>
         <div className="mt-2">
@@ -123,7 +124,7 @@ function RuleEditor({
 
       <div className="mt-3">
         <div className="flex items-center justify-between text-sm">
-          <span>🏦 Sparkonto</span>
+          <span className="inline-flex items-center gap-1.5"><PiggyBank className="h-4 w-4" strokeWidth={2.25} /> Sparkonto</span>
           <span className="font-mono">{rule.savingsPercentage} %</span>
         </div>
         <div className="mt-2">
@@ -138,8 +139,8 @@ function RuleEditor({
         </div>
       </div>
 
-      <div className="mt-3 rounded-lg bg-paper px-3 py-2 text-sm">
-        <span>🎉 Fun-Geld</span>
+      <div className="mt-3 rounded-chip bg-paper px-3 py-2 text-sm">
+        <span className="inline-flex items-center gap-1.5"><Sparkles className="h-4 w-4" strokeWidth={2.25} /> Fun-Geld</span>
         <span className="ml-2 font-mono font-semibold">
           {rule.funPercentage} %
         </span>

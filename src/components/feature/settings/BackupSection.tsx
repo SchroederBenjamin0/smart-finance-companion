@@ -87,10 +87,10 @@ export function BackupSection() {
   return (
     <>
       <div className="mt-5">
-        <h2 className="mb-2 ml-1 text-[12px] font-semibold uppercase tracking-wider text-ink-subtle">
+        <h2 className="mb-2 ml-1 text-meta font-semibold uppercase tracking-wider text-ink-subtle">
           Backup
         </h2>
-        <div className="row-divider overflow-hidden rounded-[22px] bg-surface shadow-card">
+        <div className="card row-divider overflow-hidden p-0">
           {/* Export row */}
           <button
             type="button"
@@ -102,8 +102,8 @@ export function BackupSection() {
               <Download className="h-4.5 w-4.5" strokeWidth={2.25} />
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-[15px] font-semibold text-ink">Backup exportieren</div>
-              <div className="text-[12px] text-ink-subtle">
+              <div className="text-body font-semibold text-ink">Backup exportieren</div>
+              <div className="text-meta text-ink-subtle">
                 {busy ? 'Exportiere…' : 'Alle Daten als JSON sichern'}
               </div>
             </div>
@@ -115,8 +115,8 @@ export function BackupSection() {
               <Upload className="h-4.5 w-4.5" strokeWidth={2.25} />
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-[15px] font-semibold text-ink">Backup importieren</div>
-              <div className="text-[12px] text-ink-subtle">JSON-Backup-Datei auswählen</div>
+              <div className="text-body font-semibold text-ink">Backup importieren</div>
+              <div className="text-meta text-ink-subtle">JSON-Backup-Datei auswählen</div>
             </div>
             <input
               type="file"
@@ -132,7 +132,7 @@ export function BackupSection() {
         </div>
 
         {error && (
-          <div className="mt-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-[12px] text-red-700">
+          <div className="mt-2 rounded-chip border border-red-200 bg-red-50 px-3 py-2 text-meta text-red-700">
             {error}
           </div>
         )}
@@ -148,16 +148,16 @@ export function BackupSection() {
           >
             <div className="mx-auto mb-4 h-1 w-12 rounded-full bg-forest-950/15" />
 
-            <Dialog.Title className="text-[18px] font-semibold text-red-800">
+            <Dialog.Title className="text-heading font-semibold text-red-800">
               Warnung: Daten werden ersetzt
             </Dialog.Title>
 
-            <p className="mt-2 text-[14px] text-ink">
+            <p className="mt-2 text-body text-ink">
               Restore überschreibt ALLE aktuellen Daten:
             </p>
 
             {stats && (
-              <ul className="mt-2 space-y-1 rounded-xl border border-forest-950/10 bg-surface px-3 py-2 text-[13px] text-ink-muted">
+              <ul className="mt-2 space-y-1 rounded-chip border border-forest-950/10 bg-surface px-3 py-2 text-label text-ink-muted">
                 <li className="flex items-center justify-between">
                   <span>Transaktionen</span>
                   <span className="tabular-nums">
@@ -185,12 +185,12 @@ export function BackupSection() {
               </ul>
             )}
 
-            <p className="mt-3 text-[13px] text-ink-subtle">
+            <p className="mt-3 text-label text-ink-subtle">
               Diese Aktion ist <strong>nicht rückgängig</strong> zu machen. API-Keys bleiben
               unverändert und müssen nicht neu eingegeben werden.
             </p>
 
-            <p className="mt-3 text-[14px] font-medium text-ink">
+            <p className="mt-3 text-body font-medium text-ink">
               Um zu bestätigen, tippe{' '}
               <code className="rounded bg-surface px-1.5 py-0.5 font-mono text-red-700 shadow-card">
                 REPLACE
@@ -217,7 +217,7 @@ export function BackupSection() {
               <button
                 type="button"
                 onClick={() => setPendingRestore(null)}
-                className="flex-1 rounded-full border border-forest-950/15 bg-surface px-4 py-2 text-[15px] font-medium text-ink"
+                className="flex-1 rounded-full border border-forest-950/15 bg-surface px-4 py-2 text-body font-medium text-ink"
                 disabled={busy}
               >
                 Abbrechen
@@ -226,7 +226,7 @@ export function BackupSection() {
                 type="button"
                 onClick={() => void handleConfirm()}
                 disabled={confirmText !== 'REPLACE' || busy}
-                className="flex-1 rounded-full bg-red-700 px-4 py-2 text-[15px] font-semibold text-white disabled:opacity-40"
+                className="flex-1 rounded-full bg-red-700 px-4 py-2 text-body font-semibold text-white disabled:opacity-40"
               >
                 {busy ? 'Importiere…' : 'Backup importieren'}
               </button>

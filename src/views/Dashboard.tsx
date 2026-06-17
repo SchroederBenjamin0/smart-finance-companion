@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { ArrowUpRight, Settings as SettingsIcon } from 'lucide-react';
 import { HeroHeader } from '@/components/layout/HeroHeader';
 import { AccountCardCarousel } from '@/components/feature/dashboard/AccountCardCarousel';
-import { ClaudeTipCard } from '@/components/feature/dashboard/ClaudeTipCard';
 import {
   RecentList,
   type RecentItem,
@@ -11,10 +10,8 @@ import {
   EntryDetailsSheet,
   type EntrySelection,
 } from '@/components/feature/dashboard/EntryDetailsSheet';
-import { DueSubscriptionsBanner } from '@/components/feature/subscriptions/DueSubscriptionsBanner';
 import { NewsBanner } from '@/components/feature/dashboard/NewsBanner';
 import { QuarterlyInsightBanner } from '@/components/feature/dashboard/QuarterlyInsightBanner';
-import { BackupDueBanner } from '@/components/feature/dashboard/BackupDueBanner';
 import { LegacyInvestmentBanner } from '@/components/feature/dashboard/LegacyInvestmentBanner';
 import { incomeRepo } from '@/db/repositories/income';
 import { positionsRepo } from '@/db/repositories/positions';
@@ -24,6 +21,7 @@ import type {
   InvestmentPosition,
   Transaction,
 } from '@/db/types';
+import { isInternalTransfer } from '@/modules/spending';
 import { formatEur } from '@/lib/currency';
 import { formatMonthYearDe } from '@/lib/date';
 import { useAccountsStore } from '@/stores/accounts';
@@ -37,8 +35,13 @@ export function Dashboard() {
   const rules = useConfigStore((s) => s.rules);
   const setActiveTab = useNavStore((s) => s.setActiveTab);
 
-  const [incomes, setIncomes] = useState<IncomeEntry[]>([]);
-  const [expenses, setExpenses] = useState<Transaction[]>([]);
+  // Recent lists (over-fetched so the date-sorted top-6 is drawn from a large
+  // enough pool; findRecent pre-sorts incomes by createdAt, expenses by date).
+  const [recentIncomes, setRecentIncomes] = useState<IncomeEntry[]>([]);
+  const [recentExpenses, setRecentExpenses] = useState<Transaction[]>([]);
+  // Full current-month rows, used only for the "+X diesen Monat" net change.
+  const [monthIncomes, setMonthIncomes] = useState<IncomeEntry[]>([]);
+  const [monthExpenses, setMonthExpenses] = useState<Transaction[]>([]);
   const [positions, setPositions] = useState<InvestmentPosition[]>([]);
   const [selection, setSelection] = useState<EntrySelection | null>(null);
 
@@ -47,13 +50,21 @@ export function Dashboard() {
   }, [loaded, load]);
 
   const reloadActivity = async () => {
-    const [iR, tR, pR] = await Promise.all([
-      incomeRepo.findRecent(10),
-      transactionsRepo.findRecent(10),
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
+      .toISOString()
+      .slice(0, 10);
+    const [iRecent, tRecent, iMonth, tMonth, pR] = await Promise.all([
+      incomeRepo.findRecent(50),
+      transactionsRepo.findRecent(50),
+      incomeRepo.findSince(monthStart),
+      transactionsRepo.findSince(monthStart),
       positionsRepo.findAll(),
     ]);
-    if (iR.ok) setIncomes(iR.value);
-    if (tR.ok) setExpenses(tR.value);
+    if (iRecent.ok) setRecentIncomes(iRecent.value);
+    if (tRecent.ok) setRecentExpenses(tRecent.value);
+    if (iMonth.ok) setMonthIncomes(iMonth.value);
+    if (tMonth.ok) setMonthExpenses(tMonth.value);
     if (pR.ok) setPositions(pR.value);
   };
 
@@ -64,8 +75,8 @@ export function Dashboard() {
 
   const recent = useMemo<RecentItem[]>(() => {
     const merged: RecentItem[] = [
-      ...incomes.map((entry) => ({ kind: 'income' as const, entry })),
-      ...expenses.map((transaction) => ({
+      ...recentIncomes.map((entry) => ({ kind: 'income' as const, entry })),
+      ...recentExpenses.map((transaction) => ({
         kind: 'expense' as const,
         transaction,
       })),
@@ -76,7 +87,7 @@ export function Dashboard() {
       return db.localeCompare(da);
     });
     return merged.slice(0, 6);
-  }, [incomes, expenses]);
+  }, [recentIncomes, recentExpenses]);
 
   const portfolioValue = positions.reduce(
     (sum, p) => sum + p.currentValue,
@@ -89,25 +100,21 @@ export function Dashboard() {
     .reduce((sum, a) => sum + a.balance, 0);
   const total = accountsTotal + portfolioValue;
   const monthDelta = useMemo(() => {
-    const now = new Date();
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
-      .toISOString()
-      .slice(0, 10);
-    const incomeSum = incomes
-      .filter((r) => r.date >= monthStart)
-      .reduce((sum, r) => sum + r.amount, 0);
-    const expenseSum = expenses
-      .filter((r) => r.date >= monthStart)
+    const incomeSum = monthIncomes.reduce((sum, r) => sum + r.amount, 0);
+    // umbuchung = own-account moves; excluded from the net-change figure,
+    // consistent with the spending stats (aggregateByCategory skips it).
+    const expenseSum = monthExpenses
+      .filter((r) => !isInternalTransfer(r.category))
       .reduce((sum, r) => sum + r.amount, 0);
     return incomeSum + expenseSum;
-  }, [incomes, expenses]);
+  }, [monthIncomes, monthExpenses]);
 
   return (
     <>
       <HeroHeader>
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-[13px] font-medium uppercase tracking-wide text-mint-200">
+            <p className="text-label font-medium uppercase tracking-wide text-mint-200">
               Willkommen zurück
             </p>
             <h1 className="mt-1 text-2xl font-semibold leading-tight">
@@ -125,13 +132,13 @@ export function Dashboard() {
         </div>
 
         <div className="mt-7">
-          <p className="text-[13px] font-medium text-mint-200">
+          <p className="text-label font-medium text-mint-200">
             Gesamt-Saldo
           </p>
-          <div className="mt-1 text-[40px] font-semibold leading-none tabular-nums">
+          <div className="mt-1 text-display font-semibold leading-none tabular-nums">
             {formatEur(total)}
           </div>
-          <div className="mt-3 flex flex-wrap items-center gap-2 text-[13px]">
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-label">
             {monthDelta > 0 && (
               <>
                 <span className="inline-flex items-center gap-1 rounded-full bg-surface/15 px-2.5 py-1 font-medium">
@@ -142,7 +149,7 @@ export function Dashboard() {
               </>
             )}
             {portfolioValue > 0 && (
-              <span className="rounded-full bg-surface/10 px-2.5 py-1 text-[12px] text-mint-200">
+              <span className="rounded-full bg-surface/10 px-2.5 py-1 text-meta text-mint-200">
                 davon Portfolio {formatEur(portfolioValue)}
               </span>
             )}
@@ -152,22 +159,17 @@ export function Dashboard() {
 
       <div className="space-y-3 px-4 pt-4 animate-view-enter">
         <LegacyInvestmentBanner />
-        <BackupDueBanner />
-        <DueSubscriptionsBanner />
         <QuarterlyInsightBanner />
         <NewsBanner />
-        <ClaudeTipCard
-          message="Tippe auf eine Banner-Karte oben für aktuelle Themen."
-        />
       </div>
 
       <section className="mt-5">
         <header className="flex items-center justify-between px-4">
-          <h2 className="text-[15px] font-semibold text-ink">Meine Konten</h2>
+          <h2 className="text-body font-semibold text-ink">Meine Konten</h2>
           <button
             type="button"
             onClick={() => setActiveTab('inv')}
-            className="text-[13px] font-medium text-ink-subtle"
+            className="text-label font-medium text-ink-subtle"
           >
             Alle ansehen
           </button>
@@ -185,10 +187,10 @@ export function Dashboard() {
 
       <section className="mt-6 px-4">
         <header className="flex items-center justify-between">
-          <h2 className="text-[15px] font-semibold text-ink">Letzte Einträge</h2>
+          <h2 className="text-body font-semibold text-ink">Letzte Einträge</h2>
           <button
             type="button"
-            className="text-[13px] font-medium text-ink-subtle"
+            className="text-label font-medium text-ink-subtle"
             onClick={() => setActiveTab('add')}
           >
             Neuer Eintrag

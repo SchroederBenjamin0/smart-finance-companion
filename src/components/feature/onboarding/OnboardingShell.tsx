@@ -147,7 +147,7 @@ export function OnboardingShell() {
         useConfigStore.getState().load(),
       ]);
 
-      useToastStore.getState().push('Setup abgeschlossen ✓', 'success');
+      useToastStore.getState().push('Setup abgeschlossen', 'success');
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       setErrorMsg(msg);
@@ -218,7 +218,7 @@ export function OnboardingShell() {
         {errorMsg && (
           <div
             role="alert"
-            className="mt-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+            className="mt-3 rounded-chip border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
           >
             {errorMsg}
           </div>

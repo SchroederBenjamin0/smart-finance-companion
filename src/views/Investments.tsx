@@ -10,6 +10,8 @@ import {
 } from 'lucide-react';
 import { HeroHeader } from '@/components/layout/HeroHeader';
 import { DriftBar } from '@/components/feature/investments/DriftBar';
+import { SectorBreakdownCard } from '@/components/feature/investments/SectorBreakdownCard';
+import { analyzePortfolio, SECTOR_CAP_PCT, SINGLE_STOCK_CAP_PCT } from '@/modules/portfolio-analysis';
 import { PdfImportSheet } from '@/components/feature/portfolio/PdfImportSheet';
 import { PositionForm } from '@/components/feature/portfolio/PositionForm';
 import { configRepo } from '@/db/repositories/config';
@@ -62,18 +64,25 @@ export function Investments() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loaded]);
 
+  // Stable, order-independent key of the distinct tickers, so the news fetch
+  // only re-runs when the ticker SET changes — not on every price refresh
+  // (reload() replaces `positions` with a fresh array reference each time).
+  const tickerKey = useMemo(
+    () => [...new Set(positions.map((p) => p.ticker).filter(Boolean))].sort().join(','),
+    [positions],
+  );
+
   useEffect(() => {
-    if (positions.length === 0) {
+    const tickers = tickerKey ? tickerKey.split(',') : [];
+    if (tickers.length === 0) {
       setNews([]);
       return;
     }
-    const tickers = [...new Set(positions.map((p) => p.ticker).filter(Boolean))];
-    if (tickers.length === 0) return;
     void (async () => {
       const r = await fetchNews(tickers, 5);
       if (r.ok) setNews(r.value);
     })();
-  }, [positions]);
+  }, [tickerKey]);
 
   async function refreshPrices(silent = false) {
     if (positions.length === 0) return;
@@ -116,12 +125,22 @@ export function Investments() {
     };
   }, [positions]);
 
+  const analysis = useMemo(
+    () =>
+      analyzePortfolio(positions, {
+        sectorCapPct: SECTOR_CAP_PCT,
+        singleStockCapPct: SINGLE_STOCK_CAP_PCT,
+        driftTolerancePp: tolerance,
+      }),
+    [positions, tolerance],
+  );
+
   return (
     <>
       <HeroHeader>
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-[13px] font-medium uppercase tracking-wide text-mint-200">
+            <p className="text-label font-medium uppercase tracking-wide text-mint-200">
               Trade Republic
             </p>
             <h1 className="mt-1 text-2xl font-semibold leading-tight">
@@ -154,14 +173,14 @@ export function Investments() {
       </HeroHeader>
 
       <div className="px-4 pt-4 animate-view-enter">
-        <div className="rounded-[22px] bg-surface p-5 shadow-card">
-          <p className="text-[13px] font-medium text-ink-subtle">
+        <div className="card p-5">
+          <p className="text-label font-medium text-ink-subtle">
             Aktuell investiert
           </p>
-          <div className="mt-1 text-[36px] font-semibold leading-none tabular-nums text-ink">
+          <div className="mt-1 text-display font-semibold leading-none tabular-nums text-ink">
             {formatEur(totals.value)}
           </div>
-          <div className="mt-3 flex flex-wrap gap-2 text-[12px]">
+          <div className="mt-3 flex flex-wrap gap-2 text-meta">
             <span className="rounded-full bg-paper px-2.5 py-1 text-ink-subtle">
               Eingezahlt {formatEur(totals.invested)}
             </span>
@@ -187,15 +206,15 @@ export function Investments() {
         </div>
 
         {positions.length === 0 && loaded && (
-          <div className="mt-5 flex items-start gap-3 rounded-[22px] bg-surface p-4 shadow-card">
+          <div className="card mt-5 flex items-start gap-3">
             <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-100 text-forest-800 dark:bg-forest-900 dark:text-forest-200">
               <Sparkles className="h-5 w-5" strokeWidth={2.25} />
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-ink-subtle">
+              <div className="text-caption font-bold uppercase tracking-wider text-ink-subtle">
                 Erste Position
               </div>
-              <p className="mt-0.5 text-[13px] leading-snug text-ink">
+              <p className="mt-0.5 text-label leading-snug text-ink">
                 Tippe auf <strong>+</strong>, um deine erste Holding zu
                 erfassen. ISIN auto-vervollständigt bekannte ETFs.
               </p>
@@ -205,7 +224,7 @@ export function Investments() {
 
         {positions.length > 0 && (
           <>
-            <h2 className="mt-6 text-[13px] font-semibold uppercase tracking-wider text-ink-subtle">
+            <h2 className="mt-6 text-label font-semibold uppercase tracking-wider text-ink-subtle">
               Holdings & Drift
             </h2>
             <ul className="mt-3 space-y-2">
@@ -223,9 +242,20 @@ export function Investments() {
           </>
         )}
 
+        {positions.length > 0 && (
+          <div className="mt-6">
+            <h2 className="text-label font-semibold uppercase tracking-wider text-ink-subtle">
+              Diversifikation
+            </h2>
+            <div className="mt-3">
+              <SectorBreakdownCard analysis={analysis} />
+            </div>
+          </div>
+        )}
+
         {news.length > 0 && (
           <>
-            <h2 className="mt-6 text-[13px] font-semibold uppercase tracking-wider text-ink-subtle">
+            <h2 className="mt-6 text-label font-semibold uppercase tracking-wider text-ink-subtle">
               News (letzte 5 Tage)
             </h2>
             <ul className="mt-3 space-y-2">
@@ -235,14 +265,14 @@ export function Investments() {
                     href={n.link}
                     target="_blank"
                     rel="noopener"
-                    className="block rounded-[22px] bg-surface p-4 shadow-card transition active:scale-[0.99]"
+                    className="card block transition active:scale-[0.99]"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0 flex-1">
-                        <div className="text-[14px] font-semibold leading-snug text-ink">
+                        <div className="text-body font-semibold leading-snug text-ink">
                           {n.title}
                         </div>
-                        <div className="mt-1 text-[11px] text-ink-subtle">
+                        <div className="mt-1 text-caption text-ink-subtle">
                           {n.publisher || 'Yahoo Finance'}
                           {' · '}
                           {formatRelativeDe(n.publishedAt)}
@@ -336,30 +366,30 @@ function PositionRow({
       <button
         type="button"
         onClick={onClick}
-        className="block w-full rounded-[22px] bg-surface p-4 text-left shadow-card transition active:scale-[0.99]"
+        className="card block w-full text-left transition active:scale-[0.99]"
       >
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <div className="grid h-9 w-9 place-items-center rounded-full bg-forest-100 text-[12px] font-bold text-forest-800">
+              <div className="grid h-9 w-9 place-items-center rounded-full bg-forest-100 text-meta font-bold text-forest-800">
                 {position.ticker.slice(0, 4)}
               </div>
               <div className="min-w-0">
-                <div className="truncate text-[15px] font-semibold text-ink">
+                <div className="truncate text-body font-semibold text-ink">
                   {position.name}
                 </div>
-                <div className="text-[11px] text-ink-subtle">
+                <div className="text-caption text-ink-subtle">
                   {position.shares} · {position.ticker}
                 </div>
               </div>
             </div>
           </div>
           <div className="text-right">
-            <div className="text-[15px] font-semibold tabular-nums text-ink">
+            <div className="text-body font-semibold tabular-nums text-ink">
               {formatEur(position.currentValue)}
             </div>
             <div
-              className={`text-[11px] font-medium tabular-nums ${
+              className={`text-caption font-medium tabular-nums ${
                 gainAbs >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-700 dark:text-red-400'
               }`}
             >
@@ -374,7 +404,7 @@ function PositionRow({
             targetWeight={position.targetPercentage}
             tolerancePp={tolerance}
           />
-          <div className="flex items-center justify-between text-[11px]">
+          <div className="flex items-center justify-between text-caption">
             <span className="text-ink-subtle">
               {currentPct.toFixed(1)}%
               {position.targetPercentage > 0 && (
@@ -400,7 +430,7 @@ function PositionRow({
                   target="_blank"
                   rel="noopener"
                   onClick={(e) => e.stopPropagation()}
-                  className="inline-flex items-center gap-1 rounded-full bg-forest-950 px-2.5 py-0.5 text-[11px] font-semibold text-white"
+                  className="inline-flex items-center gap-1 rounded-full bg-forest-950 px-2.5 py-0.5 text-caption font-semibold text-white"
                 >
                   In TR <ExternalLink className="h-3 w-3" strokeWidth={2.5} />
                 </a>
