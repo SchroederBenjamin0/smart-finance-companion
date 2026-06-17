@@ -194,14 +194,11 @@ Markt-Timing.
 Antwort-Format (strikt JSON, kein Markdown):
 {
   "allocations": [
-    {
-      "ticker": "IWDA.AS",
-      "name": "iShares Core MSCI World",
-      "amount_eur": 230,
-      "reason": "Hauptbaustein bleibt"
-    }
+    { "action": "buy",  "isin": "IE00B4L5Y983", "amount_eur": 230, "reason": "..." },
+    { "action": "trim", "isin": "<gehaltene ISIN>", "amount_eur": 120, "reason": "..." }
   ],
   "total_eur": 470,
+  "diversification": "1-2 Sätze zur Sektor-/Konzentrations-Lage",
   "drift_warning": null,
   "summary": "Kurze Hauptaussage (1-2 Sätze)"
 }

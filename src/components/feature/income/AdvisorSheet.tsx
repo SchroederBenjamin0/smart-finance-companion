@@ -4,7 +4,8 @@ import { Sheet } from '@/components/ui/Sheet';
 import { positionsRepo } from '@/db/repositories/positions';
 import { recommendationsRepo } from '@/db/repositories/recommendations';
 import type { InvestmentPosition, Recommendation } from '@/db/types';
-import { DEFAULT_ALLOCATION_TARGET } from '@/db/types';
+import { ALL_CONFIG_KEYS, DEFAULT_ALLOCATION_TARGET } from '@/db/types';
+import { configRepo } from '@/db/repositories/config';
 import { formatEur } from '@/lib/currency';
 import { nowIso } from '@/lib/date';
 import { generateId } from '@/lib/id';
@@ -75,10 +76,13 @@ export function AdvisorSheet({
         return;
       }
 
+      const tolR = await configRepo.getJson<number>(ALL_CONFIG_KEYS.driftToleranceGlobal);
+      const driftTolerancePp = tolR.ok && typeof tolR.value === 'number' ? tolR.value : 5;
+
       const portfolioAnalysis = analyzePortfolio(portfolio, {
         sectorCapPct: SECTOR_CAP_PCT,
         singleStockCapPct: SINGLE_STOCK_CAP_PCT,
-        driftTolerancePp: 5,
+        driftTolerancePp,
       });
       setAnalysis(portfolioAnalysis);
 
