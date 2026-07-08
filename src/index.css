@@ -1,34 +1,77 @@
 @import '@fontsource/inter/latin-400.css';
+@import '@fontsource/inter/latin-500.css';
 @import '@fontsource/inter/latin-600.css';
 @import '@fontsource/inter/latin-700.css';
+@import '@fontsource/inter/latin-800.css';
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ─── Semantic colour tokens ─────────────────────────────────────────────────
-   All bg-paper, bg-surface, text-ink* classes resolve through these variables.
-   A single @media block here covers every component without touching them.
-   NOTE: Recharts chart stroke colours (#0a2e1f etc.) are inline SVG props and
-   do NOT auto-switch — this is a known gap, tracked for a future sprint.
+/* ─── "Ink" colour tokens ─────────────────────────────────────────────────────
+   Every themeable colour lives here as space-separated RGB channels so Tailwind
+   can apply alpha (`bg-forest-950/10`) and the runtime theme engine
+   (`src/lib/theme.ts`) can repaint the app by rewriting these variables on
+   `document.documentElement`.
+
+   These `:root` values are the pre-hydration default (Ink · light). The theme
+   engine overrides them inline once the persisted theme loads; the
+   `prefers-color-scheme` block keeps the first paint correct for users whose OS
+   is dark before JS runs. Runtime dark mode is driven by a `.dark` class
+   (`darkMode: 'class'`), toggled by the engine.
    ────────────────────────────────────────────────────────────────────────── */
 :root {
-  --color-paper:      #f2f2f7;
-  --color-surface:    #ffffff;
-  --color-divider:    #e4e4e7; /* zinc-200 equivalent */
-  --color-ink:        #0a2e1f;
-  --color-ink-muted:  #3d5a4d;
-  --color-ink-subtle: #5f7168;
+  /* neutrals */
+  --color-paper: 238 241 247;
+  --color-surface: 255 255 255;
+  --color-divider: 226 231 241;
+  --color-hero: 20 38 79;
+  --color-ink: 15 26 51;
+  --color-ink-muted: 74 85 112;
+  --color-ink-subtle: 139 147 168;
+  /* accent ramp */
+  --f-50: 238 243 253;
+  --f-100: 231 237 252;
+  --f-200: 205 221 251;
+  --f-300: 174 198 248;
+  --f-400: 143 176 242;
+  --f-500: 95 140 236;
+  --f-600: 61 111 224;
+  --f-700: 47 95 224;
+  --f-800: 41 82 200;
+  --f-900: 20 38 79;
+  --f-950: 16 29 61;
+  /* accent tints */
+  --m-50: 245 248 254;
+  --m-100: 231 237 252;
+  --m-200: 201 217 255;
+  /* typography */
+  --font-app: 'Inter';
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --color-paper:      #111827; /* gray-900 */
-    --color-surface:    #1f2937; /* gray-800 */
-    --color-divider:    #374151; /* gray-700 */
-    --color-ink:        #e5e7eb; /* gray-200 */
-    --color-ink-muted:  #9ca3af; /* gray-400 */
-    --color-ink-subtle: #9aa6af;
+  :root:not(.light):not(.dark) {
+    --color-paper: 10 17 34;
+    --color-surface: 20 29 51;
+    --color-divider: 42 51 80;
+    --color-hero: 21 42 87;
+    --color-ink: 234 240 255;
+    --color-ink-muted: 154 166 196;
+    --color-ink-subtle: 99 113 143;
+    --f-50: 26 38 68;
+    --f-100: 27 39 68;
+    --f-200: 36 52 88;
+    --f-300: 47 68 114;
+    --f-400: 90 120 180;
+    --f-500: 110 150 235;
+    --f-600: 80 130 235;
+    --f-700: 91 141 239;
+    --f-800: 143 178 255;
+    --f-900: 27 39 68;
+    --f-950: 20 29 51;
+    --m-50: 22 32 56;
+    --m-100: 27 39 68;
+    --m-200: 143 178 255;
   }
 }
 
@@ -44,6 +87,7 @@
     overscroll-behavior-y: none;
     font-feature-settings: 'tnum' on, 'lnum' on, 'cv11' on;
     font-family:
+      var(--font-app),
       Inter,
       -apple-system,
       BlinkMacSystemFont,
@@ -70,11 +114,11 @@
 
 @layer components {
   .card {
-    @apply rounded-card bg-surface p-4 shadow-card;
+    @apply rounded-card border border-divider bg-surface p-4 shadow-card;
   }
 
   .card-tight {
-    @apply rounded-control bg-surface p-3 shadow-card;
+    @apply rounded-control border border-divider bg-surface p-3 shadow-card;
   }
 
   .btn-primary {
@@ -114,6 +158,6 @@
   }
 
   .row-divider > * + * {
-    @apply border-t border-forest-950/10;
+    @apply border-t border-divider;
   }
 }

@@ -1,43 +1,60 @@
 import type { Config } from 'tailwindcss';
 
+/**
+ * Colour system — "Ink" direction.
+ *
+ * Every themeable colour is defined as an `rgb(var(--x) / <alpha-value>)` token
+ * so that (a) Tailwind opacity modifiers like `bg-forest-950/10` keep working,
+ * and (b) the runtime theme engine (`src/lib/theme.ts`) can repaint the whole
+ * app — presets *and* a user-chosen custom accent — by rewriting the CSS
+ * variables on `:root`. Nothing in components hardcodes hex values.
+ *
+ * The `forest` scale keeps its old key names purely so the ~40 existing
+ * `bg-forest-950` / `text-forest-800` usages don't need touching — but the
+ * values are now a navy→blue accent ramp. `mint` = soft accent tints.
+ */
+const ch = (name: string) => `rgb(var(${name}) / <alpha-value>)`;
+
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
-  darkMode: 'media',
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
-        // Forest-green primary palette (design uses #0a2e1f as deepest tone)
+        // Accent ramp (was forest-green, now navy→blue). Runtime-themeable.
         forest: {
-          50: '#f0f9f3',
-          100: '#dcfce7',
-          200: '#bbf7d0',
-          300: '#86efac',
-          400: '#4ade80',
-          500: '#22c55e',
-          600: '#16a34a',
-          700: '#166534',
-          800: '#14532d',
-          900: '#0e3a23',
-          950: '#0a2e1f',
+          50: ch('--f-50'),
+          100: ch('--f-100'),
+          200: ch('--f-200'),
+          300: ch('--f-300'),
+          400: ch('--f-400'),
+          500: ch('--f-500'),
+          600: ch('--f-600'),
+          700: ch('--f-700'),
+          800: ch('--f-800'),
+          900: ch('--f-900'),
+          950: ch('--f-950'),
         },
+        // Soft accent tints (AI banners, chips).
         mint: {
-          50: '#f0f9f3',
-          100: '#eaf6ee',
-          200: '#dcfce7',
+          50: ch('--m-50'),
+          100: ch('--m-100'),
+          200: ch('--m-200'),
         },
-        // Semantic tokens — resolved via CSS variables so dark-mode
-        // overrides in index.css automatically update all usages.
-        paper: 'var(--color-paper)',
-        surface: 'var(--color-surface)',
-        divider: 'var(--color-divider)',
+        // Semantic neutral tokens — dark mode + palette swap these vars.
+        paper: ch('--color-paper'),
+        surface: ch('--color-surface'),
+        divider: ch('--color-divider'),
+        hero: ch('--color-hero'),
         ink: {
-          DEFAULT: 'var(--color-ink)',
-          muted: 'var(--color-ink-muted)',
-          subtle: 'var(--color-ink-subtle)',
+          DEFAULT: ch('--color-ink'),
+          muted: ch('--color-ink-muted'),
+          subtle: ch('--color-ink-subtle'),
         },
       },
       fontFamily: {
         sans: [
+          'var(--font-app)',
           'Inter',
           '-apple-system',
           'BlinkMacSystemFont',
@@ -53,26 +70,23 @@ export default {
         label: ['13px', { lineHeight: '1.4' }],
         body: ['15px', { lineHeight: '1.45' }],
         heading: ['17px', { lineHeight: '1.3' }],
-        title: ['22px', { lineHeight: '1.2' }],
-        'display-sm': ['28px', { lineHeight: '1.1' }],
-        display: ['40px', { lineHeight: '1.0' }],
+        title: ['22px', { lineHeight: '1.2', letterSpacing: '-0.5px' }],
+        page: ['30px', { lineHeight: '1.05', letterSpacing: '-0.7px' }],
+        'display-sm': ['28px', { lineHeight: '1.1', letterSpacing: '-0.6px' }],
+        display: ['44px', { lineHeight: '1.0', letterSpacing: '-1.2px' }],
       },
       borderRadius: {
-        card: '22px',
-        control: '16px',
-        chip: '12px',
-        '4xl': '32px',
-        '5xl': '40px',
+        // "weniger runde Ecken" — Ink geometry.
+        card: '12px',
+        control: '10px',
+        chip: '8px',
+        hero: '18px',
+        '4xl': '18px', // legacy alias used by HeroHeader (rounded-b-4xl)
+        '5xl': '22px',
       },
       boxShadow: {
-        card: '0 1px 2px rgba(10, 46, 31, 0.04), 0 4px 12px rgba(10, 46, 31, 0.06)',
-        nav: '0 8px 24px rgba(10, 46, 31, 0.18)',
-      },
-      backgroundImage: {
-        'hero-forest': 'linear-gradient(160deg, #0a4d2e 0%, #22c55e 100%)',
-        'card-fun': 'linear-gradient(150deg, #0a7d50, #13a35a)',
-        'card-savings': 'linear-gradient(150deg, #0a4d2e, #138a40)',
-        'card-investment': 'linear-gradient(150deg, #065f46, #0c8a5a)',
+        card: '0 1px 2px rgba(20, 38, 79, 0.04), 0 4px 12px rgba(20, 38, 79, 0.06)',
+        nav: '0 12px 32px -8px rgba(20, 38, 79, 0.35), 0 4px 8px rgba(20, 38, 79, 0.16)',
       },
       keyframes: {
         'fade-in': {

@@ -10,6 +10,7 @@ import { Stats } from '@/views/Stats';
 import { Settings } from '@/views/Settings';
 import { useAccountsStore } from '@/stores/accounts';
 import { useConfigStore } from '@/stores/config';
+import { useThemeStore } from '@/stores/theme';
 import { useNavStore } from '@/stores/navigation';
 import { useOnboardingStore } from '@/stores/onboarding';
 import { useSharePrefillStore } from '@/stores/sharePrefill';
@@ -52,6 +53,8 @@ export function App() {
   const refreshOnboarding = useOnboardingStore((s) => s.refresh);
   const loadAccounts = useAccountsStore((s) => s.load);
   const loadConfig = useConfigStore((s) => s.load);
+  const loadTheme = useThemeStore((s) => s.load);
+  const syncSystemTheme = useThemeStore((s) => s.syncSystem);
   const activeTab = useNavStore((s) => s.activeTab);
   const setActiveTab = useNavStore((s) => s.setActiveTab);
   const setPrefill = useSharePrefillStore((s) => s.setPrefill);
@@ -72,6 +75,18 @@ export function App() {
       window.history.replaceState(null, '', cleanUrl);
     }
   }, [setPrefill, setActiveTab]);
+
+  // Apply the persisted theme (palette / mode / accent / font) as early as
+  // possible, then keep it in sync when the OS light/dark preference flips
+  // while the user is on "system" mode.
+  useEffect(() => {
+    void loadTheme();
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const onChange = () => syncSystemTheme();
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, [loadTheme, syncSystemTheme]);
 
   useEffect(() => {
     void (async () => {
