@@ -13,15 +13,17 @@ interface Props {
   portfolioPositionCount?: number;
 }
 
-const META: Record<
-  BankAccountType,
-  { Icon: LucideIcon; label: string; gradient: string }
-> = {
-  fun: { Icon: ACCOUNT_ICON.fun, label: 'Fun-Geld', gradient: 'bg-card-fun' },
-  savings: { Icon: ACCOUNT_ICON.savings, label: 'Sparkonto', gradient: 'bg-card-savings' },
+const META: Record<BankAccountType, { Icon: LucideIcon; label: string }> = {
+  fun: { Icon: ACCOUNT_ICON.fun, label: 'Fun-Geld' },
+  savings: { Icon: ACCOUNT_ICON.savings, label: 'Sparkonto' },
 };
 
 const ORDER: BankAccountType[] = ['fun', 'savings'];
+
+const CARD =
+  'flex w-[172px] shrink-0 snap-start flex-col rounded-card border border-divider bg-surface p-[18px] shadow-card';
+const ICON_SQUARE =
+  'mb-4 grid h-[38px] w-[38px] place-items-center rounded-chip bg-forest-100 text-forest-800';
 
 export function AccountCardCarousel({
   accounts,
@@ -41,52 +43,37 @@ export function AccountCardCarousel({
           const acc = accounts.find((a) => a.type === type);
           const meta = META[type];
           return (
-            <li
-              key={type}
-              className={`relative shrink-0 snap-start ${meta.gradient} flex h-[142px] w-[180px] flex-col justify-between overflow-hidden rounded-card p-[18px] text-white shadow-card`}
-            >
-              <div
-                className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-surface/[0.10]"
-                aria-hidden="true"
-              />
-              <div className="relative">
-                <meta.Icon className="h-6 w-6" strokeWidth={2.25} />
-                <div className="mt-2 text-label font-medium">
-                  {meta.label}
-                </div>
+            <li key={type} className={CARD}>
+              <div className={ICON_SQUARE}>
+                <meta.Icon className="h-5 w-5" strokeWidth={2.25} />
               </div>
-              <div className="relative">
-                <div className="text-2xl font-semibold tabular-nums">
-                  {formatEur(acc?.balance ?? 0)}
-                </div>
-                <div className="mt-1 text-caption font-medium">
-                  {pct[type]}% · auto-split
-                </div>
+              <div className="text-meta font-medium text-ink-muted">
+                {meta.label}
+              </div>
+              <div className="mt-1 text-title font-semibold tabular-nums text-ink">
+                {formatEur(acc?.balance ?? 0)}
+              </div>
+              <div className="mt-1 text-caption text-ink-subtle">
+                {pct[type]}% · auto-split
               </div>
             </li>
           );
         })}
 
-        <li className="relative shrink-0 snap-start bg-card-investment flex h-[142px] w-[180px] flex-col justify-between overflow-hidden rounded-card p-[18px] text-white shadow-card">
-          <div
-            className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-surface/[0.10]"
-            aria-hidden="true"
-          />
-          <div className="relative">
-            <TrendingUp className="h-6 w-6" strokeWidth={2.25} />
-            <div className="mt-2 text-label font-medium">
-              Portfolio (TR)
-            </div>
+        <li className={CARD}>
+          <div className={ICON_SQUARE}>
+            <TrendingUp className="h-5 w-5" strokeWidth={2.25} />
           </div>
-          <div className="relative">
-            <div className="text-2xl font-semibold tabular-nums">
-              {formatEur(portfolioValue)}
-            </div>
-            <div className="mt-1 text-caption font-medium">
-              {portfolioPositionCount > 0
-                ? `${portfolioPositionCount} Position${portfolioPositionCount === 1 ? '' : 'en'}`
-                : 'PDF-Import oder Position hinzufügen'}
-            </div>
+          <div className="text-meta font-medium text-ink-muted">
+            Portfolio (TR)
+          </div>
+          <div className="mt-1 text-title font-semibold tabular-nums text-ink">
+            {formatEur(portfolioValue)}
+          </div>
+          <div className="mt-1 text-caption text-ink-subtle">
+            {portfolioPositionCount > 0
+              ? `${portfolioPositionCount} Position${portfolioPositionCount === 1 ? '' : 'en'}`
+              : 'PDF-Import oder Position'}
           </div>
         </li>
       </ul>

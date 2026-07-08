@@ -1,10 +1,6 @@
 import { TriangleAlert } from 'lucide-react';
 import type { PortfolioAnalysis } from '@/modules/portfolio-analysis';
-
-const SECTOR_COLORS = [
-  '#0a4d2e', '#16a34a', '#10b981', '#22c55e', '#65a30d', '#0e7490',
-  '#7c3aed', '#b45309', '#9aa6af',
-];
+import { useChartColors } from '@/lib/chart-colors';
 
 interface Props {
   analysis: PortfolioAnalysis;
@@ -13,6 +9,7 @@ interface Props {
 }
 
 export function SectorBreakdownCard({ analysis, compact = false }: Props) {
+  const ramp = useChartColors().ramp;
   if (analysis.totalValue <= 0) {
     return (
       <div className="card">
@@ -38,7 +35,7 @@ export function SectorBreakdownCard({ analysis, compact = false }: Props) {
         {analysis.sectors.map((s, i) => (
           <div
             key={s.sector}
-            style={{ width: `${s.pct}%`, backgroundColor: SECTOR_COLORS[i % SECTOR_COLORS.length] }}
+            style={{ width: `${s.pct}%`, backgroundColor: ramp[i % ramp.length] }}
             title={`${s.sector} ${s.pct.toFixed(0)}%`}
           />
         ))}
@@ -50,7 +47,7 @@ export function SectorBreakdownCard({ analysis, compact = false }: Props) {
             <span className="flex items-center gap-2 text-ink">
               <span
                 className="inline-block h-2.5 w-2.5 rounded-full"
-                style={{ backgroundColor: SECTOR_COLORS[i % SECTOR_COLORS.length] }}
+                style={{ backgroundColor: ramp[i % ramp.length] }}
               />
               {s.sector}
               {flaggedSectors.has(s.sector) && (

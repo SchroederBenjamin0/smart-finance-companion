@@ -8,6 +8,7 @@ import {
   Key,
   Layout,
   Lock as LockIcon,
+  Palette,
   PieChart,
   PiggyBank,
   RefreshCw,
@@ -24,6 +25,9 @@ import { DriftToleranceSlider } from '@/components/feature/settings/DriftToleran
 import { LoansSection } from '@/components/feature/settings/LoansSection';
 import { PinSettingsSheet } from '@/components/feature/settings/PinSettingsSheet';
 import { RulesEditorSheet } from '@/components/feature/settings/RulesEditorSheet';
+import { ThemeSettingsSheet } from '@/components/feature/settings/ThemeSettingsSheet';
+import { useThemeStore } from '@/stores/theme';
+import { PALETTE_LABELS } from '@/lib/theme';
 import { accountsRepo } from '@/db/repositories/accounts';
 import { configRepo } from '@/db/repositories/config';
 import { resetDB } from '@/db/client';
@@ -48,7 +52,9 @@ export function Settings() {
   const [newKey, setNewKey] = useState('');
   const [saving, setSaving] = useState(false);
   const [editingRules, setEditingRules] = useState(false);
+  const [editingTheme, setEditingTheme] = useState(false);
   const [editingPin, setEditingPin] = useState(false);
+  const themeConfig = useThemeStore((s) => s.config);
   const [pinIsSet, setPinIsSet] = useState(false);
   const [emergencyText, setEmergencyText] = useState(
     String(config.emergencyFundTarget),
@@ -220,6 +226,25 @@ export function Settings() {
       </header>
 
       <div className="px-4 pt-2">
+        <Section title="Darstellung">
+          <Row
+            Icon={Palette}
+            label="Design & Farbe"
+            value={`${
+              themeConfig.paletteId === 'custom'
+                ? 'Eigene'
+                : PALETTE_LABELS[themeConfig.paletteId]
+            } · ${
+              themeConfig.mode === 'system'
+                ? 'System'
+                : themeConfig.mode === 'light'
+                  ? 'Hell'
+                  : 'Dunkel'
+            }`}
+            onClick={() => setEditingTheme(true)}
+          />
+        </Section>
+
         <Section title="Konten-Salden">
           <p className="px-4 pt-3 text-meta leading-snug text-ink-subtle">
             Die Salden werden beim Revolut-CSV-Import automatisch auf den
@@ -410,6 +435,10 @@ export function Settings() {
       <RulesEditorSheet
         open={editingRules}
         onOpenChange={setEditingRules}
+      />
+      <ThemeSettingsSheet
+        open={editingTheme}
+        onOpenChange={setEditingTheme}
       />
       <PinSettingsSheet
         open={editingPin}

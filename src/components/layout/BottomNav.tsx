@@ -27,7 +27,7 @@ export function BottomNav() {
       style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 16px)' }}
       aria-label="Hauptnavigation"
     >
-      <ul className="pointer-events-auto flex h-[54px] items-center gap-1 rounded-card bg-forest-950 p-1.5 shadow-nav">
+      <ul className="pointer-events-auto flex h-[54px] items-center gap-1 rounded-2xl bg-forest-950 p-1.5 shadow-nav">
         {TABS.map((tab) => {
           const isActive = tab.id === activeTab;
           return (
@@ -40,10 +40,10 @@ export function BottomNav() {
                 }}
                 aria-current={isActive ? 'page' : undefined}
                 aria-label={tab.label}
-                className={`flex h-[42px] items-center gap-1.5 rounded-card px-3 text-sm font-semibold transition ${
+                className={`flex h-[42px] items-center gap-1.5 rounded-xl px-3 text-sm font-semibold transition-all duration-300 ${
                   isActive
-                    ? 'bg-white text-forest-950'
-                    : 'text-white/85 hover:text-white'
+                    ? 'bg-forest-700 text-white'
+                    : 'text-white/60 hover:text-white'
                 }`}
               >
                 <tab.Icon className="h-5 w-5" strokeWidth={2.25} />
